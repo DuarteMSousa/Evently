@@ -12,6 +12,7 @@
     <modules>
         <module>Venues</module>
         <module>Users</module>
+        <module>Reviews</module>
     </modules>
 
     <properties>
