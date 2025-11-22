@@ -1,16 +1,17 @@
-package org.evently.users.dtos;
+package org.evently.users.dtos.User;
 
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Date;
-import java.util.UUID;
 
 @Setter
 @Getter
-public class UserUpdateDTO {
+public class UserCreateDTO {
 
     private String username;
+
+    private String password;
 
     private String email;
 

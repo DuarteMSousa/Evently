@@ -1,11 +1,14 @@
 package org.evently.users.services;
 
-import org.evently.users.dtos.UserCreateDTO;
-import org.evently.users.dtos.UserDTO;
-import org.evently.users.dtos.UserUpdateDTO;
+import org.evently.users.Utils.PasswordUtils;
+import org.evently.users.exceptions.LoginFailedException;
+import org.evently.users.exceptions.UserAlreadyExistsException;
+import org.evently.users.exceptions.UserNotFoundException;
 import org.evently.users.models.User;
 import org.evently.users.repositories.UsersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -20,32 +23,58 @@ public class UsersService {
     private UsersRepository usersRepository;
 
     @Transactional
-    public UserDTO createUser(UserCreateDTO userCreateDTO) {
+    public User createUser(User user) {
+        if (usersRepository.existsByUsername(user.getUsername())) {
+            throw new UserAlreadyExistsException("User with username " + user.getUsername() + " already exists");
+        }
 
-        return new UserDTO();
+        user.setPassword(PasswordUtils.hashPassword(user.getPassword()));
+
+        return usersRepository.save(user);
     }
 
     @Transactional
-    public UserDTO updateUser(UserUpdateDTO userUpdateDTO) {
-        return new UserDTO();
+    public User updateUser(User user) {
+        if (!usersRepository.existsById(user.getId())) {
+            throw new UserNotFoundException("User not found");
+        }
+
+        user.setPassword(PasswordUtils.hashPassword(user.getPassword()));
+
+        return usersRepository.save(user);
     }
 
-    public UserDTO getUser(UUID userId) {
-        return usersRepository.findBy
-
-
+    public User getUser(UUID userId) {
+        return usersRepository
+                .findById(userId)
+                .orElseThrow(()-> new UserNotFoundException(""));
     }
 
-    public List<UserDTO> getUsersPage() {
-        return new ArrayList<UserDTO>();
+    public List<User> getUsersPage() {
+        return new ArrayList<User>();
     }
 
     @Transactional
-    public UserDTO deactivateUser(UUID userId) {
-        return new UserDTO();
+    public User deactivateUser(UUID userId) {
+        User userToDeactivate = usersRepository.findById(userId)
+                .orElseThrow(()-> new UserNotFoundException(""));
+
+        userToDeactivate.setActive(false);
+        return usersRepository.save(userToDeactivate);
     }
 
-    public String loginUser(User user) {
+    public String loginUser(UUID userId, String password) {
+        if(!usersRepository.existsById(userId)) {
+            throw new LoginFailedException("");
+        }
+
+        User user = usersRepository.findById(userId)
+                .orElseThrow(()-> new LoginFailedException(""));
+
+        if(!PasswordUtils.checkPassword(password, user.getPassword())) {
+            throw new LoginFailedException("");
+        }
+
         return "";
     }
 }

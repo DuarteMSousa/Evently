@@ -23,18 +23,22 @@ public class User {
     @GeneratedValue
     private UUID id;
 
+    @Column(unique = true)
     private String username;
 
     private String password;
 
+    @Column(unique = true)
     private String email;
 
-    private boolean isActive;
+    private boolean isActive=true;
 
+    @Column(unique = true)
     private String nif;
 
     private Date birthDate;
 
+    @Column(unique = true)
     private String phoneNumber;
 
     @CreatedDate

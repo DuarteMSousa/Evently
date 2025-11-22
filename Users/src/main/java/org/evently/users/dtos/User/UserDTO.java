@@ -1,9 +1,8 @@
-package org.evently.users.dtos;
+package org.evently.users.dtos.User;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
+
 import java.util.Date;
 import java.util.UUID;
 
