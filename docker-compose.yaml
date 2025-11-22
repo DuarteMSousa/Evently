@@ -19,3 +19,16 @@ services:
       PGADMIN_DEFAULT_PASSWORD: pgadmin123
     ports:
       - "9999:80"
+
+  rabbitmq:
+    image: rabbitmq:3.12.9-management
+    container_name: rabbit_container
+    hostname: rabbit_server
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: 123
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - c:\Docker\rabbitmq_data:/var/lib/rabbitmq
