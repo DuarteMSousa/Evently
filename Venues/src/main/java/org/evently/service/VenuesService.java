@@ -1,7 +1,7 @@
-package org.example.service;
+package org.evently.service;
 
-import org.example.models.Venue;
-import org.example.models.VenueZone;
+import org.evently.models.Venue;
+import org.evently.models.VenueZone;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;

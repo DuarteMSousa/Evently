@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16.0
+    container_name: postgres_server
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: postgres123
+      POSTGRES_DB: carshop
+    ports:
+      - "5432:5432"
+    volumes:
+      - c:\Docker\Postgresql:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4:7.8
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: teste@teste.com
+      PGADMIN_DEFAULT_PASSWORD: pgadmin123
+    ports:
+      - "9999:80"

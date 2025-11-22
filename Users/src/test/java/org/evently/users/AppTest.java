@@ -1,4 +1,4 @@
-package org.example;
+package org.evently.users;
 
 import junit.framework.Test;
 import junit.framework.TestCase;

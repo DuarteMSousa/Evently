@@ -1,7 +1,7 @@
-package org.example.controllers;
+package org.evently.controllers;
 
-import org.example.models.Venue;
-import org.example.service.VenuesService;
+import org.evently.models.Venue;
+import org.evently.service.VenuesService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
