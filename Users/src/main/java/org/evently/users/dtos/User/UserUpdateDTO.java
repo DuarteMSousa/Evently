@@ -4,10 +4,13 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Date;
+import java.util.UUID;
 
 @Setter
 @Getter
 public class UserUpdateDTO {
+
+    private UUID id;
 
     private String username;
 

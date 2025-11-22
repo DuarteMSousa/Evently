@@ -1,17 +1,19 @@
 package org.evently.users.services;
 
 import org.evently.users.Utils.PasswordUtils;
-import org.evently.users.exceptions.LoginFailedException;
-import org.evently.users.exceptions.UserAlreadyExistsException;
-import org.evently.users.exceptions.UserNotFoundException;
+import org.evently.users.exceptions.*;
 import org.evently.users.models.User;
 import org.evently.users.repositories.UsersRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.awt.print.Pageable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -21,6 +23,8 @@ public class UsersService {
 
     @Autowired
     private UsersRepository usersRepository;
+
+    private ModelMapper modelMapper = new ModelMapper();
 
     @Transactional
     public User createUser(User user) {
@@ -34,14 +38,22 @@ public class UsersService {
     }
 
     @Transactional
-    public User updateUser(User user) {
-        if (!usersRepository.existsById(user.getId())) {
-            throw new UserNotFoundException("User not found");
+    public User updateUser(UUID id,User user) {
+        if (!id.equals(user.getId())){
+            throw new InvalidUserUpdateException("Parameter id and body id do not correspond");
         }
 
-        user.setPassword(PasswordUtils.hashPassword(user.getPassword()));
+        User existingUser = usersRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        return usersRepository.save(user);
+        existingUser.setUsername(user.getUsername());
+        existingUser.setPassword(PasswordUtils.hashPassword(user.getPassword()));
+        existingUser.setEmail(user.getEmail());
+        existingUser.setBirthDate(user.getBirthDate());
+        existingUser.setNif(user.getNif());
+        existingUser.setPhoneNumber(user.getPhoneNumber());
+
+        return usersRepository.save(existingUser);
     }
 
     public User getUser(UUID userId) {
@@ -58,6 +70,10 @@ public class UsersService {
     public User deactivateUser(UUID userId) {
         User userToDeactivate = usersRepository.findById(userId)
                 .orElseThrow(()-> new UserNotFoundException(""));
+
+        if(!userToDeactivate.isActive()){
+            throw new UserAlreadyDeactivatedException("");
+        }
 
         userToDeactivate.setActive(false);
         return usersRepository.save(userToDeactivate);
@@ -76,5 +92,10 @@ public class UsersService {
         }
 
         return "";
+    }
+
+    public Page<User> getUsersPage(Integer pageNumber, Integer pageSize) {
+        PageRequest pageable =  PageRequest.of(pageNumber, pageSize);
+        return usersRepository.findAll(pageable);
     }
 }
