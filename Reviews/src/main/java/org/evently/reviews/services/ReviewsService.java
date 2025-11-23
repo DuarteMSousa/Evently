@@ -6,6 +6,7 @@ import org.evently.reviews.repositories.ReviewsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,25 +20,37 @@ public class ReviewsService {
         return reviewsRepository.findAll();
     }
 
-    public Review get(UUID id) throws UnexistingReviewException {
+    public Review getReview(UUID id) throws UnexistingReviewException {
         return reviewsRepository
                 .findById(id)
                 .orElseThrow(() -> new UnexistingReviewException());
     }
 
-    public Review add(Review review) {
+    @Transactional
+    public Review registerReview(Review review) {
         return reviewsRepository.save(review);
     }
 
-    public Review update(Review review) throws UnexistingReviewException {
+    @Transactional
+    public Review updateReview(UUID id, Review review) throws UnexistingReviewException {
         if (!reviewsRepository.existsById(review.getId())) {
             throw new UnexistingReviewException();
         }
 
-        return reviewsRepository.save(review);
+        Review existingReview = reviewsRepository.findById(id).orElseThrow(() -> new UnexistingReviewException());
+
+        existingReview.setAuthor(existingReview.getAuthor());
+        existingReview.setEntity(existingReview.getEntity());
+        existingReview.setEntityType(existingReview.getEntityType());
+        existingReview.setRating(review.getRating());
+        existingReview.setComment(review.getComment());
+
+
+        return reviewsRepository.save(existingReview);
     }
 
-    public void delete(UUID id) throws UnexistingReviewException {
+    @Transactional
+    public void deleteReview(UUID id) throws UnexistingReviewException {
         if (!reviewsRepository.existsById(id)) {
             throw new UnexistingReviewException();
         }

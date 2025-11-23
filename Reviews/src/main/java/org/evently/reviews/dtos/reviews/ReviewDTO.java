@@ -15,9 +15,9 @@ public class ReviewDTO {
 
     private UUID id;
 
-    private UUID authorId;
+    private UUID author;
 
-    private UUID entityId;
+    private UUID entity;
 
     private EntityType entityType;
 

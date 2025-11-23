@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,20 +25,22 @@ public class ReviewCommentsService {
         return reviewCommentsRepository.findAll();
     }
 
-    public ReviewComment get(UUID id) throws UnexistingReviewCommentException {
+    public ReviewComment getReviewComment(UUID id) throws UnexistingReviewCommentException {
         return reviewCommentsRepository
                 .findById(id)
                 .orElseThrow(() -> new UnexistingReviewCommentException());
     }
 
-    public ReviewComment add(ReviewComment reviewComment) throws UnexistingReviewException {
-        if(reviewsService.get(reviewComment.getReview().getId()) == null)
+    @Transactional
+    public ReviewComment registerReviewComment(ReviewComment reviewComment) throws UnexistingReviewException {
+        if(reviewsService.getReview(reviewComment.getReview().getId()) == null)
             throw new UnexistingReviewException();
 
         return reviewCommentsRepository.save(reviewComment);
     }
 
-    public ReviewComment update(ReviewComment reviewComment) throws UnexistingReviewCommentException {
+    @Transactional
+    public ReviewComment updateReviewComment(ReviewComment reviewComment) throws UnexistingReviewCommentException {
         if (!reviewCommentsRepository.existsById(reviewComment.getId())) {
             throw new UnexistingReviewCommentException();
         }
@@ -45,7 +48,8 @@ public class ReviewCommentsService {
         return reviewCommentsRepository.save(reviewComment);
     }
 
-    public void delete(UUID id) throws UnexistingReviewCommentException {
+    @Transactional
+    public void deleteReviewComment(UUID id) throws UnexistingReviewCommentException {
         if (!reviewCommentsRepository.existsById(id)) {
             throw new UnexistingReviewCommentException();
         }

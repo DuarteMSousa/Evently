@@ -10,7 +10,7 @@ import java.util.UUID;
 @Getter
 public class ReviewCommentCreateDTO {
 
-    private UUID authorId;
+    private UUID author;
 
     private Review review;
 

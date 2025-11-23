@@ -1,5 +1,6 @@
 package org.evently.reviews.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,19 +16,15 @@ import java.util.UUID;
 @AllArgsConstructor
 @Data
 @Entity
-@Table(name = "reviewComments")
+@Table(name = "review_comments")
 @EntityListeners(AuditingEntityListener.class)
 public class ReviewComment {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    private UUID authorId;
-
-    @ManyToOne
-    @JoinColumn(name = "review_id", nullable = false)
-    private Review review;
+    private UUID author;
 
     private String comment;
 
@@ -37,4 +34,8 @@ public class ReviewComment {
     @LastModifiedDate
     private Date updatedAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "review", nullable = false)
+    @JsonIgnore
+    private Review review;
 }

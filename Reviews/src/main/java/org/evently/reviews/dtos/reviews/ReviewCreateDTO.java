@@ -10,9 +10,9 @@ import java.util.UUID;
 @Getter
 public class ReviewCreateDTO {
 
-    private UUID authorId;
+    private UUID author;
 
-    private UUID entityId;
+    private UUID entity;
 
     private EntityType entityType;
 

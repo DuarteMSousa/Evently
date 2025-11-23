@@ -22,12 +22,12 @@ import java.util.UUID;
 public class Review {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    private UUID authorId;
+    private UUID author;
 
-    private UUID entityId;
+    private UUID entity;
 
     private EntityType entityType;
 
@@ -35,13 +35,12 @@ public class Review {
 
     private String comment;
 
-    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL)
-    private List<ReviewComment> comments;
-
     @CreatedDate
     private Date createdAt;
 
     @LastModifiedDate
     private Date updatedAt;
 
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL)
+    private List<ReviewComment> comments;
 }

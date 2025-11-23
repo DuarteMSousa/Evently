@@ -13,7 +13,7 @@ public class ReviewCommentDTO {
 
     private UUID id;
 
-    private UUID authorId;
+    private UUID author;
 
     private Review review;
 
