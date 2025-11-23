@@ -1,97 +1,115 @@
 package org.evently.service;
 
+import org.evently.dtos.venues.VenueSearchDTO;
+import org.evently.exceptions.InvalidVenueException;
+import org.evently.exceptions.VenueAlreadyDeactivatedException;
+import org.evently.exceptions.VenueNotFoundException;
 import org.evently.models.Venue;
-import org.evently.models.VenueZone;
+import org.evently.repositories.VenuesRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import javax.transaction.Transactional;
+import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 public class VenuesService {
 
-    // "Base de dados" em memória
-    private final Map<UUID, Venue> venues = new ConcurrentHashMap<>();
+    @Autowired
+    private VenuesRepository venuesRepository;
 
-    // GET /get-venue/{venueId}
-    public Venue getVenue(UUID id) {
-        return venues.get(id);
+    private void validateVenue(Venue venue) {
+        if (venue.getCapacity() == null || venue.getCapacity() <= 0) {
+            throw new InvalidVenueException("Capacity must be greater than 0");
+        }
+        if (venue.getName() == null) {
+            throw new InvalidVenueException("Name is required");
+        }
+        if (venue.getAddress() == null ) {
+            throw new InvalidVenueException("Address is required");
+        }
+        if (venue.getCity() == null) {
+            throw new InvalidVenueException("City is required");
+        }
+        if (venue.getCountry() == null) {
+            throw new InvalidVenueException("Country is required");
+        }
+        if (venue.getPostalCode() == null) {
+            throw new InvalidVenueException("Postal code is required");
+        }
+        if (venue.getCreatedBy() == null && venue.getId() == null) {
+            // na criação, createdBy obrigatório
+            throw new InvalidVenueException("CreatedBy is required");
+        }
     }
 
-    // POST /search-venues
-    public List<Venue> searchVenues(String name, String city, String country, Boolean active) {
-        return venues.values().stream()
-                .filter(v -> name == null ||
-                        v.getName().toLowerCase().contains(name.toLowerCase()))
-                .filter(v -> city == null ||
-                        v.getCity().equalsIgnoreCase(city))
-                .filter(v -> country == null ||
-                        v.getCountry().equalsIgnoreCase(country))
-                .filter(v -> active == null ||
-                        v.isActive() == active)
-                .collect(Collectors.toList());
-    }
+    @Transactional
+    public Venue createVenue(Venue venue) {
+        validateVenue(venue);
 
-    // POST /create-venue
-    public UUID createVenue(Venue venue) {
-
-        // validações básicas
-        if (venue.getCapacity() <= 0) {
-            throw new IllegalArgumentException("Venue capacity must be > 0");
+        if (venuesRepository.existsByName(venue.getName())) {
+            throw new InvalidVenueException("Venue with name " + venue.getName() + " already exists");
         }
 
-        int totalZonesCapacity = 0;
-        if (venue.getZones() != null) {
-            totalZonesCapacity = venue.getZones().stream()
-                    .mapToInt(VenueZone::getCapacity)
-                    .sum();
-        }
-
-        if (totalZonesCapacity > venue.getCapacity()) {
-            throw new IllegalArgumentException(
-                    "Total zones capacity cannot be greater than venue capacity");
-        }
-
-        UUID id = UUID.randomUUID();
-        Instant now = Instant.now();
-
-        venue.setId(id);
         venue.setActive(true);
-        venue.setCreatedAt(now);
-        venue.setUpdatedAt(null);
-        venue.setUpdatedBy(null);
-
-        if (venue.getZones() != null) {
-            for (VenueZone zone : venue.getZones()) {
-                if (zone.getId() == null) {
-                    zone.setId(UUID.randomUUID());
-                }
-                zone.setVenueId(id);
-                zone.setCreatedAt(now);
-                zone.setCreatedBy(venue.getCreatedBy());
-            }
-        }
-
-        venues.put(id, venue);
-        return id;
+        return venuesRepository.save(venue);
     }
 
-    // PUT /deactivate-venue/{id}
-    public boolean deactivateVenue(UUID id) {
-        Venue venue = venues.get(id);
-        if (venue == null) {
-            return false;
-        }
+    @Transactional
+    public Venue deactivateVenue(UUID id) {
+        Venue venue = venuesRepository.findById(id)
+                .orElseThrow(() -> new VenueNotFoundException("Venue not found"));
 
         if (!venue.isActive()) {
-            return true;
+            throw new VenueAlreadyDeactivatedException("Venue already deactivated");
         }
 
         venue.setActive(false);
-        venue.setUpdatedAt(Instant.now());
+        return venuesRepository.save(venue);
+    }
 
-        return true;
+    public Venue getVenue(UUID id) {
+        return venuesRepository.findById(id)
+                .orElseThrow(() -> new VenueNotFoundException("Venue not found"));
+    }
+
+    public List<Venue> searchVenues(VenueSearchDTO criteria) {
+        // validações simples de input
+        if (criteria.getMinCapacity() != null && criteria.getMinCapacity() < 0) {
+            throw new InvalidVenueException("minCapacity must be >= 0");
+        }
+
+        List<Venue> allVenues = venuesRepository.findAll();
+
+        return allVenues.stream()
+                .filter(v -> {
+                    if (criteria.getOnlyActive() != null && criteria.getOnlyActive() && !v.isActive()) {
+                        return false;
+                    }
+                    if (criteria.getName() != null) {
+                        if (!v.getName().toLowerCase().contains(criteria.getName().toLowerCase())) {
+                            return false;
+                        }
+                    }
+                    if (criteria.getCity() != null) {
+                        if (!v.getCity().equalsIgnoreCase(criteria.getCity())) {
+                            return false;
+                        }
+                    }
+                    if (criteria.getCountry() != null) {
+                        if (!v.getCountry().equalsIgnoreCase(criteria.getCountry())) {
+                            return false;
+                        }
+                    }
+                    if (criteria.getMinCapacity() != null) {
+                        if (v.getCapacity() < criteria.getMinCapacity()) {
+                            return false;
+                        }
+                    }
+                    return true;
+                })
+                .collect(Collectors.toList());
     }
 }
