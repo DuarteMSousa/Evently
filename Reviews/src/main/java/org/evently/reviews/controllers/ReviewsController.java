@@ -29,6 +29,12 @@ public class ReviewsController {
 
     @GetMapping("/get-review/{id}")
     public ResponseEntity<?> getReview(@PathVariable("id") UUID id) {
+        /* HttpStatus(produces)
+         * 200 OK - Request processed as expected.
+         * 400 BAD_REQUEST - undefined error
+         * 404 NOT_FOUND - review not found
+         */
+
         Review review;
 
         try {
@@ -49,6 +55,11 @@ public class ReviewsController {
 
     @PostMapping("/register-review")
     public ResponseEntity<?> registerReview(@RequestBody ReviewCreateDTO reviewDTO) {
+        /* HttpStatus(produces)
+         * 201 CREATED - Request processed as expected.
+         * 400 BAD_REQUEST - undefined error
+         */
+
         Review newReview;
 
         try {
@@ -64,6 +75,12 @@ public class ReviewsController {
 
     @PutMapping("/update-review/{id}")
     public ResponseEntity<?> updateReview(@PathVariable("id") UUID id, @RequestBody ReviewUpdateDTO reviewDTO) {
+        /* HttpStatus(produces)
+         * 200 OK - Request processed as expected.
+         * 400 BAD_REQUEST - undefined error
+         * 404 NOT_FOUND - review not found
+         */
+
         Review updatedReview;
 
         try {
@@ -83,6 +100,12 @@ public class ReviewsController {
 
     @DeleteMapping("/delete-review/{id}")
     public ResponseEntity<?> deleteReview(@PathVariable("id") UUID id) {
+        /* HttpStatus(produces)
+         * 204 NO_CONTENT - Request processed as expected.
+         * 400 BAD_REQUEST - undefined error
+         * 404 NOT_FOUND - review not found
+         */
+
         try {
             reviewService.deleteReview(id);
         } catch (UnexistingReviewException e) {

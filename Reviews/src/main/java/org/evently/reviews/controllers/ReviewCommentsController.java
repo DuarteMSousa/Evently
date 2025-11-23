@@ -3,6 +3,7 @@ package org.evently.reviews.controllers;
 import org.evently.reviews.dtos.reviewComments.ReviewCommentCreateDTO;
 import org.evently.reviews.dtos.reviewComments.ReviewCommentDTO;
 import org.evently.reviews.dtos.reviewComments.ReviewCommentUpdateDTO;
+
 import org.evently.reviews.exceptions.UnexistingReviewCommentException;
 import org.evently.reviews.exceptions.UnexistingReviewException;
 import org.evently.reviews.models.Review;
@@ -35,6 +36,12 @@ public class ReviewCommentsController {
 
     @GetMapping("/get-comment/{id}")
     public ResponseEntity<?> getReviewComment(@PathVariable("id") UUID id) {
+        /* HttpStatus(produces)
+         * 200 OK - Request processed as expected.
+         * 400 BAD_REQUEST - undefined error
+         * 404 NOT_FOUND - comment not found
+         */
+
         ReviewComment comment;
 
         try {
@@ -53,19 +60,19 @@ public class ReviewCommentsController {
                 .body(modelMapper.map(comment, ReviewCommentDTO.class));
     }
 
-    @PostMapping("/register-comment/{reviewId}")
-    public ResponseEntity<?> registerReviewComment(@PathVariable("reviewId") UUID reviewId ,@RequestBody ReviewCommentCreateDTO commentDTO) throws UnexistingReviewException {
+    @PostMapping("/register-comment")
+    public ResponseEntity<?> registerReviewComment(@RequestBody ReviewCommentCreateDTO commentDTO)
+            throws UnexistingReviewException {
+        /* HttpStatus(produces)
+         * 201 CREATED - Request processed as expected.
+         * 400 BAD_REQUEST - undefined error
+         * 404 NOT_FOUND - review not found
+         */
+
         ReviewComment newComment;
 
-        Review review = reviewsService.getReview(reviewId);
-
-        newComment = new ReviewComment();
-        newComment.setAuthor(commentDTO.getAuthor());
-        newComment.setReview(review);
-        newComment.setComment(commentDTO.getComment());
-
         try {
-            newComment = reviewCommentsService.registerReviewComment(newComment);
+            newComment = reviewCommentsService.registerReviewComment(modelMapper.map(commentDTO, ReviewComment.class));
         } catch (Exception e) {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
@@ -78,12 +85,18 @@ public class ReviewCommentsController {
         );
     }
 
-    @PutMapping("/update-comment")
-    public ResponseEntity<?> updateReviewComment(@RequestBody ReviewCommentUpdateDTO commentDTO) {
-        ReviewComment updatedComment;
+    @PutMapping("/update-comment/{id}")
+    public ResponseEntity<?> updateReviewComment(@PathVariable("id") UUID id, @RequestBody ReviewCommentUpdateDTO reviewCommentUpdateDTO) {
+        /* HttpStatus(produces)
+         * 200 OK - Request processed as expected.
+         * 400 BAD_REQUEST - undefined error
+         * 404 NOT_FOUND - comment not found
+         */
+
+        ReviewComment updatedReviewComment;
 
         try {
-            updatedComment = reviewCommentsService.updateReviewComment(modelMapper.map(commentDTO, ReviewComment.class));
+            updatedReviewComment = reviewCommentsService.updateReviewComment(id ,modelMapper.map(reviewCommentUpdateDTO, ReviewComment.class));
         } catch (UnexistingReviewCommentException e) {
             return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)
@@ -94,14 +107,17 @@ public class ReviewCommentsController {
                     .body(e.getMessage());
         }
 
-        return new ResponseEntity<>(
-                modelMapper.map(updatedComment, ReviewCommentDTO.class),
-                HttpStatus.OK
-        );
+        return new ResponseEntity<>(modelMapper.map(updatedReviewComment, ReviewCommentDTO.class), HttpStatus.OK);
     }
 
     @DeleteMapping("/delete-comment/{id}")
     public ResponseEntity<?> deleteReviewComment(@PathVariable("id") UUID id) {
+        /* HttpStatus(produces)
+         * 204 NO_CONTENT - Request processed as expected.
+         * 400 BAD_REQUEST - undefined error
+         * 404 NOT_FOUND - comment not found
+         */
+
         try {
             reviewCommentsService.deleteReviewComment(id);
         } catch (UnexistingReviewCommentException e) {

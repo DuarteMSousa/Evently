@@ -25,14 +25,19 @@ public class Review {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
+    @Column(nullable = false)
     private UUID author;
 
+    @Column(nullable = false)
     private UUID entity;
 
+    @Column(nullable = false)
     private EntityType entityType;
 
+    @Column(nullable = false)
     private int rating;
 
+    @Column(nullable = false, length = 100)
     private String comment;
 
     @CreatedDate

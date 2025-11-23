@@ -2,7 +2,6 @@ package org.evently.reviews.dtos.reviewComments;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.evently.reviews.models.Review;
 
 import java.util.Date;
 import java.util.UUID;
@@ -15,7 +14,7 @@ public class ReviewCommentDTO {
 
     private UUID author;
 
-    private Review review;
+    private UUID reviewId;
 
     private String comment;
 

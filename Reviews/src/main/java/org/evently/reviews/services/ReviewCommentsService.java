@@ -2,6 +2,7 @@ package org.evently.reviews.services;
 
 import org.evently.reviews.exceptions.UnexistingReviewCommentException;
 import org.evently.reviews.exceptions.UnexistingReviewException;
+import org.evently.reviews.models.Review;
 import org.evently.reviews.models.ReviewComment;
 import org.evently.reviews.repositories.ReviewCommentsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,12 +41,18 @@ public class ReviewCommentsService {
     }
 
     @Transactional
-    public ReviewComment updateReviewComment(ReviewComment reviewComment) throws UnexistingReviewCommentException {
+    public ReviewComment updateReviewComment(UUID id, ReviewComment reviewComment) throws UnexistingReviewCommentException {
         if (!reviewCommentsRepository.existsById(reviewComment.getId())) {
             throw new UnexistingReviewCommentException();
         }
 
-        return reviewCommentsRepository.save(reviewComment);
+        ReviewComment existingReviewComment = reviewCommentsRepository.findById(id).orElseThrow(() -> new UnexistingReviewCommentException());
+        existingReviewComment.setAuthor(existingReviewComment.getAuthor());
+        existingReviewComment.setComment(reviewComment.getComment());
+        existingReviewComment.setReview(existingReviewComment.getReview());
+
+
+        return reviewCommentsRepository.save(existingReviewComment);
     }
 
     @Transactional

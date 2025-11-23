@@ -12,7 +12,7 @@ public class ReviewCommentCreateDTO {
 
     private UUID author;
 
-    private Review review;
+    private UUID reviewId;
 
     private String comment;
 
