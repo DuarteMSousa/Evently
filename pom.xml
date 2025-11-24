@@ -14,6 +14,7 @@
         <module>Users</module>
         <module>Reviews</module>
         <module>Organizations</module>
+        <module>Payments</module>
     </modules>
 
     <properties>
