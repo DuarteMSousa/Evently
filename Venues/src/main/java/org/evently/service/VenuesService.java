@@ -7,6 +7,7 @@ import org.evently.exceptions.VenueNotFoundException;
 import org.evently.models.Venue;
 import org.evently.repositories.VenuesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -81,35 +82,28 @@ public class VenuesService {
             throw new InvalidVenueException("minCapacity must be >= 0");
         }
 
-        List<Venue> allVenues = venuesRepository.findAll();
+        Specification<Venue> spec = Specification.where(null);
 
-        return allVenues.stream()
-                .filter(v -> {
-                    if (criteria.getOnlyActive() != null && criteria.getOnlyActive() && !v.isActive()) {
-                        return false;
-                    }
-                    if (criteria.getName() != null) {
-                        if (!v.getName().toLowerCase().contains(criteria.getName().toLowerCase())) {
-                            return false;
-                        }
-                    }
-                    if (criteria.getCity() != null) {
-                        if (!v.getCity().equalsIgnoreCase(criteria.getCity())) {
-                            return false;
-                        }
-                    }
-                    if (criteria.getCountry() != null) {
-                        if (!v.getCountry().equalsIgnoreCase(criteria.getCountry())) {
-                            return false;
-                        }
-                    }
-                    if (criteria.getMinCapacity() != null) {
-                        if (v.getCapacity() < criteria.getMinCapacity()) {
-                            return false;
-                        }
-                    }
-                    return true;
-                })
-                .collect(Collectors.toList());
+        if (criteria.getOnlyActive() != null && criteria.getOnlyActive()) {
+            spec = spec.and((root, query, cb) -> cb.isTrue(root.get("active")));
+        }
+
+        if (criteria.getName() != null) {
+            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("name")), "%" + criteria.getName().toLowerCase() + "%"));
+        }
+
+        if (criteria.getCity() != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(cb.lower(root.get("city")), criteria.getCity().toLowerCase()));
+        }
+
+        if (criteria.getCountry() != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(cb.lower(root.get("country")), criteria.getCountry().toLowerCase()));
+        }
+
+        if (criteria.getMinCapacity() != null) {
+            spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("capacity"), criteria.getMinCapacity()));
+        }
+
+        return venuesRepository.findAll(spec);
     }
 }
