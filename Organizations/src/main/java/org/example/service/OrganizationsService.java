@@ -57,8 +57,28 @@ public class OrganizationsService {
         }
 
         org.setActive(true);
-        return organizationsRepository.save(org);
+        Organization saved = organizationsRepository.save(org);
+
+        UUID orgId = saved.getId();
+        UUID creatorId = saved.getCreatedBy();
+
+        if (creatorId == null) {
+            throw new InvalidOrganizationException("CreatedBy is required");
+        }
+
+        MemberId memberId = new MemberId(orgId, creatorId);
+
+        if (!membersRepository.existsById(memberId)) {
+            Member member = new Member();
+            member.setId(memberId);
+            member.setOrganization(saved);
+            member.setCreatedBy(creatorId);
+
+            membersRepository.save(member);
+        }
+        return saved;
     }
+
 
     @Transactional
     public Organization updateOrganization(UUID orgId, Organization orgWithUpdates) {
