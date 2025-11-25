@@ -1,11 +1,10 @@
-package org.evently.reviews.models;
+package org.evently.models;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.evently.reviews.enums.EntityType;
+import org.evently.enums.RefundRequestStatus;
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
@@ -17,35 +16,40 @@ import java.util.UUID;
 @AllArgsConstructor
 @Data
 @Entity
-@Table(name = "reviews")
+@Table(name = "refund_requests")
 @EntityListeners(AuditingEntityListener.class)
-public class Review {
-
+public class RefundRequest {
     @Id
     @GeneratedValue
     private UUID id;
 
     @Column(nullable = false)
-    private UUID author;
+    private UUID payment;
 
     @Column(nullable = false)
-    private UUID entity;
+    private UUID user;
 
     @Column(nullable = false)
-    private EntityType entityType;
+    private String title;
 
     @Column(nullable = false)
-    private int rating;
+    private String description;
 
     @Column(nullable = false, length = 100)
-    private String comment;
+    private RefundRequestStatus status;
 
     @CreatedDate
     private Date createdAt;
 
-    @LastModifiedDate
-    private Date updatedAt;
+    @Column()
+    private Date decisionAt;
 
-    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL)
-    private List<ReviewComment> comments;
+    @Column()
+    private Date processedAt;
+
+    @OneToMany(mappedBy = "refundRequest", cascade = CascadeType.ALL)
+    private List<RefundRequestMessage> messages;
+
+    @OneToOne(mappedBy = "refundRequest", cascade = CascadeType.ALL)
+    private RefundDecision refundDecision;
 }

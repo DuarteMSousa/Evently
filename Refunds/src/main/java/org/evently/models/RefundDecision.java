@@ -1,11 +1,10 @@
-package org.evently.reviews.models;
+package org.evently.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.evently.enums.DecisionType;
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
@@ -16,28 +15,25 @@ import java.util.UUID;
 @AllArgsConstructor
 @Data
 @Entity
-@Table(name = "review_comments")
+@Table(name = "refund_decisions")
 @EntityListeners(AuditingEntityListener.class)
-public class ReviewComment {
-
+public class RefundDecision {
     @Id
     @GeneratedValue
     private UUID id;
 
     @Column(nullable = false)
-    private UUID author;
+    private UUID decidedBy;
 
-    @Column(nullable = false,  length = 100)
-    private String comment;
+    @Column(nullable = false, length = 100)
+    private DecisionType decisionType;
+
+    @Column(nullable = false)
+    private String description;
 
     @CreatedDate
     private Date createdAt;
 
-    @LastModifiedDate
-    private Date updatedAt;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "review", nullable = false)
-    @JsonIgnore
-    private Review review;
+    @OneToOne(mappedBy = "review", cascade = CascadeType.ALL)
+    private RefundRequest refundRequest;
 }

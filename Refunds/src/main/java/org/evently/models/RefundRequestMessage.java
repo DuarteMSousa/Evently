@@ -1,4 +1,4 @@
-package org.evently.reviews.models;
+package org.evently.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
@@ -16,28 +16,24 @@ import java.util.UUID;
 @AllArgsConstructor
 @Data
 @Entity
-@Table(name = "review_comments")
+@Table(name = "refund_request_message")
 @EntityListeners(AuditingEntityListener.class)
-public class ReviewComment {
-
+public class RefundRequestMessage {
     @Id
     @GeneratedValue
     private UUID id;
 
     @Column(nullable = false)
-    private UUID author;
+    private UUID user;
 
-    @Column(nullable = false,  length = 100)
-    private String comment;
+    @Column(nullable = false, length = 100)
+    private String content;
 
     @CreatedDate
     private Date createdAt;
 
-    @LastModifiedDate
-    private Date updatedAt;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "review", nullable = false)
+    @JoinColumn(name = "refundRequest", nullable = false)
     @JsonIgnore
-    private Review review;
+    private RefundRequest refundRequest;
 }
