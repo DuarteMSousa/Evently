@@ -15,6 +15,7 @@
         <module>Reviews</module>
         <module>Organizations</module>
         <module>Payments</module>
+        <module>Events</module>
     </modules>
 
     <properties>

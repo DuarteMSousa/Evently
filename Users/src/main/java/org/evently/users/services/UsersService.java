@@ -62,10 +62,6 @@ public class UsersService {
                 .orElseThrow(()-> new UserNotFoundException(""));
     }
 
-    public List<User> getUsersPage() {
-        return new ArrayList<User>();
-    }
-
     @Transactional
     public User deactivateUser(UUID userId) {
         User userToDeactivate = usersRepository.findById(userId)
