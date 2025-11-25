@@ -24,10 +24,10 @@ public class RefundRequest {
     private UUID id;
 
     @Column(nullable = false)
-    private UUID payment;
+    private UUID paymentId;
 
     @Column(nullable = false)
-    private UUID user;
+    private UUID userId;
 
     @Column(nullable = false, length = 50)
     private String title;
@@ -35,7 +35,8 @@ public class RefundRequest {
     @Column(nullable = false, length = 200)
     private String description;
 
-    @Column(nullable = false, length = 100)
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 50)
     private RefundRequestStatus status;
 
     @CreatedDate

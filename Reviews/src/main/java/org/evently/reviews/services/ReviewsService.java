@@ -57,7 +57,7 @@ public class ReviewsService {
         reviewsRepository.deleteById(id);
     }
 
-    public Page<Review> getReviewByAuthorPage(UUID authorId,Integer pageNumber, Integer pageSize) {
+    public Page<Review> getReviewsByAuthor(UUID authorId,Integer pageNumber, Integer pageSize) {
         if(pageSize>50){
             pageSize = 50;
         }
@@ -65,7 +65,7 @@ public class ReviewsService {
         return reviewsRepository.findAllByAuthorId(authorId,pageable);
     }
 
-    public Page<Review> getReviewByEntityPage(UUID entityId,Integer pageNumber, Integer pageSize) {
+    public Page<Review> getReviewsByEntity(UUID entityId,Integer pageNumber, Integer pageSize) {
         if(pageSize>50){
             pageSize = 50;
         }

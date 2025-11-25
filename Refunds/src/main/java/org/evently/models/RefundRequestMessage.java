@@ -24,7 +24,7 @@ public class RefundRequestMessage {
     private UUID id;
 
     @Column(nullable = false)
-    private UUID user;
+    private UUID userId;
 
     @Column(nullable = false, length = 200)
     private String content;
@@ -33,7 +33,7 @@ public class RefundRequestMessage {
     private Date createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "refundRequest", nullable = false)
+    @JoinColumn(name = "refundRequestId", nullable = false)
     @JsonIgnore
     private RefundRequest refundRequest;
 }

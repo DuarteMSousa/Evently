@@ -31,7 +31,8 @@ public class Review {
     @Column(nullable = false)
     private UUID entityId;
 
-    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 50)
     private EntityType entityType;
 
     @Column(nullable = false)

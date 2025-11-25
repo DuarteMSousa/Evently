@@ -8,14 +8,16 @@ import java.util.UUID;
 
 @Setter
 @Getter
-public class RefundDecisionCreateDTO {
+public class RefundDecisionDTO {
 
-    private UUID refundRequestId;
+    private UUID id;
 
     private UUID decidedBy;
 
     private DecisionType decisionType;
 
     private String description;
+
+    private UUID refundRequestId;
 
 }

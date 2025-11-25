@@ -67,7 +67,7 @@ public class ReviewCommentsService {
         reviewCommentsRepository.deleteById(id);
     }
 
-    public Page<ReviewComment> getReviewCommentByReviewPage(Review review, Integer pageNumber, Integer pageSize) {
+    public Page<ReviewComment> getReviewCommentsByReview(Review review, Integer pageNumber, Integer pageSize) {
         if(pageSize>50){
             pageSize = 50;
         }

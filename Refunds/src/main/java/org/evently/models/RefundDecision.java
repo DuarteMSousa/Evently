@@ -25,7 +25,8 @@ public class RefundDecision {
     @Column(nullable = false)
     private UUID decidedBy;
 
-    @Column(nullable = false, length = 100)
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 50)
     private DecisionType decisionType;
 
     @Column(nullable = false, length = 200)
@@ -34,6 +35,7 @@ public class RefundDecision {
     @CreatedDate
     private Date createdAt;
 
-    @OneToOne(mappedBy = "review", cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "refundRequestId", nullable = false)
     private RefundRequest refundRequest;
 }
