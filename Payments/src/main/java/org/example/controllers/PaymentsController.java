@@ -88,20 +88,29 @@ public class PaymentsController {
          * 402 – Pagamento recusado
          */
         try {
-            Payment payment = modelMapper.map(dto, Payment.class);
+            // Em vez de modelMapper.map(dto, Payment.class);
+            Payment payment = new Payment();
+            payment.setOrderId(dto.getOrderId());
+            payment.setUserId(dto.getUserId());
+            payment.setAmount(dto.getAmount());
+            payment.setProvider(dto.getProvider());
+            // NÃO mexemos em payment.setId()  -> é gerado pelo @GeneratedValue
+            // payment.setStatus() será tratado no service
 
             Payment created = paymentsService.processPayment(payment);
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(toPaymentDTO(created));
+            PaymentDTO response = modelMapper.map(created, PaymentDTO.class);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+
         } catch (InvalidPaymentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (PaymentRefusedException e) {
-            // 402 Payment Required
             return ResponseEntity.status(402).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
 
     // ---------- POST /cancel-payment/{paymentId} ----------
 

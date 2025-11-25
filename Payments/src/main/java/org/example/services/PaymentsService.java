@@ -1,6 +1,8 @@
 package org.example.services;
 
 import org.example.exceptions.*;
+import org.example.integrations.PaymentProviderClient;
+import org.example.messaging.PaymentEventsPublisher;
 import org.example.models.Payment;
 import org.example.models.PaymentEvent;
 import org.example.repositories.PaymentEventsRepository;
@@ -21,6 +23,12 @@ public class PaymentsService {
 
     @Autowired
     private PaymentEventsRepository paymentEventsRepository;
+
+    @Autowired
+    private PaymentProviderClient paymentProviderClient;
+
+    @Autowired
+    private PaymentEventsPublisher paymentEventsPublisher;
 
     // --------- helpers ---------
 
@@ -57,38 +65,46 @@ public class PaymentsService {
     public Payment processPayment(Payment payment) {
         validatePaymentForProcess(payment);
 
-        // estado inicial
         payment.setStatus("PENDING");
+        Payment savedPending = paymentsRepository.save(payment);
+        createEvent(savedPending, "PENDING", null);
+        paymentEventsPublisher.publishPaymentEvent("PENDING", savedPending);
 
-        // aqui seria a chamada real ao provider (Stripe, PayPal, etc.)
-        // vamos simular:
-        boolean approved = payment.getAmount().compareTo(new BigDecimal("5.00")) >= 0;
+        try {
+            // chama o provider externo (fake ou real)
+            String providerRef = paymentProviderClient.charge(
+                    savedPending.getOrderId(),
+                    savedPending.getUserId(),
+                    savedPending.getAmount(),
+                    savedPending.getProvider()
+            );
 
-        if (!approved) {
-            payment.setStatus("FAILED");
-            Payment saved = paymentsRepository.save(payment);
-            createEvent(saved, "ERROR", 402);
-            throw new PaymentRefusedException("Payment refused by provider");
+            savedPending.setProviderRef(providerRef);
+            savedPending.setStatus("CAPTURED");
+            Payment savedCaptured = paymentsRepository.save(savedPending);
+
+            createEvent(savedCaptured, "CAPTURE", 200);
+            paymentEventsPublisher.publishPaymentEvent("CAPTURE", savedCaptured);
+
+            return savedCaptured;
+
+        } catch (PaymentRefusedException e) {
+            savedPending.setStatus("FAILED");
+            Payment failed = paymentsRepository.save(savedPending);
+
+            createEvent(failed, "ERROR", 402);
+            paymentEventsPublisher.publishPaymentEvent("FAILED", failed);
+
+            // volta a atirar a exceção para o controller devolver 402
+            throw e;
         }
-
-        payment.setStatus("CAPTURED");
-        Payment savedPayment = paymentsRepository.save(payment);
-        createEvent(savedPayment, "CAPTURE", 200);
-
-        return savedPayment;
     }
 
-    /**
-     * Obter pagamento por id
-     */
     public Payment getPayment(UUID paymentId) {
         return paymentsRepository.findById(paymentId)
                 .orElseThrow(() -> new PaymentNotFoundException("Payment not found"));
     }
 
-    /**
-     * Obter pagamentos de um utilizador
-     */
     public List<Payment> getPaymentsByUser(UUID userId) {
         List<Payment> list = paymentsRepository.findByUserId(userId);
         if (list.isEmpty()) {
@@ -97,43 +113,41 @@ public class PaymentsService {
         return list;
     }
 
-    /**
-     * Cancelar pagamento
-     */
     @Transactional
     public Payment cancelPayment(UUID paymentId) {
         Payment payment = paymentsRepository.findById(paymentId)
                 .orElseThrow(() -> new PaymentNotFoundException("Payment not found"));
 
-        if (payment.getStatus().equals("CANCELED")) {
+        if ("CANCELED".equals(payment.getStatus())) {
             throw new PaymentAlreadyCanceledException("Payment already canceled");
         }
-        if (payment.getStatus().equals("REFUNDED")) {
+        if ("REFUNDED".equals(payment.getStatus())) {
             throw new InvalidPaymentException("Cannot cancel a refunded payment");
         }
 
         payment.setStatus("CANCELED");
         Payment updated = paymentsRepository.save(payment);
+
         createEvent(updated, "CANCEL", 200);
+        paymentEventsPublisher.publishPaymentEvent("CANCEL", updated);
 
         return updated;
     }
 
-    /**
-     * Processar reembolso
-     */
     @Transactional
     public Payment processRefund(UUID paymentId) {
         Payment payment = paymentsRepository.findById(paymentId)
                 .orElseThrow(() -> new PaymentNotFoundException("Payment not found"));
 
-        if (!payment.getStatus().equals("CAPTURED")) {
+        if (!"CAPTURED".equals(payment.getStatus())) {
             throw new InvalidRefundException("Only CAPTURED payments can be refunded");
         }
 
         payment.setStatus("REFUNDED");
         Payment updated = paymentsRepository.save(payment);
+
         createEvent(updated, "REFUND", 200);
+        paymentEventsPublisher.publishPaymentEvent("REFUND", updated);
 
         return updated;
     }
