@@ -29,10 +29,10 @@ public class RefundRequest {
     @Column(nullable = false)
     private UUID user;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 50)
     private String title;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 200)
     private String description;
 
     @Column(nullable = false, length = 100)

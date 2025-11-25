@@ -16,27 +16,20 @@ import java.util.UUID;
 @AllArgsConstructor
 @Data
 @Entity
-@Table(name = "categories")
+@Table(name = "carts")
 @EntityListeners(AuditingEntityListener.class)
 
-public class Category {
+public class Cart {
 
     @Id
-    @GeneratedValue
-    private UUID id;
+    private UUID userId;
 
-    private String name;
-
-    private UUID createdBy;
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<CartItem> items;
 
     @CreatedDate
     private Date createdAt;
 
-    private UUID updatedBy;
-
     @LastModifiedDate
     private Date updatedAt;
-
-    @ManyToMany(fetch = FetchType.EAGER)
-    private List<Event> events;
 }

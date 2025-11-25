@@ -28,7 +28,7 @@ public class RefundDecision {
     @Column(nullable = false, length = 100)
     private DecisionType decisionType;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 200)
     private String description;
 
     @CreatedDate

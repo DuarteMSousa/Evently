@@ -18,6 +18,7 @@
         <module>Events</module>
         <module>Refunds</module>
         <module>Notifications</module>
+        <module>Cart</module>
     </modules>
 
     <properties>

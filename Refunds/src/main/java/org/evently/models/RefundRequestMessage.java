@@ -26,7 +26,7 @@ public class RefundRequestMessage {
     @Column(nullable = false)
     private UUID user;
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, length = 200)
     private String content;
 
     @CreatedDate
