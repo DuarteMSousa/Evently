@@ -19,6 +19,7 @@
         <module>Refunds</module>
         <module>Notifications</module>
         <module>Cart</module>
+        <module>TicketManagement</module>
     </modules>
 
     <properties>
