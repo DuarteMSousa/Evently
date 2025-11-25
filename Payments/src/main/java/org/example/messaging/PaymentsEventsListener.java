@@ -4,7 +4,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
 @Component
-public class PaymentsEventsListener {
+public class PaymentsEventsListener { //sera para fazer aqui ou nas orders??
 
     @RabbitListener(queues = "${app.payments.queue}")
     public void handlePaymentEvent(PaymentEventsPublisher.PaymentEventMessage message) {

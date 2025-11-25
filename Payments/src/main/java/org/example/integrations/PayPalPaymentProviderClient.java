@@ -1,0 +1,131 @@
+package org.example.integrations;
+
+import org.example.exceptions.PaymentRefusedException;
+import org.example.models.Payment;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
+import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.*;
+
+@Component
+public class PayPalPaymentProviderClient implements PaymentProviderClient {
+
+    private final RestTemplate restTemplate;
+
+    @Value("${paypal.base-url}")
+    private String baseUrl; // ex: https://api-m.sandbox.paypal.com
+
+    @Value("${paypal.client-id}")
+    private String clientId;
+
+    @Value("${paypal.client-secret}")
+    private String clientSecret;
+
+    @Value("${paypal.return-url}")
+    private String returnUrl; // ex: http://localhost:8088/payments/paypal-callback
+
+    @Value("${paypal.cancel-url}")
+    private String cancelUrl; // ex: http://localhost:8088/payments/paypal-cancel
+
+    public PayPalPaymentProviderClient(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
+
+    private String getAccessToken() {
+        String url = baseUrl + "/v1/oauth2/token";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.setBasicAuth(clientId, clientSecret);
+
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add("grant_type", "client_credentials");
+
+        HttpEntity<MultiValueMap<String, String>> request =
+                new HttpEntity<>(body, headers);
+
+        ResponseEntity<Map> response = restTemplate.exchange(
+                url, HttpMethod.POST, request, Map.class);
+
+        if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
+            throw new PaymentRefusedException("Failed to obtain PayPal access token");
+        }
+
+        return (String) response.getBody().get("access_token");
+    }
+
+    @Override
+    public String createPaymentOrder(Payment payment) {
+        String accessToken = getAccessToken();
+
+        String url = baseUrl + "/v2/checkout/orders";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(accessToken);
+
+        // body da ordem PayPal
+        Map<String, Object> body = new HashMap<>();
+        body.put("intent", "CAPTURE");
+
+        Map<String, Object> purchaseUnit = new HashMap<>();
+        purchaseUnit.put("reference_id", payment.getOrderId().toString());
+
+        Map<String, String> amount = new HashMap<>();
+        amount.put("currency_code", "EUR");
+        amount.put("value", payment.getAmount().toString());
+        purchaseUnit.put("amount", amount);
+
+        body.put("purchase_units", Collections.singletonList(purchaseUnit));
+
+        Map<String, String> appContext = new HashMap<>();
+        appContext.put("return_url", returnUrl);
+        appContext.put("cancel_url", cancelUrl);
+        body.put("application_context", appContext);
+
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+
+        ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
+
+        if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
+            throw new PaymentRefusedException("Failed to create PayPal order");
+        }
+
+        String orderId = (String) response.getBody().get("id");
+
+        if (orderId == null) {
+            throw new PaymentRefusedException("PayPal did not return an order id");
+        }
+
+        // guardamos o orderId em providerRef
+        payment.setProviderRef(orderId);
+
+        return orderId;
+    }
+
+    @Override
+    public void capturePayment(String providerRef) {
+        String accessToken = getAccessToken();
+
+        String url = baseUrl + "/v2/checkout/orders/" + providerRef + "/capture";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(accessToken);
+
+        HttpEntity<Void> request = new HttpEntity<>(headers);
+
+        ResponseEntity<Map> response = restTemplate.exchange(
+                url, HttpMethod.POST, request, Map.class);
+
+        if (!response.getStatusCode().is2xxSuccessful()) {
+            throw new PaymentRefusedException("PayPal capture failed with status: " +
+                    response.getStatusCode());
+        }
+        // Se quiseres, podes validar mais coisas no body.
+    }
+}

@@ -1,18 +1,18 @@
 package org.example.integrations;
 
-import java.math.BigDecimal;
-import java.util.UUID;
+import org.example.models.Payment;
 
 public interface PaymentProviderClient {
 
     /**
-     * Processa o pagamento no provider externo.
-     * Deve devolver um transactionId / providerRef.
-     *
-     * Pode lançar uma PaymentRefusedException.
+     * Cria uma ordem de pagamento no provider (ex.: PayPal)
+     * Deve atualizar o Payment (providerRef, etc.)
+     * e devolver o URL para o utilizador aprovar o pagamento.
      */
-    String charge(UUID orderId,
-                  UUID userId,
-                  BigDecimal amount,
-                  String provider);
+    String createPaymentOrder(Payment payment);
+
+    /**
+     * Captura/finaliza o pagamento depois do utilizador aprovar.
+     */
+    void capturePayment(String providerRef);
 }

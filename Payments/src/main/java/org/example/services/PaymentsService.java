@@ -25,12 +25,12 @@ public class PaymentsService {
     private PaymentEventsRepository paymentEventsRepository;
 
     @Autowired
-    private PaymentProviderClient paymentProviderClient;
-
-    @Autowired
     private PaymentEventsPublisher paymentEventsPublisher;
 
-    // --------- helpers ---------
+    @Autowired
+    private PaymentProviderClient paymentProviderClient; // PayPal
+
+    // ---------- helpers ----------
 
     private void validatePaymentForProcess(Payment payment) {
         if (payment.getOrderId() == null) {
@@ -46,6 +46,9 @@ public class PaymentsService {
         if (payment.getProvider() == null) {
             throw new InvalidPaymentException("Provider is required");
         }
+        if (!"PAYPAL".equalsIgnoreCase(payment.getProvider())) {
+            throw new InvalidPaymentException("Only PAYPAL provider is supported");
+        }
     }
 
     private PaymentEvent createEvent(Payment payment, String type, Integer statusCode) {
@@ -56,48 +59,60 @@ public class PaymentsService {
         return paymentEventsRepository.save(event);
     }
 
-    // --------- use cases ---------
+    // ---------- use cases ----------
 
-    /**
-     * Processar pagamento
-     */
     @Transactional
     public Payment processPayment(Payment payment) {
         validatePaymentForProcess(payment);
 
+        // estado inicial
         payment.setStatus("PENDING");
-        Payment savedPending = paymentsRepository.save(payment);
-        createEvent(savedPending, "PENDING", null);
-        paymentEventsPublisher.publishPaymentEvent("PENDING", savedPending);
+        Payment saved = paymentsRepository.save(payment);
 
         try {
-            // chama o provider externo (fake ou real)
-            String providerRef = paymentProviderClient.charge(
-                    savedPending.getOrderId(),
-                    savedPending.getUserId(),
-                    savedPending.getAmount(),
-                    savedPending.getProvider()
-            );
+            // cria ordem no PayPal e preenche providerRef
+            paymentProviderClient.createPaymentOrder(saved);
 
-            savedPending.setProviderRef(providerRef);
-            savedPending.setStatus("CAPTURED");
-            Payment savedCaptured = paymentsRepository.save(savedPending);
+            Payment updated = paymentsRepository.save(saved);
 
-            createEvent(savedCaptured, "CAPTURE", 200);
-            paymentEventsPublisher.publishPaymentEvent("CAPTURE", savedCaptured);
+            createEvent(updated, "PENDING", null);
+            paymentEventsPublisher.publishPaymentEvent("PENDING", updated);
 
-            return savedCaptured;
+            return updated;
 
         } catch (PaymentRefusedException e) {
-            savedPending.setStatus("FAILED");
-            Payment failed = paymentsRepository.save(savedPending);
+            saved.setStatus("FAILED");
+            Payment failed = paymentsRepository.save(saved);
 
             createEvent(failed, "ERROR", 402);
             paymentEventsPublisher.publishPaymentEvent("FAILED", failed);
 
-            // volta a atirar a exceção para o controller devolver 402
             throw e;
         }
+    }
+
+    @Transactional
+    public Payment capturePaypalPayment(String providerRef) {
+        Payment payment = paymentsRepository.findByProviderRef(providerRef)
+                .orElseThrow(() -> new PaymentNotFoundException("Payment not found for providerRef"));
+
+        if (!"PAYPAL".equalsIgnoreCase(payment.getProvider())) {
+            throw new InvalidPaymentException("Payment is not PAYPAL");
+        }
+
+        if (!"PENDING".equalsIgnoreCase(payment.getStatus())) {
+            throw new InvalidPaymentException("Only PENDING PAYPAL payments can be captured");
+        }
+
+        paymentProviderClient.capturePayment(providerRef);
+
+        payment.setStatus("CAPTURED");
+        Payment updated = paymentsRepository.save(payment);
+
+        createEvent(updated, "CAPTURE", 200);
+        paymentEventsPublisher.publishPaymentEvent("CAPTURE", updated);
+
+        return updated;
     }
 
     public Payment getPayment(UUID paymentId) {
@@ -118,10 +133,10 @@ public class PaymentsService {
         Payment payment = paymentsRepository.findById(paymentId)
                 .orElseThrow(() -> new PaymentNotFoundException("Payment not found"));
 
-        if ("CANCELED".equals(payment.getStatus())) {
+        if ("CANCELED".equalsIgnoreCase(payment.getStatus())) {
             throw new PaymentAlreadyCanceledException("Payment already canceled");
         }
-        if ("REFUNDED".equals(payment.getStatus())) {
+        if ("REFUNDED".equalsIgnoreCase(payment.getStatus())) {
             throw new InvalidPaymentException("Cannot cancel a refunded payment");
         }
 
@@ -139,7 +154,7 @@ public class PaymentsService {
         Payment payment = paymentsRepository.findById(paymentId)
                 .orElseThrow(() -> new PaymentNotFoundException("Payment not found"));
 
-        if (!"CAPTURED".equals(payment.getStatus())) {
+        if (!"CAPTURED".equalsIgnoreCase(payment.getStatus())) {
             throw new InvalidRefundException("Only CAPTURED payments can be refunded");
         }
 
