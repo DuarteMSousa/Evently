@@ -16,6 +16,7 @@
         <module>Organizations</module>
         <module>Payments</module>
         <module>Events</module>
+        <module>Refunds</module>
     </modules>
 
     <properties>
