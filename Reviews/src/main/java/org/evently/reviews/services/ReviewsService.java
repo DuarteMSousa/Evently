@@ -16,10 +16,6 @@ public class ReviewsService {
     @Autowired
     private ReviewsRepository reviewsRepository;
 
-    public List<Review> getAll() {
-        return reviewsRepository.findAll();
-    }
-
     public Review getReview(UUID id) throws UnexistingReviewException {
         return reviewsRepository
                 .findById(id)
