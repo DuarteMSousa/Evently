@@ -1,8 +1,5 @@
 package org.example.services;
 
-import org.evently.users.Utils.PasswordUtils;
-import org.evently.users.models.User;
-import org.evently.users.repositories.UsersRepository;
 import org.example.enums.EventStatus;
 import org.example.exceptions.EventAlreadyCanceledException;
 import org.example.exceptions.EventAlreadyExistsException;
@@ -17,8 +14,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -62,7 +57,7 @@ public class EventsService {
 
     @Transactional
     public Event cancelEvent(UUID eventId) {
-        Event eventToCancel = eventsRepository.findById(userId)
+        Event eventToCancel = eventsRepository.findById(eventId)
                 .orElseThrow(() -> new EventNotFoundException(""));
 
         if (!eventToCancel.getStatus().equals(EventStatus.CANCELED)) {
@@ -73,23 +68,18 @@ public class EventsService {
         return eventsRepository.save(eventToCancel);
     }
 
-    public String loginUser(UUID userId, String password) {
-        if (!usersRepository.existsById(userId)) {
-            throw new LoginFailedException("");
-        }
+    @Transactional
+    public Event publishEvent(UUID eventId) {
+        Event event = eventsRepository.findById(eventId)
+                .orElseThrow(() -> new EventNotFoundException(""));
 
-        User user = usersRepository.findById(userId)
-                .orElseThrow(() -> new LoginFailedException(""));
+        event.setStatus(EventStatus.PUBLISHED);
 
-        if (!PasswordUtils.checkPassword(password, user.getPassword())) {
-            throw new LoginFailedException("");
-        }
-
-        return "";
+        return eventsRepository.save(event);
     }
 
     public Page<Event> getEventPage(Integer pageNumber, Integer pageSize) {
         PageRequest pageable = PageRequest.of(pageNumber, pageSize);
-        return eventsRepository.findAll(pageable);
+        return eventsRepository.findAllByStatus(EventStatus.PUBLISHED,pageable);
     }
 }
