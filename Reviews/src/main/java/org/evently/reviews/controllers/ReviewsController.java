@@ -3,7 +3,7 @@ package org.evently.reviews.controllers;
 import org.evently.reviews.dtos.reviews.ReviewCreateDTO;
 import org.evently.reviews.dtos.reviews.ReviewDTO;
 import org.evently.reviews.dtos.reviews.ReviewUpdateDTO;
-import org.evently.reviews.exceptions.UnexistingReviewException;
+import org.evently.reviews.exceptions.ReviewNotFoundException;
 import org.evently.reviews.models.Review;
 import org.evently.reviews.services.ReviewsService;
 import org.modelmapper.ModelMapper;
@@ -39,7 +39,7 @@ public class ReviewsController {
 
         try {
             review = reviewService.getReview(id);
-        } catch (UnexistingReviewException e) {
+        } catch (ReviewNotFoundException e) {
             return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)
                     .body(e.getMessage());
@@ -85,7 +85,7 @@ public class ReviewsController {
 
         try {
             updatedReview = reviewService.updateReview(id ,modelMapper.map(reviewDTO, Review.class));
-        } catch (UnexistingReviewException e) {
+        } catch (ReviewNotFoundException e) {
             return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)
                     .body(e.getMessage());
@@ -108,7 +108,7 @@ public class ReviewsController {
 
         try {
             reviewService.deleteReview(id);
-        } catch (UnexistingReviewException e) {
+        } catch (ReviewNotFoundException e) {
             return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)
                     .body(e.getMessage());

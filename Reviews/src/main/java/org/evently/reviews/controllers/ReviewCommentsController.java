@@ -4,9 +4,7 @@ import org.evently.reviews.dtos.reviewComments.ReviewCommentCreateDTO;
 import org.evently.reviews.dtos.reviewComments.ReviewCommentDTO;
 import org.evently.reviews.dtos.reviewComments.ReviewCommentUpdateDTO;
 
-import org.evently.reviews.exceptions.UnexistingReviewCommentException;
-import org.evently.reviews.exceptions.UnexistingReviewException;
-import org.evently.reviews.models.Review;
+import org.evently.reviews.exceptions.ReviewCommentNotFoundException;
 import org.evently.reviews.models.ReviewComment;
 import org.evently.reviews.services.ReviewCommentsService;
 import org.evently.reviews.services.ReviewsService;
@@ -46,7 +44,7 @@ public class ReviewCommentsController {
 
         try {
             comment = reviewCommentsService.getReviewComment(id);
-        } catch (UnexistingReviewCommentException e) {
+        } catch (ReviewCommentNotFoundException e) {
             return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)
                     .body(e.getMessage());
@@ -62,7 +60,7 @@ public class ReviewCommentsController {
 
     @PostMapping("/register-comment")
     public ResponseEntity<?> registerReviewComment(@RequestBody ReviewCommentCreateDTO commentDTO)
-            throws UnexistingReviewException {
+            throws ReviewCommentNotFoundException {
         /* HttpStatus(produces)
          * 201 CREATED - Request processed as expected.
          * 400 BAD_REQUEST - undefined error
@@ -97,7 +95,7 @@ public class ReviewCommentsController {
 
         try {
             updatedReviewComment = reviewCommentsService.updateReviewComment(id ,modelMapper.map(reviewCommentUpdateDTO, ReviewComment.class));
-        } catch (UnexistingReviewCommentException e) {
+        } catch (ReviewCommentNotFoundException e) {
             return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)
                     .body(e.getMessage());
@@ -120,7 +118,7 @@ public class ReviewCommentsController {
 
         try {
             reviewCommentsService.deleteReviewComment(id);
-        } catch (UnexistingReviewCommentException e) {
+        } catch (ReviewCommentNotFoundException e) {
             return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)
                     .body(e.getMessage());

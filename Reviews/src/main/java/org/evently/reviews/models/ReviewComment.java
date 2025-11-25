@@ -25,7 +25,7 @@ public class ReviewComment {
     private UUID id;
 
     @Column(nullable = false)
-    private UUID author;
+    private UUID authorId;
 
     @Column(nullable = false,  length = 100)
     private String comment;
@@ -37,7 +37,7 @@ public class ReviewComment {
     private Date updatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "review", nullable = false)
+    @JoinColumn(name = "reviewId", nullable = false)
     @JsonIgnore
     private Review review;
 }

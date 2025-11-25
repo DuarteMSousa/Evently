@@ -10,6 +10,7 @@ import java.util.UUID;
 public class ReviewCommentUpdateDTO {
 
     private UUID id;
+
     private String comment;
 
 }

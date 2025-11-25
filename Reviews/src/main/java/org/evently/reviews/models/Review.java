@@ -26,10 +26,10 @@ public class Review {
     private UUID id;
 
     @Column(nullable = false)
-    private UUID author;
+    private UUID authorId;
 
     @Column(nullable = false)
-    private UUID entity;
+    private UUID entityId;
 
     @Column(nullable = false)
     private EntityType entityType;

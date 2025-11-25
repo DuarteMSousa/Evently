@@ -1,13 +1,17 @@
 package org.evently.reviews.services;
 
-import org.evently.reviews.exceptions.UnexistingReviewException;
+import org.evently.reviews.exceptions.InvalidReviewUpdateException;
+import org.evently.reviews.exceptions.ReviewAlreadyExistsException;
+import org.evently.reviews.exceptions.ReviewNotFoundException;
 import org.evently.reviews.models.Review;
 import org.evently.reviews.repositories.ReviewsRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -16,10 +20,12 @@ public class ReviewsService {
     @Autowired
     private ReviewsRepository reviewsRepository;
 
-    public Review getReview(UUID id) throws UnexistingReviewException {
+    private ModelMapper modelMapper = new ModelMapper();
+
+    public Review getReview(UUID id) {
         return reviewsRepository
                 .findById(id)
-                .orElseThrow(() -> new UnexistingReviewException());
+                .orElseThrow(() -> new ReviewNotFoundException("Review not found"));
     }
 
     @Transactional
@@ -28,29 +34,42 @@ public class ReviewsService {
     }
 
     @Transactional
-    public Review updateReview(UUID id, Review review) throws UnexistingReviewException {
-        if (!reviewsRepository.existsById(review.getId())) {
-            throw new UnexistingReviewException();
+    public Review updateReview(UUID id, Review review) {
+        if (!id.equals(review.getId())) {
+            throw new InvalidReviewUpdateException("Parameter id and body id do not correspond");
         }
 
-        Review existingReview = reviewsRepository.findById(id).orElseThrow(() -> new UnexistingReviewException());
+        Review existingEvent = reviewsRepository.findById(id)
+                .orElseThrow(() -> new ReviewNotFoundException("Review not found"));
 
-        existingReview.setAuthor(existingReview.getAuthor());
-        existingReview.setEntity(existingReview.getEntity());
-        existingReview.setEntityType(existingReview.getEntityType());
-        existingReview.setRating(review.getRating());
-        existingReview.setComment(review.getComment());
+        //VERIFICAR SE ALTERA CORRETAMENTE
+        modelMapper.map(review, existingEvent);
 
-
-        return reviewsRepository.save(existingReview);
+        return reviewsRepository.save(existingEvent);
     }
 
     @Transactional
-    public void deleteReview(UUID id) throws UnexistingReviewException {
+    public void deleteReview(UUID id) {
         if (!reviewsRepository.existsById(id)) {
-            throw new UnexistingReviewException();
+            throw new ReviewNotFoundException("Review not found");
         }
 
         reviewsRepository.deleteById(id);
+    }
+
+    public Page<Review> getReviewByAuthorPage(UUID authorId,Integer pageNumber, Integer pageSize) {
+        if(pageSize>50){
+            pageSize = 50;
+        }
+        PageRequest pageable = PageRequest.of(pageNumber, pageSize);
+        return reviewsRepository.findAllByAuthorId(authorId,pageable);
+    }
+
+    public Page<Review> getReviewByEntityPage(UUID entityId,Integer pageNumber, Integer pageSize) {
+        if(pageSize>50){
+            pageSize = 50;
+        }
+        PageRequest pageable = PageRequest.of(pageNumber, pageSize);
+        return reviewsRepository.findAllByAuthorId(entityId,pageable);
     }
 }

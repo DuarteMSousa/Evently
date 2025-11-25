@@ -15,17 +15,15 @@ public class ReviewDTO {
 
     private UUID id;
 
-    private UUID author;
+    private UUID authorId;
 
-    private UUID entity;
+    private UUID entityId;
 
     private EntityType entityType;
 
     private int rating;
 
     private String comment;
-
-    private List<ReviewComment> comments;
 
     private Date createdAt;
 
