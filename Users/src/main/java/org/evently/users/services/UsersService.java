@@ -91,6 +91,9 @@ public class UsersService {
     }
 
     public Page<User> getUsersPage(Integer pageNumber, Integer pageSize) {
+        if(pageSize>50){
+            pageSize = 50;
+        }
         PageRequest pageable =  PageRequest.of(pageNumber, pageSize);
         return usersRepository.findAll(pageable);
     }
