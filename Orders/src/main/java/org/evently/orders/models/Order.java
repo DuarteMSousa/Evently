@@ -31,8 +31,8 @@ public class Order {
     @Column(nullable = false, length = 50)
     private OrderStatus status;
 
-    @Column(nullable = false)
-    private float total;
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal total;
 
     @CreatedDate
     private Date createdAt;

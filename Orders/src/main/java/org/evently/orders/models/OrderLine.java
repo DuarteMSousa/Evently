@@ -22,8 +22,8 @@ public class OrderLine {
     @Column(nullable = false)
     private Integer quantity;
 
-    @Column(nullable = false)
-    private float unitPrice;
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal unitPrice;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "orderId", nullable = false)
