@@ -21,6 +21,7 @@
         <module>Cart</module>
         <module>TicketManagement</module>
         <module>Tickets</module>
+        <module>Orders</module>
     </modules>
 
     <properties>
