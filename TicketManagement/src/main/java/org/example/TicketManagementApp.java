@@ -8,10 +8,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  *
  */
 @SpringBootApplication
-public class TicketManagementService
+public class TicketManagementApp
 {
     public static void main( String[] args )
     {
-        SpringApplication.run(TicketManagementService.class, args);
+        SpringApplication.run(TicketManagementApp.class, args);
     }
 }

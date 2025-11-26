@@ -1,5 +1,6 @@
 package org.evently.services;
 
+import jakarta.transaction.Transactional;
 import org.evently.exceptions.RefundDecisionNotFoundException;
 import org.evently.models.RefundDecision;
 import org.evently.models.RefundRequest;
@@ -9,7 +10,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import java.util.UUID;
 
 @Service

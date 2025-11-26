@@ -1,5 +1,6 @@
 package org.evently.reviews.services;
 
+import jakarta.transaction.Transactional;
 import org.evently.reviews.exceptions.InvalidReviewCommentUpdateException;
 import org.evently.reviews.exceptions.ReviewCommentNotFoundException;
 import org.evently.reviews.exceptions.ReviewNotFoundException;
@@ -13,8 +14,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
-import java.util.List;
 import java.util.UUID;
 
 @Service

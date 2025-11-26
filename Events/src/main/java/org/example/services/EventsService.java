@@ -1,5 +1,6 @@
 package org.example.services;
 
+import jakarta.transaction.Transactional;
 import org.example.enums.EventStatus;
 import org.example.exceptions.EventAlreadyCanceledException;
 import org.example.exceptions.EventAlreadyExistsException;
@@ -13,7 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
+
 import java.util.UUID;
 
 @Service

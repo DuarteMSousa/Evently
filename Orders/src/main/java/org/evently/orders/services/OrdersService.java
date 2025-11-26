@@ -1,5 +1,6 @@
 package org.evently.orders.services;
 
+import jakarta.transaction.Transactional;
 import org.evently.orders.exceptions.InvalidOrderUpdateException;
 import org.evently.orders.exceptions.OrderNotFoundException;
 import org.evently.orders.models.Order;
@@ -10,7 +11,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import java.util.UUID;
 
 @Service

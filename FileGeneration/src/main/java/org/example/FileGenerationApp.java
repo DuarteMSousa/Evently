@@ -7,11 +7,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * Hello world!
  *
  */
+
 @SpringBootApplication
-public class EventsService
+public class FileGenerationApp
 {
     public static void main( String[] args )
     {
-        SpringApplication.run(EventsService.class, args);
+        SpringApplication.run(FileGenerationApp.class, args);
     }
 }

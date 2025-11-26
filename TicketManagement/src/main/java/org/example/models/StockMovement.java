@@ -1,11 +1,12 @@
 package org.example.models;
 
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.example.enums.StockMovementType;
 
-import javax.persistence.*;
+
 import java.util.UUID;
 
 @NoArgsConstructor

@@ -1,5 +1,6 @@
 package org.example.service;
 
+import jakarta.transaction.Transactional;
 import org.example.exceptions.*;
 import org.example.models.Member;
 import org.example.models.MemberId;
@@ -9,7 +10,6 @@ import org.example.repositories.OrganizationsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;

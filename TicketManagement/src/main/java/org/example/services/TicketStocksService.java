@@ -4,19 +4,14 @@ import org.example.enums.StockMovementType;
 import org.example.exceptions.TicketStockAlreadyExistsException;
 import org.example.exceptions.TicketStockNotFoundException;
 import org.example.models.StockMovement;
-import org.example.models.TicketReservation;
 import org.example.models.TicketStock;
-import org.example.models.TicketStockId;
-import org.example.repositories.TicketReservationsRepository;
 import org.example.repositories.TicketStocksRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.Optional;
-import java.util.UUID;
+import jakarta.transaction.Transactional;
+
 
 @Service
 public class TicketStocksService {

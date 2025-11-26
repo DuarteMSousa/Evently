@@ -1,6 +1,7 @@
 package org.example.service;
 
 
+import jakarta.transaction.Transactional;
 import org.example.exceptions.MemberNotFoundException;
 import org.example.exceptions.OrganizationNotFoundException;
 import org.example.exceptions.PermissionDeniedException;
@@ -13,7 +14,7 @@ import org.example.repositories.OrganizationsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
+
 import java.util.List;
 import java.util.UUID;
 

@@ -1,5 +1,6 @@
 package org.example.models;
 
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -7,11 +8,8 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 @NoArgsConstructor
@@ -29,7 +27,7 @@ public class SessionTier {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sessionId")
-    private EventSession session;
+    private EventSession eventSession;
 
     private UUID zoneId;
 

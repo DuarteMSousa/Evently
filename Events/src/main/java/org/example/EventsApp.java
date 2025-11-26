@@ -8,10 +8,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  *
  */
 @SpringBootApplication
-public class CartService
+public class EventsApp
 {
     public static void main( String[] args )
     {
-        SpringApplication.run(CartService.class, args);
+        SpringApplication.run(EventsApp.class, args);
     }
 }
