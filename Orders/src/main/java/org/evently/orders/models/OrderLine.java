@@ -27,7 +27,8 @@ public class OrderLine {
     private BigDecimal unitPrice;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "orderId", nullable = false)
+    @MapsId("orderId")
+    @JoinColumn(name = "order_id", nullable = false)
     @JsonIgnore
     private Order order;
 }

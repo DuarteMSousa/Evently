@@ -51,6 +51,6 @@ public class TicketsService {
             pageSize = 50;
         }
         PageRequest pageable = PageRequest.of(pageNumber, pageSize);
-        return ticketsRepository.FindAllByUserId(userId, pageable);
+        return ticketsRepository.findAllByUserId(userId, pageable);
     }
 }
