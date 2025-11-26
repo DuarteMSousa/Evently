@@ -75,7 +75,6 @@ public class NotificationsService {
 
         OutBoxMessage savedMsg = outBoxMessagesRepository.save(message);
 
-        // Envio síncrono do email
         if ("EMAIL".equalsIgnoreCase(channel)) {
             try {
                 emailService.sendNotificationEmail(emailTo,
@@ -90,9 +89,6 @@ public class NotificationsService {
                 savedMsg.setStatus("FAILED");
                 savedMsg.setAttempts(savedMsg.getAttempts() + 1);
                 outBoxMessagesRepository.save(savedMsg);
-
-                // se quiseres podes lançar exceção aqui
-                // ou apenas logar e deixar como FAILED
             }
         }
 

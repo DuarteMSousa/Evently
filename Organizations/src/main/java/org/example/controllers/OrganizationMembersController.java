@@ -33,7 +33,11 @@ public class OrganizationMembersController {
         return dto;
     }
 
-    // GET /get-members/{orgId}
+    /*
+     * 200 OK - Membros da organização encontrados
+     * 404 NOT_FOUND - Organização não encontrada
+     * 400 BAD_REQUEST - Erro genérico
+     */
     @GetMapping("/get-members/{orgId}")
     public ResponseEntity<?> getMembers(@PathVariable("orgId") UUID orgId) {
         try {
@@ -50,7 +54,13 @@ public class OrganizationMembersController {
         }
     }
 
-    // POST /add-member/{orgId}/{userId}?requesterId=...
+    /*
+     * 201 CREATED - Membro adicionado
+     * 403 FORBIDDEN - Falta de permissões (Utilizador não é o criador da organização)
+     * 404 NOT_FOUND - Organização não encontrada
+     * 405 METHOD_NOT_ALLOWED - Utilizador não encontrado
+     * 400 BAD_REQUEST - Erro genérico
+     */
     @PostMapping("/add-member/{orgId}/{userId}")
     public ResponseEntity<?> addMember(@PathVariable("orgId") UUID orgId,
                                        @PathVariable("userId") UUID userId,
@@ -70,7 +80,13 @@ public class OrganizationMembersController {
         }
     }
 
-    // DELETE /remove-member/{orgId}/{userId}?requesterId=...
+    /*
+     * 200 OK - Membro removido
+     * 403 FORBIDDEN - Falta de permissões (Utilizador não é o criador da organização)
+     * 404 NOT_FOUND - Organização não encontrada
+     * 405 METHOD_NOT_ALLOWED - Utilizador não encontrado
+     * 400 BAD_REQUEST - Erro genérico
+     */
     @DeleteMapping("/remove-member/{orgId}/{userId}")
     public ResponseEntity<?> removeMember(@PathVariable("orgId") UUID orgId,
                                           @PathVariable("userId") UUID userId,

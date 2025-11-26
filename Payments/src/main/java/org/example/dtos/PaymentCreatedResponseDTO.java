@@ -12,5 +12,5 @@ public class PaymentCreatedResponseDTO {
     private String status;
     private String provider;
     private String providerRef;
-    private String approvalUrl; // <--- importante
+    private String approvalUrl;
 }

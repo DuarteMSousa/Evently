@@ -30,6 +30,10 @@ public class OrganizationsController {
         return modelMapper.map(org, OrganizationDTO.class);
     }
 
+    /*
+     * 200 OK - Organizações encontradas
+     * 400 BAD_REQUEST - Erro genérico
+     */
     @GetMapping("/get-organizations")
     public ResponseEntity<?> getOrganizations() {
         try {
@@ -44,6 +48,11 @@ public class OrganizationsController {
         }
     }
 
+    /*
+     * 200 OK - Organização encontrada
+     * 404 NOT_FOUND - Organização não encontrada
+     * 400 BAD_REQUEST - Erro genérico
+     */
     @GetMapping("/get-organization/{orgId}")
     public ResponseEntity<?> getOrganization(@PathVariable("orgId") UUID orgId) {
         try {
@@ -56,6 +65,10 @@ public class OrganizationsController {
         }
     }
 
+    /*
+     * 201 CREATED - Organização registada
+     * 400 BAD_REQUEST - Campos inválidos / Erro genérico
+     */
     @PostMapping("/create-organization")
     public ResponseEntity<?> createOrganization(@RequestBody OrganizationCreateDTO dto) {
         try {
@@ -71,6 +84,12 @@ public class OrganizationsController {
         }
     }
 
+    /*
+     * 200 OK - Organização atualizada
+     * 400 BAD_REQUEST - Campos inválidos / Erro genérico
+     * 403 FORBIDDEN - Falta de permissões (Utilizador não é o criador da organização)
+     * 404 NOT_FOUND - Organização não encontrada
+     */
     @PutMapping("/update-organization/{orgId}")
     public ResponseEntity<?> updateOrganization(@PathVariable("orgId") UUID orgId,
                                                 @RequestBody OrganizationUpdateDTO dto) {

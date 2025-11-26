@@ -77,7 +77,6 @@ public class VenuesService {
     }
 
     public List<Venue> searchVenues(VenueSearchDTO criteria) {
-        // validações simples de input
         if (criteria.getMinCapacity() != null && criteria.getMinCapacity() < 0) {
             throw new InvalidVenueException("minCapacity must be >= 0");
         }

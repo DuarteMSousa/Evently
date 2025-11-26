@@ -34,9 +34,11 @@ public class PaymentsController {
         return modelMapper.map(payment, PaymentDTO.class);
     }
 
-    // -------------------------------------------------------
-    // GET /check-payment-status/{paymentId}
-    // -------------------------------------------------------
+    /*
+     * 200 OK - Estado do pagamento encontrado
+     * 404 NOT_FOUND - Pagamento não encontrado
+     * 400 BAD_REQUEST - Erro genérico
+     */
     @GetMapping("/check-payment-status/{paymentId}")
     public ResponseEntity<?> checkPaymentStatus(@PathVariable("paymentId") UUID paymentId) {
 
@@ -56,9 +58,11 @@ public class PaymentsController {
         }
     }
 
-    // -------------------------------------------------------
-    // GET /user-payments/{userId}
-    // -------------------------------------------------------
+    /*
+     * 200 OK - Lista de pagamentos do utilizador encontrada
+     * 404 NOT_FOUND - Utilizador não encontrado
+     * 400 BAD_REQUEST - Erro genérico
+     */
     @GetMapping("/user-payments/{userId}")
     public ResponseEntity<?> getUserPayments(@PathVariable("userId") UUID userId) {
 
@@ -77,14 +81,15 @@ public class PaymentsController {
         }
     }
 
-    // -------------------------------------------------------
-    // POST /process-payment  (cria ordem PayPal, devolve approvalUrl)
-    // -------------------------------------------------------
+    /*
+     * 201 CREATED - Pagamento criado e iniciado
+     * 400 BAD_REQUEST - Campos inválidos / Erro genérico
+     * 402 PAYMENT_REQUIRED - Pagamento recusado pelo provedor
+     */
     @PostMapping("/process-payment")
     public ResponseEntity<?> processPayment(@RequestBody PaymentCreateDTO dto) {
 
         try {
-            // DTO -> Entity (manual para não chatear o ModelMapper com ids)
             Payment payment = new Payment();
             payment.setOrderId(dto.getOrderId());
             payment.setUserId(dto.getUserId());
@@ -93,8 +98,6 @@ public class PaymentsController {
 
             Payment created = paymentsService.processPayment(payment);
 
-            // Construímos o approvalUrl a partir do providerRef (PayPal order id)
-            // Formato típico do PayPal Checkout:
             String approvalUrl = "https://www.sandbox.paypal.com/checkoutnow?token="
                     + created.getProviderRef();
 
@@ -117,15 +120,15 @@ public class PaymentsController {
         }
     }
 
-    // -------------------------------------------------------
-    // GET /paypal-callback?token=...
-    // Este endpoint simula o "return_url" do PayPal
-    // -------------------------------------------------------
+    /*
+     * 200 OK - Pagamento atualizado após callback do PayPal
+     * 404 NOT_FOUND - Pagamento não encontrado
+     * 400 BAD_REQUEST - Erro genérico / Captura inválida
+     */
     @GetMapping("/paypal-callback")
     public ResponseEntity<?> paypalCallback(@RequestParam("token") String token) {
 
         try {
-            // token == PayPal order id == providerRef
             Payment updated = paymentsService.capturePaypalPayment(token);
             PaymentDTO dto = toPaymentDTO(updated);
 
@@ -140,16 +143,20 @@ public class PaymentsController {
         }
     }
 
-    // (Opcional) cancelar via return_url de cancel do PayPal
+    /*
+     * 200 OK - Pagamento cancelado pelo utilizador
+     */
     @GetMapping("/paypal-cancel")
     public ResponseEntity<?> paypalCancel(@RequestParam(value = "token", required = false) String token) {
         // Podes só devolver uma mensagem ou no futuro marcar como FAILED/CANCELED
         return ResponseEntity.status(HttpStatus.OK).body("Pagamento cancelado pelo utilizador no PayPal.");
     }
 
-    // -------------------------------------------------------
-    // POST /cancel-payment/{paymentId}
-    // -------------------------------------------------------
+    /*
+     * 200 OK - Pagamento cancelado
+     * 404 NOT_FOUND - Pagamento não encontrado
+     * 400 BAD_REQUEST - Erro genérico / Já cancelado / Estado inválido
+     */
     @PostMapping("/cancel-payment/{paymentId}")
     public ResponseEntity<?> cancelPayment(@PathVariable("paymentId") UUID paymentId) {
 
@@ -166,9 +173,11 @@ public class PaymentsController {
         }
     }
 
-    // -------------------------------------------------------
-    // POST /process-refund/{paymentId}
-    // -------------------------------------------------------
+    /*
+     * 201 CREATED - Reembolso processado
+     * 404 NOT_FOUND - Pagamento não encontrado
+     * 400 BAD_REQUEST - Erro genérico / Reembolso inválido
+     */
     @PostMapping("/process-refund/{paymentId}")
     public ResponseEntity<?> processRefund(@PathVariable("paymentId") UUID paymentId) {
 

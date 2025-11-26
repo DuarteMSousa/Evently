@@ -25,8 +25,6 @@ public class PaymentEventsPublisher {
     }
 
     public void publishPaymentEvent(String eventType, Payment payment) {
-        // Podes criar um DTO próprio para o evento,
-        // mas para simplificar vamos mandar um objeto simples.
         PaymentEventMessage message = new PaymentEventMessage(
                 payment.getId(),
                 payment.getOrderId(),
@@ -67,7 +65,6 @@ public class PaymentEventsPublisher {
         public PaymentEventMessage() {
         }
 
-        // getters e setters
         public UUID getPaymentId() { return paymentId; }
         public void setPaymentId(UUID paymentId) { this.paymentId = paymentId; }
         public UUID getOrderId() { return orderId; }

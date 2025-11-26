@@ -47,7 +47,6 @@ public class OrganizationMembersService {
         checkOwnerPermission(org, requesterId);
 
         if (!org.isActive()) {
-            // opcional: não permitir adicionar membros a org inativa
             throw new PermissionDeniedException("Cannot add members to an inactive organization");
         }
 

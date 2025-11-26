@@ -27,9 +27,9 @@ public class PaymentEvent {
     private Payment payment;
 
     @Column(nullable = false, length = 20)
-    private String type; // AUTH, CAPTURE, CANCEL, REFUND, ERROR
+    private String type;
 
-    private Integer statusCode; // código devolvido pelo provider (ex: 200, 400, 401)
+    private Integer statusCode;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)

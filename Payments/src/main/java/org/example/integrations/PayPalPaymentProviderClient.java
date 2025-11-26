@@ -17,7 +17,7 @@ public class PayPalPaymentProviderClient implements PaymentProviderClient {
     private final RestTemplate restTemplate;
 
     @Value("${paypal.base-url}")
-    private String baseUrl; // ex: https://api-m.sandbox.paypal.com
+    private String baseUrl;
 
     @Value("${paypal.client-id}")
     private String clientId;
@@ -26,10 +26,10 @@ public class PayPalPaymentProviderClient implements PaymentProviderClient {
     private String clientSecret;
 
     @Value("${paypal.return-url}")
-    private String returnUrl; // ex: http://localhost:8088/payments/paypal-callback
+    private String returnUrl;
 
     @Value("${paypal.cancel-url}")
-    private String cancelUrl; // ex: http://localhost:8088/payments/paypal-cancel
+    private String cancelUrl;
 
     public PayPalPaymentProviderClient(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
@@ -101,7 +101,6 @@ public class PayPalPaymentProviderClient implements PaymentProviderClient {
             throw new PaymentRefusedException("PayPal did not return an order id");
         }
 
-        // guardamos o orderId em providerRef
         payment.setProviderRef(orderId);
 
         return orderId;
@@ -126,6 +125,5 @@ public class PayPalPaymentProviderClient implements PaymentProviderClient {
             throw new PaymentRefusedException("PayPal capture failed with status: " +
                     response.getStatusCode());
         }
-        // Se quiseres, podes validar mais coisas no body.
     }
 }

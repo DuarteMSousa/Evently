@@ -23,13 +23,13 @@ public class OutBoxMessage {
     private UUID id;
 
     @Column(nullable = false)
-    private UUID notificationId; // ligação lógica à Notification
+    private UUID notificationId;
 
     @Column(nullable = false, length = 10)
-    private String channel; // EMAIL, PUSH, SMS
+    private String channel;
 
     @Column(nullable = false, length = 10)
-    private String status; // PENDING, SENT, FAILED
+    private String status;
 
     @Column(nullable = false)
     private Integer attempts;

@@ -13,9 +13,6 @@ public class NotificationCreateDTO {
     private String type;
     private String title;
     private String body;
-
-    // para OutBox
-    private String channel; // EMAIL, PUSH, SMS
-
+    private String channel;
     private String emailTo;
 }

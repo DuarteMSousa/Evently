@@ -26,7 +26,7 @@ public class Notification {
     private UUID userId;
 
     @Column(nullable = false, length = 30)
-    private String type; // EVENT_REMINDER, ORDER_STATUS, ...
+    private String type;
 
     @Column(nullable = false, length = 200)
     private String title;
@@ -35,7 +35,7 @@ public class Notification {
     private String body;
 
     @Column(nullable = false, length = 10)
-    private String status; // UNREAD, READ, DELETED
+    private String status;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)

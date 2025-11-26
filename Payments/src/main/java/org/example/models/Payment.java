@@ -35,13 +35,13 @@ public class Payment {
     private BigDecimal amount;
 
     @Column(nullable = false, length = 20)
-    private String status;  // PENDING, AUTHORIZED, CAPTURED, CANCELED, REFUNDED, FAILED
+    private String status;
 
     @Column(nullable = false, length = 50)
-    private String provider; // STRIPE, PAYPAL, MBWAY...
+    private String provider;
 
     @Column(length = 100)
-    private String providerRef; // transaction id do provider
+    private String providerRef;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)

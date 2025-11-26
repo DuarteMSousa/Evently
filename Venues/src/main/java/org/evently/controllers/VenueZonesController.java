@@ -48,7 +48,6 @@ public class VenueZonesController {
          * 404 NOT_FOUND – Venue não encontrado
          */
         try {
-            // DTO -> Entity
             VenueZone zone = modelMapper.map(dto, VenueZone.class);
 
             VenueZone newZone = venueZonesService.createVenueZone(dto.getVenueId(), zone);
