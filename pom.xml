@@ -20,6 +20,7 @@
         <module>Notifications</module>
         <module>Cart</module>
         <module>TicketManagement</module>
+        <module>Tickets</module>
     </modules>
 
     <properties>
