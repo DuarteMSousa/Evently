@@ -24,18 +24,28 @@ import java.util.UUID;
 public class TicketReservation {
 
     @Id
+    @GeneratedValue
     private UUID id;
 
+    @Column(nullable = false)
     private UUID userId;
 
+    @Column(nullable = false)
+    private UUID orderId;
+
+    @Column(nullable = false)
     private UUID tierId;
 
+    @Column(nullable = false)
     private UUID sessionId;
 
+    @Column(nullable = false)
     private UUID eventId;
 
+    @Column(nullable = false)
     private Integer quantity;
 
+    @Column(nullable = false)
     private TicketReservationStatus status;
 
     private OffsetDateTime expiresAt;

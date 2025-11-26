@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: {{backgroundColor}};
+            color: {{textColor}};
+            padding: 20px;
+            width: 600px;
+            border: 2px solid {{borderColor}};
+            border-radius: 10px;
+        }
+        .header { text-align: center; }
+        .qr { text-align: center; margin-top: 20px; }
+        .details { margin-top: 20px; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <img src="data:image/png;base64,{{logoBase64}}" width="100"/>
+    <h1>{{eventName}}</h1>
+</div>
+<div class="details">
+    <p>Data: {{eventDate}}</p>
+    <p>Local: {{venue}}</p>
+    <p>Tier: {{tier}}</p>
+</div>
+<div class="qr">
+    <img src="data:image/png;base64,{{qrCodeBase64}}" width="150"/>
+</div>
+</body>
+</html>

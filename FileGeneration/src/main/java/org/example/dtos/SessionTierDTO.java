@@ -1,0 +1,27 @@
+package org.example.dtos;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.UUID;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+public class SessionTierDTO {
+
+    private UUID id;
+
+    private UUID zoneId;
+
+    private BigDecimal price;
+
+    private Date createdAt;
+
+    private UUID updatedBy;
+
+    private Date updatedAt;
+}

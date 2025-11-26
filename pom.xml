@@ -22,6 +22,7 @@
         <module>TicketManagement</module>
         <module>Tickets</module>
         <module>Orders</module>
+        <module>FileGeneration</module>
     </modules>
 
     <properties>

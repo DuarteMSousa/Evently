@@ -1,7 +1,9 @@
 package org.example.services;
 
+import org.example.enums.StockMovementType;
 import org.example.exceptions.TicketStockAlreadyExistsException;
 import org.example.exceptions.TicketStockNotFoundException;
+import org.example.models.StockMovement;
 import org.example.models.TicketReservation;
 import org.example.models.TicketStock;
 import org.example.models.TicketStockId;
@@ -25,15 +27,10 @@ public class TicketStocksService {
     private ModelMapper modelMapper = new ModelMapper();
 
     @Transactional
-    public TicketStock createTicketStock(UUID eventId, UUID sessionId, UUID tierId) {
-        TicketStockId ticketStockId = new TicketStockId(eventId, sessionId, tierId);
-        if (ticketStocksRepository.existsById(ticketStockId)) {
+    public TicketStock createTicketStock(TicketStock ticketStock) {
+        if (ticketStocksRepository.existsById(ticketStock.getId())) {
             throw new TicketStockAlreadyExistsException("Ticket stock already exists");
         }
-
-        TicketStock ticketStock = new TicketStock();
-
-        ticketStock.setId(ticketStockId);
 
         ticketStock.setAvailableQuantity(0);
 
@@ -41,18 +38,20 @@ public class TicketStocksService {
     }
 
     @Transactional
-    public TicketStock addTicketStockQuantity(UUID eventId, UUID sessionId, UUID tierId, Integer quantity) {
-        TicketStockId ticketStockId = new TicketStockId(eventId, sessionId, tierId);
-
+    public TicketStock addStockMovement(StockMovement movement) {
         TicketStock ticketStock = ticketStocksRepository
-                .findById(ticketStockId)
+                .findById(movement.getTicketStock().getId())
                 .orElseThrow(() -> new TicketStockNotFoundException("Ticket stock not found"));
 
-        ticketStock.setAvailableQuantity(ticketStock.getAvailableQuantity()+quantity);
+
+        ticketStock.getStockMovementList().add(movement);
+
+        Integer addedQuantity = movement.getType().equals(StockMovementType.IN) ? movement.getQuantity() : -movement.getQuantity();
+
+        ticketStock.setAvailableQuantity(ticketStock.getAvailableQuantity() + addedQuantity);
 
         return ticketStocksRepository.save(ticketStock);
     }
-
 
 
 }
