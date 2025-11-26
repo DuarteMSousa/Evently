@@ -18,6 +18,4 @@ public class RefundRequestCreateDTO {
 
     private String description;
 
-    private RefundRequestStatus status;
-
 }
