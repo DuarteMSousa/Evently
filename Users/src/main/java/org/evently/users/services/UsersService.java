@@ -1,5 +1,6 @@
 package org.evently.users.services;
 
+import org.evently.users.Utils.JwtUtils;
 import org.evently.users.Utils.PasswordUtils;
 import org.evently.users.exceptions.*;
 import org.evently.users.models.User;
@@ -23,6 +24,9 @@ public class UsersService {
 
     @Autowired
     private UsersRepository usersRepository;
+
+    @Autowired
+    private JwtUtils jwtUtils;
 
     private ModelMapper modelMapper = new ModelMapper();
 
@@ -75,19 +79,16 @@ public class UsersService {
         return usersRepository.save(userToDeactivate);
     }
 
-    public String loginUser(UUID userId, String password) {
-        if(!usersRepository.existsById(userId)) {
-            throw new LoginFailedException("");
+    public String loginUser(String username, String password) {
+        User user = usersRepository.findByUsername(username)
+                .orElseThrow(() -> new LoginFailedException("User not found"));
+
+        if (!PasswordUtils.checkPassword(password, user.getPassword())) {
+            throw new LoginFailedException("Invalid credentials");
         }
 
-        User user = usersRepository.findById(userId)
-                .orElseThrow(()-> new LoginFailedException(""));
-
-        if(!PasswordUtils.checkPassword(password, user.getPassword())) {
-            throw new LoginFailedException("");
-        }
-
-        return "";
+        // gera JWT e devolve
+        return jwtUtils.generateToken(user.getId(), user.getUsername());
     }
 
     public Page<User> getUsersPage(Integer pageNumber, Integer pageSize) {

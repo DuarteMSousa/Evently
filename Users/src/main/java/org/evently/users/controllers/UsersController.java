@@ -1,8 +1,7 @@
 package org.evently.users.controllers;
 
-import org.evently.users.dtos.User.UserCreateDTO;
-import org.evently.users.dtos.User.UserDTO;
-import org.evently.users.dtos.User.UserUpdateDTO;
+import org.evently.users.dtos.User.*;
+import org.evently.users.exceptions.LoginFailedException;
 import org.evently.users.exceptions.UserAlreadyDeactivatedException;
 import org.evently.users.exceptions.UserNotFoundException;
 import org.evently.users.models.User;
@@ -141,4 +140,18 @@ public class UsersController {
 
         return ResponseEntity.status(HttpStatus.OK).body(usersPage);
     }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody UserLoginRequestDTO dto) {
+
+        try {
+            String token = usersService.loginUser(dto.getUsername(), dto.getPassword());
+            return ResponseEntity.ok(new UserLoginResponseDTO(token));
+        } catch (LoginFailedException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
 }
