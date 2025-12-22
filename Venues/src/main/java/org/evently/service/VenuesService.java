@@ -40,8 +40,6 @@ public class VenuesService {
         if (venue.getPostalCode() == null) {
             throw new InvalidVenueException("Postal code is required");
         }
-
-        //venue.setCreatedBy(new UUID(55,5));
         if (venue.getCreatedBy() == null && venue.getId() == null) {
             throw new InvalidVenueException("CreatedBy is required");
         }
