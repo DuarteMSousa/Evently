@@ -6,6 +6,10 @@ import org.evently.users.exceptions.*;
 import org.evently.users.models.User;
 import org.evently.users.repositories.UsersRepository;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -30,10 +34,31 @@ public class UsersService {
 
     private ModelMapper modelMapper = new ModelMapper();
 
+    private Logger logger = LoggerFactory.getLogger(UsersService.class);
+
+    private Marker createMarker = MarkerFactory.getMarker("User create operation");
+
     @Transactional
     public User createUser(User user) {
+        logger.info(createMarker, "Create user method entered");
         if (usersRepository.existsByUsername(user.getUsername())) {
+            logger.error("Username {} already exists",user.getUsername());
             throw new UserAlreadyExistsException("User with username " + user.getUsername() + " already exists");
+        }
+
+        if (usersRepository.existsByEmail(user.getEmail())) {
+            logger.error("Email {} already exists",user.getEmail());
+            throw new UserAlreadyExistsException("User with email " + user.getEmail() + " already exists");
+        }
+
+        if (usersRepository.existsByNif(user.getNif())) {
+            logger.error("Nif {} already exists",user.getNif());
+            throw new UserAlreadyExistsException("User with nif " + user.getNif() + " already exists");
+        }
+
+        if (usersRepository.existsByPhoneNumber(user.getPhoneNumber())) {
+            logger.error("Phone number {} already exists",user.getPhoneNumber());
+            throw new UserAlreadyExistsException("User with phone number " + user.getNif() + " already exists");
         }
 
         user.setPassword(PasswordUtils.hashPassword(user.getPassword()));

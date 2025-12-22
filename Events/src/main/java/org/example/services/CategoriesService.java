@@ -8,6 +8,10 @@ import org.example.models.Event;
 import org.example.repositories.CategoriesRepository;
 import org.example.repositories.EventsRepository;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,13 +28,20 @@ public class CategoriesService {
 
     private ModelMapper modelMapper = new ModelMapper();
 
+    private Logger logger = LoggerFactory.getLogger(CategoriesService.class);
+
+    private Marker createMarker = MarkerFactory.getMarker("Category create operation");
+
     @Transactional
     public Category createCategory(Category category) {
+        logger.info(createMarker, "Method create category entered (CategoriesService)");
         if (categoriesRepository.existsByName(category.getName())) {
+            logger.error("Category with the name {} already exists (CategoriesService)", category.getName());
             throw new CategoryAlreadyExistsException("Category with name " + category.getName() + " already exists");
         }
 
         if (category.getName() == null || category.getName().isEmpty()) {
+            logger.error("Empty category name (CategoriesService)");
             throw new InvalidCategoryException("Empty category name");
         }
 
