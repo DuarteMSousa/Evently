@@ -47,5 +47,5 @@ public class Event {
     private List<EventSession> sessions;
 
     @ManyToMany()
-    private List<Category> category;
+    private List<Category> categories;
 }

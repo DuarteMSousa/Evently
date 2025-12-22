@@ -30,6 +30,10 @@ public class CategoriesService {
             throw new CategoryAlreadyExistsException("Category with name " + category.getName() + " already exists");
         }
 
+        if (category.getName() == null || category.getName().isEmpty()) {
+            throw new InvalidCategoryException("Empty category name");
+        }
+
         return categoriesRepository.save(category);
     }
 
@@ -41,6 +45,10 @@ public class CategoriesService {
 
         Category existingCategory = categoriesRepository.findById(id)
                 .orElseThrow(() -> new CategoryNotFoundException("Category not found"));
+
+        if (category.getName() == null || category.getName().isEmpty()) {
+            throw new InvalidCategoryException("Empty category name");
+        }
 
         //VERIFICAR SE ALTERA CORRETAMENTE
         modelMapper.map(category, existingCategory);

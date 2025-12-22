@@ -55,6 +55,8 @@ public class CartService {
                 .filter(i -> i.getProductId().equals(productId))
                 .findFirst();
 
+        //verificar existencia do product
+
         if (item.isPresent()) {
             throw new CartItemAlreadyExistsException("Cart Item already exists");
         } else {

@@ -2,10 +2,7 @@ package org.example.services;
 
 import jakarta.transaction.Transactional;
 import org.example.enums.EventStatus;
-import org.example.exceptions.EventAlreadyCanceledException;
-import org.example.exceptions.EventAlreadyExistsException;
-import org.example.exceptions.EventNotFoundException;
-import org.example.exceptions.InvalidEventUpdateException;
+import org.example.exceptions.*;
 import org.example.models.Event;
 import org.example.repositories.EventsRepository;
 import org.modelmapper.ModelMapper;
@@ -31,6 +28,18 @@ public class EventsService {
             throw new EventAlreadyExistsException("Event with name " + event.getName() + " already exists");
         }
 
+        if (event.getName() == null || event.getName().isEmpty()) {
+            throw new InvalidEventException("Empty category name");
+        }
+
+        if (event.getDescription() == null || event.getDescription().isEmpty()) {
+            throw new InvalidEventException("Empty description");
+        }
+
+        event.setStatus(EventStatus.DRAFT);
+
+        //createdby para ver organization
+
         return eventsRepository.save(event);
     }
 
@@ -42,6 +51,14 @@ public class EventsService {
 
         Event existingEvent = eventsRepository.findById(id)
                 .orElseThrow(() -> new EventNotFoundException("Event not found"));
+
+        if (event.getName() == null || event.getName().isEmpty()) {
+            throw new InvalidEventException("Empty category name");
+        }
+
+        if (event.getDescription() == null || event.getDescription().isEmpty()) {
+            throw new InvalidEventException("Empty description");
+        }
 
         //VERIFICAR SE ALTERA CORRETAMENTE
         modelMapper.map(event, existingEvent);
@@ -65,6 +82,7 @@ public class EventsService {
             throw new EventAlreadyCanceledException("Event already cancelled");
         }
 
+        //enviar mensagem
         eventToCancel.setStatus(EventStatus.CANCELED);
         return eventsRepository.save(eventToCancel);
     }
@@ -74,16 +92,17 @@ public class EventsService {
         Event event = eventsRepository.findById(eventId)
                 .orElseThrow(() -> new EventNotFoundException(""));
 
-        event.setStatus(EventStatus.PUBLISHED);
+        event.setStatus(EventStatus.PENDING_STOCK_GENERATION);
 
+        //enviar mensagem
         return eventsRepository.save(event);
     }
 
     public Page<Event> getEventPage(Integer pageNumber, Integer pageSize) {
-        if(pageSize>50){
+        if (pageSize > 50) {
             pageSize = 50;
         }
         PageRequest pageable = PageRequest.of(pageNumber, pageSize);
-        return eventsRepository.findAllByStatus(EventStatus.PUBLISHED,pageable);
+        return eventsRepository.findAllByStatus(EventStatus.PUBLISHED, pageable);
     }
 }
