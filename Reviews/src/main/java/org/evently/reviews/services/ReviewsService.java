@@ -49,6 +49,10 @@ public class ReviewsService {
             logger.warn(REVIEW_VALIDATION, "Missing entityId");
             throw new InvalidReviewUpdateException("Entity ID is required");
         }
+        if(review.getEntityType() == null) {
+            logger.warn(REVIEW_VALIDATION, "Missing entityType");
+            throw new InvalidReviewUpdateException("Entity Type is required");
+        }
         if (review.getComment() == null || review.getComment().trim().isEmpty()) {
             logger.warn(REVIEW_VALIDATION, "Comment is empty or null");
             throw new InvalidReviewUpdateException("Comment cannot be empty");

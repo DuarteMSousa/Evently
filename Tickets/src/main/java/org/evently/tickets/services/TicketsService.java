@@ -36,6 +36,14 @@ public class TicketsService {
         logger.debug(TICKET_VALIDATION, "Validating ticket payload (userId={}, eventId={})",
                 ticket.getUserId(), ticket.getEventId());
 
+        if (ticket.getReservationId() == null) {
+            logger.warn(TICKET_VALIDATION, "Missing reservationId");
+            throw new InvalidTicketUpdateException("Reservation ID is required");
+        }
+        if (ticket.getOrderId() == null) {
+            logger.warn(TICKET_VALIDATION, "Missing orderId");
+            throw new InvalidTicketUpdateException("Order ID is required");
+        }
         if (ticket.getUserId() == null) {
             logger.warn(TICKET_VALIDATION, "Missing userId");
             throw new InvalidTicketUpdateException("User ID is required");
@@ -44,13 +52,13 @@ public class TicketsService {
             logger.warn(TICKET_VALIDATION, "Missing eventId");
             throw new InvalidTicketUpdateException("Event ID is required");
         }
-        if (ticket.getOrderId() == null) {
-            logger.warn(TICKET_VALIDATION, "Missing orderId");
-            throw new InvalidTicketUpdateException("Order ID is required");
+        if (ticket.getSessionId() == null) {
+            logger.warn(TICKET_VALIDATION, "Missing sessionId");
+            throw new InvalidTicketUpdateException("Session ID is required");
         }
-        if (ticket.getReservationId() == null) {
-            logger.warn(TICKET_VALIDATION, "Missing reservationId");
-            throw new InvalidTicketUpdateException("Reservation ID is required");
+        if (ticket.getTierId() == null) {
+            logger.warn(TICKET_VALIDATION, "Missing tier id");
+            throw new InvalidTicketUpdateException("Tier ID is required");
         }
         if (ticket.getStatus() == null) {
             logger.warn(TICKET_VALIDATION, "Missing status");

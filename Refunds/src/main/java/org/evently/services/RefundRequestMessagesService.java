@@ -38,7 +38,7 @@ public class RefundRequestMessagesService {
 
         if (message.getUserId() == null) {
             logger.warn(MSG_VALIDATION, "Missing userId");
-            throw new InvalidRefundRequestUpdateException("Author User ID is required");
+            throw new InvalidRefundRequestUpdateException("User ID is required");
         }
         if (message.getContent() == null || message.getContent().trim().isEmpty()) {
             logger.warn(MSG_VALIDATION, "Message is empty");

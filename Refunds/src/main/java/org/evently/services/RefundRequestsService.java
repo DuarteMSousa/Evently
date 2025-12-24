@@ -47,6 +47,10 @@ public class RefundRequestsService {
             logger.warn(REFUND_VALIDATION, "Title is empty");
             throw new InvalidRefundRequestUpdateException("Title is required");
         }
+        if(request.getDescription() == null || request.getDescription().trim().isEmpty()) {
+            logger.warn(REFUND_VALIDATION, "Description is empty");
+            throw new InvalidRefundRequestUpdateException("Description is required");
+        }
         if (request.getStatus() == null) {
             logger.warn(REFUND_VALIDATION, "Status is null");
             throw new InvalidRefundRequestUpdateException("Initial status is required");
