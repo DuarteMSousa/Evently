@@ -7,6 +7,10 @@ import org.example.models.MemberId;
 import org.example.models.Organization;
 import org.example.repositories.MembersRepository;
 import org.example.repositories.OrganizationsRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +21,18 @@ import java.util.regex.Pattern;
 @Service
 public class OrganizationsService {
 
+    private static final Logger logger = LoggerFactory.getLogger(OrganizationsService.class);
+
+    private static final Marker ORG_VALIDATE = MarkerFactory.getMarker("ORG_VALIDATE");
+    private static final Marker ORG_PERMISSION = MarkerFactory.getMarker("ORG_PERMISSION");
+    private static final Marker ORG_CREATE = MarkerFactory.getMarker("ORG_CREATE");
+    private static final Marker ORG_UPDATE = MarkerFactory.getMarker("ORG_UPDATE");
+    private static final Marker ORG_GET = MarkerFactory.getMarker("ORG_GET");
+    private static final Marker ORG_LIST = MarkerFactory.getMarker("ORG_LIST");
+    private static final Marker ORG_MEMBERS_GET = MarkerFactory.getMarker("ORG_MEMBERS_GET");
+    private static final Marker ORG_MEMBER_ADD = MarkerFactory.getMarker("ORG_MEMBER_ADD");
+    private static final Marker ORG_MEMBER_REMOVE = MarkerFactory.getMarker("ORG_MEMBER_REMOVE");
+
     @Autowired
     private OrganizationsRepository organizationsRepository;
 
@@ -25,44 +41,77 @@ public class OrganizationsService {
 
     private static final Pattern NIPC_PATTERN = Pattern.compile("\\d{9}");
 
-
     private void validateOrganization(Organization org, boolean isCreate) {
+        logger.debug(ORG_VALIDATE,
+                "Validating organization (isCreate={}, orgId={}, name={}, nipcPresent={}, createdByPresent={}, updatedByPresent={})",
+                isCreate,
+                org != null ? org.getId() : null,
+                org != null ? org.getName() : null,
+                org != null && org.getNipc() != null,
+                org != null && org.getCreatedBy() != null,
+                org != null && org.getUpdatedBy() != null
+        );
+
         if (org.getName() == null) {
+            logger.warn(ORG_VALIDATE, "Missing name");
             throw new InvalidOrganizationException("Name is required");
         }
         if (org.getNipc() == null || !NIPC_PATTERN.matcher(org.getNipc()).matches()) {
+            logger.warn(ORG_VALIDATE, "Invalid NIPC format (nipc={})", org.getNipc());
             throw new InvalidOrganizationException("NIPC must have exactly 9 digits");
         }
         if (isCreate && org.getCreatedBy() == null) {
+            logger.warn(ORG_VALIDATE, "Missing createdBy on create");
             throw new InvalidOrganizationException("CreatedBy is required");
         }
         if (!isCreate && org.getUpdatedBy() == null) {
+            logger.warn(ORG_VALIDATE, "Missing updatedBy on update");
             throw new InvalidOrganizationException("UpdatedBy is required");
         }
     }
 
     private void checkOwnerPermission(Organization org, UUID requesterId) {
-        if (!org.getCreatedBy().equals(requesterId)) {
+        if (org.getCreatedBy() == null || requesterId == null) {
+            logger.warn(ORG_PERMISSION, "Permission check failed due to missing ids (orgCreatedBy={}, requesterId={})",
+                    org.getCreatedBy(), requesterId);
             throw new PermissionDeniedException("User is not the creator of the organization");
         }
-    }
 
+        if (!org.getCreatedBy().equals(requesterId)) {
+            logger.warn(ORG_PERMISSION, "Permission denied (orgId={}, orgCreatedBy={}, requesterId={})",
+                    org.getId(), org.getCreatedBy(), requesterId);
+            throw new PermissionDeniedException("User is not the creator of the organization");
+        }
+
+        logger.debug(ORG_PERMISSION, "Permission granted (orgId={}, requesterId={})", org.getId(), requesterId);
+    }
 
     @Transactional
     public Organization createOrganization(Organization org) {
+        logger.info(ORG_CREATE, "Create organization requested (name={}, nipc={}, createdBy={})",
+                org != null ? org.getName() : null,
+                org != null ? org.getNipc() : null,
+                org != null ? org.getCreatedBy() : null
+        );
+
         validateOrganization(org, true);
 
         if (organizationsRepository.existsByNipc(org.getNipc())) {
+            logger.warn(ORG_CREATE, "Organization already exists with NIPC {}", org.getNipc());
             throw new InvalidOrganizationException("Organization with this NIPC already exists");
         }
 
         org.setActive(true);
         Organization saved = organizationsRepository.save(org);
 
+        logger.info(ORG_CREATE, "Organization created (orgId={}, nipc={}, active={})",
+                saved.getId(), saved.getNipc(), saved.isActive());
+
         UUID orgId = saved.getId();
         UUID creatorId = saved.getCreatedBy();
 
         if (creatorId == null) {
+            logger.warn(ORG_CREATE, "CreatedBy missing after save (orgId={})", orgId);
             throw new InvalidOrganizationException("CreatedBy is required");
         }
 
@@ -75,15 +124,25 @@ public class OrganizationsService {
             member.setCreatedBy(creatorId);
 
             membersRepository.save(member);
+
+            logger.info(ORG_CREATE, "Creator added as member (orgId={}, userId={})", orgId, creatorId);
+        } else {
+            logger.debug(ORG_CREATE, "Creator already member (orgId={}, userId={})", orgId, creatorId);
         }
+
         return saved;
     }
 
-
     @Transactional
     public Organization updateOrganization(UUID orgId, Organization orgWithUpdates) {
+        logger.info(ORG_UPDATE, "Update organization requested (orgId={}, updatedBy={})",
+                orgId, orgWithUpdates != null ? orgWithUpdates.getUpdatedBy() : null);
+
         Organization existing = organizationsRepository.findById(orgId)
-                .orElseThrow(() -> new OrganizationNotFoundException("Organization not found"));
+                .orElseThrow(() -> {
+                    logger.warn(ORG_UPDATE, "Organization not found (orgId={})", orgId);
+                    return new OrganizationNotFoundException("Organization not found");
+                });
 
         validateOrganization(orgWithUpdates, false);
 
@@ -98,68 +157,94 @@ public class OrganizationsService {
         if (orgWithUpdates.getSiteUrl() != null) {
             existing.setSiteUrl(orgWithUpdates.getSiteUrl());
         }
-        if (orgWithUpdates.getNipc() != null &&
-                !orgWithUpdates.getNipc().equals(existing.getNipc())) {
 
+        if (orgWithUpdates.getNipc() != null && !orgWithUpdates.getNipc().equals(existing.getNipc())) {
             if (!NIPC_PATTERN.matcher(orgWithUpdates.getNipc()).matches()) {
+                logger.warn(ORG_UPDATE, "Invalid new NIPC format (orgId={}, nipc={})", orgId, orgWithUpdates.getNipc());
                 throw new InvalidOrganizationException("NIPC must have exactly 9 digits");
             }
 
             if (organizationsRepository.existsByNipc(orgWithUpdates.getNipc())) {
+                logger.warn(ORG_UPDATE, "New NIPC already exists (orgId={}, nipc={})", orgId, orgWithUpdates.getNipc());
                 throw new InvalidOrganizationException("Organization with this NIPC already exists");
             }
 
             existing.setNipc(orgWithUpdates.getNipc());
+            logger.info(ORG_UPDATE, "NIPC updated (orgId={}, nipc={})", orgId, existing.getNipc());
         }
+
         if (orgWithUpdates.isActive() != existing.isActive()) {
             existing.setActive(orgWithUpdates.isActive());
+            logger.info(ORG_UPDATE, "Active flag changed (orgId={}, active={})", orgId, existing.isActive());
         }
 
         existing.setUpdatedBy(orgWithUpdates.getUpdatedBy());
 
-        return organizationsRepository.save(existing);
+        Organization saved = organizationsRepository.save(existing);
+
+        logger.info(ORG_UPDATE, "Organization updated successfully (orgId={})", saved.getId());
+
+        return saved;
     }
 
     public List<Organization> getOrganizations() {
-        return organizationsRepository.findAll();
+        logger.debug(ORG_LIST, "Get organizations requested");
+        List<Organization> orgs = organizationsRepository.findAll();
+        logger.debug(ORG_LIST, "Get organizations completed (results={})", orgs.size());
+        return orgs;
     }
 
     public Organization getOrganization(UUID orgId) {
+        logger.debug(ORG_GET, "Get organization requested (orgId={})", orgId);
+
         return organizationsRepository.findById(orgId)
-                .orElseThrow(() -> new OrganizationNotFoundException("Organization not found"));
+                .orElseThrow(() -> {
+                    logger.warn(ORG_GET, "Organization not found (orgId={})", orgId);
+                    return new OrganizationNotFoundException("Organization not found");
+                });
     }
 
-
     public List<Member> getMembers(UUID orgId) {
+        logger.debug(ORG_MEMBERS_GET, "Get members requested (orgId={})", orgId);
+
         if (!organizationsRepository.existsById(orgId)) {
+            logger.warn(ORG_MEMBERS_GET, "Organization not found (orgId={})", orgId);
             throw new OrganizationNotFoundException("Organization not found");
         }
-        return membersRepository.findByOrganization_Id(orgId);
+
+        List<Member> members = membersRepository.findByOrganization_Id(orgId);
+        logger.debug(ORG_MEMBERS_GET, "Get members completed (orgId={}, results={})", orgId, members.size());
+
+        return members;
     }
 
     @Transactional
     public Member addMember(UUID orgId, UUID userId, UUID requesterId) {
+        logger.info(ORG_MEMBER_ADD, "Add member requested (orgId={}, userId={}, requesterId={})",
+                orgId, userId, requesterId);
 
         Organization org = organizationsRepository.findById(orgId)
-                .orElseThrow(() -> new OrganizationNotFoundException("Organization not found"));
+                .orElseThrow(() -> {
+                    logger.warn(ORG_MEMBER_ADD, "Organization not found (orgId={})", orgId);
+                    return new OrganizationNotFoundException("Organization not found");
+                });
 
         checkOwnerPermission(org, requesterId);
 
         if (!org.isActive()) {
+            logger.warn(ORG_MEMBER_ADD, "Cannot add member to inactive org (orgId={})", orgId);
             throw new InvalidOrganizationException("Cannot add members to an inactive organization");
         }
 
-        // Aqui seria o local para chamar o microserviço de Users para verificar se o user existe
-        // Por enquanto, assumimos que o user existe.
         if (userId == null) {
+            logger.warn(ORG_MEMBER_ADD, "User not found (userId=null)");
             throw new UserNotFoundException("User not found");
         }
 
         MemberId memberId = new MemberId(orgId, userId);
 
         if (membersRepository.existsById(memberId)) {
-            // já é membro, podemos simplesmente retornar ou lançar exceção.
-            // Vou apenas retornar o existente.
+            logger.info(ORG_MEMBER_ADD, "User already member (orgId={}, userId={})", orgId, userId);
             return membersRepository.findById(memberId).get();
         }
 
@@ -168,22 +253,36 @@ public class OrganizationsService {
         member.setOrganization(org);
         member.setCreatedBy(requesterId);
 
-        return membersRepository.save(member);
+        Member saved = membersRepository.save(member);
+
+        logger.info(ORG_MEMBER_ADD, "Member added successfully (orgId={}, userId={})", orgId, userId);
+
+        return saved;
     }
 
     @Transactional
     public void removeMember(UUID orgId, UUID userId, UUID requesterId) {
+        logger.info(ORG_MEMBER_REMOVE, "Remove member requested (orgId={}, userId={}, requesterId={})",
+                orgId, userId, requesterId);
 
         Organization org = organizationsRepository.findById(orgId)
-                .orElseThrow(() -> new OrganizationNotFoundException("Organization not found"));
+                .orElseThrow(() -> {
+                    logger.warn(ORG_MEMBER_REMOVE, "Organization not found (orgId={})", orgId);
+                    return new OrganizationNotFoundException("Organization not found");
+                });
 
         checkOwnerPermission(org, requesterId);
 
         MemberId memberId = new MemberId(orgId, userId);
 
         Member member = membersRepository.findById(memberId)
-                .orElseThrow(() -> new MemberNotFoundException("Member not found"));
+                .orElseThrow(() -> {
+                    logger.warn(ORG_MEMBER_REMOVE, "Member not found (orgId={}, userId={})", orgId, userId);
+                    return new MemberNotFoundException("Member not found");
+                });
 
         membersRepository.delete(member);
+
+        logger.info(ORG_MEMBER_REMOVE, "Member removed successfully (orgId={}, userId={})", orgId, userId);
     }
 }

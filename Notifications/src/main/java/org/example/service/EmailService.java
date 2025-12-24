@@ -1,5 +1,9 @@
 package org.example.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -8,18 +12,31 @@ import org.springframework.stereotype.Service;
 @Service
 public class EmailService {
 
+    private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
+
+    private static final Marker EMAIL_SEND = MarkerFactory.getMarker("EMAIL_SEND");
+    private static final Marker EMAIL_ERROR = MarkerFactory.getMarker("EMAIL_ERROR");
+
     @Autowired
     private JavaMailSender mailSender;
 
     public void sendNotificationEmail(String to, String subject, String body) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(to);
-        message.setSubject(subject);
-        message.setText(body);
 
-        // se quiseres, podes também definir um "from" aqui
-        // message.setFrom("no-reply@evently.com");
+        logger.info(EMAIL_SEND, "Sending email (to={}, subject={})", to, subject);
 
-        mailSender.send(message);
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(to);
+            message.setSubject(subject);
+            message.setText(body);
+
+            mailSender.send(message);
+
+            logger.info(EMAIL_SEND, "Email sent successfully (to={})", to);
+
+        } catch (Exception ex) {
+            logger.error(EMAIL_ERROR, "Failed to send email (to={}, subject={})", to, subject, ex);
+            throw ex;
+        }
     }
 }

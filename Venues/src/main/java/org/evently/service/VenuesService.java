@@ -9,74 +9,129 @@ import org.evently.repositories.VenuesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class VenuesService {
+
+    private static final Logger logger = LoggerFactory.getLogger(VenuesService.class);
+
+    private static final Marker VENUE_CREATE = MarkerFactory.getMarker("VENUE_CREATE");
+    private static final Marker VENUE_DEACTIVATE = MarkerFactory.getMarker("VENUE_DEACTIVATE");
+    private static final Marker VENUE_GET = MarkerFactory.getMarker("VENUE_GET");
+    private static final Marker VENUE_SEARCH = MarkerFactory.getMarker("VENUE_SEARCH");
+    private static final Marker VENUE_VALIDATION = MarkerFactory.getMarker("VENUE_VALIDATION");
+
 
     @Autowired
     private VenuesRepository venuesRepository;
 
     private void validateVenue(Venue venue) {
+        logger.debug(VENUE_VALIDATION, "Validating venue payload (id={})", venue.getId());
+
         if (venue.getCapacity() == null || venue.getCapacity() <= 0) {
+            logger.warn(VENUE_VALIDATION, "Invalid capacity: {}", venue.getCapacity());
             throw new InvalidVenueException("Capacity must be greater than 0");
         }
         if (venue.getName() == null) {
+            logger.warn(VENUE_VALIDATION, "Missing name");
             throw new InvalidVenueException("Name is required");
         }
-        if (venue.getAddress() == null ) {
+        if (venue.getAddress() == null) {
+            logger.warn(VENUE_VALIDATION, "Missing address");
             throw new InvalidVenueException("Address is required");
         }
         if (venue.getCity() == null) {
+            logger.warn(VENUE_VALIDATION, "Missing city");
             throw new InvalidVenueException("City is required");
         }
         if (venue.getCountry() == null) {
+            logger.warn(VENUE_VALIDATION, "Missing country");
             throw new InvalidVenueException("Country is required");
         }
         if (venue.getPostalCode() == null) {
+            logger.warn(VENUE_VALIDATION, "Missing postal code");
             throw new InvalidVenueException("Postal code is required");
         }
         if (venue.getCreatedBy() == null && venue.getId() == null) {
+            logger.warn(VENUE_VALIDATION, "Missing createdBy for new venue");
             throw new InvalidVenueException("CreatedBy is required");
         }
     }
 
     @Transactional
     public Venue createVenue(Venue venue) {
+        logger.info(VENUE_CREATE, "Create venue requested (name={}, city={}, country={})",
+                venue.getName(), venue.getCity(), venue.getCountry());
+
         validateVenue(venue);
 
         if (venuesRepository.existsByName(venue.getName())) {
+            logger.warn(VENUE_CREATE, "Venue name already exists: {}", venue.getName());
             throw new InvalidVenueException("Venue with name " + venue.getName() + " already exists");
         }
 
         venue.setActive(true);
-        return venuesRepository.save(venue);
+        Venue saved = venuesRepository.save(venue);
+
+        logger.info(VENUE_CREATE, "Venue created successfully (id={}, name={})",
+                saved.getId(), saved.getName());
+
+        return saved;
     }
 
     @Transactional
     public Venue deactivateVenue(UUID id) {
+        logger.info(VENUE_DEACTIVATE, "Deactivate venue requested (id={})", id);
+
         Venue venue = venuesRepository.findById(id)
-                .orElseThrow(() -> new VenueNotFoundException("Venue not found"));
+                .orElseThrow(() -> {
+                    logger.warn(VENUE_DEACTIVATE, "Venue not found (id={})", id);
+                    return new VenueNotFoundException("Venue not found");
+                });
 
         if (!venue.isActive()) {
+            logger.warn(VENUE_DEACTIVATE, "Venue already deactivated (id={})", id);
             throw new VenueAlreadyDeactivatedException("Venue already deactivated");
         }
 
         venue.setActive(false);
-        return venuesRepository.save(venue);
+        Venue saved = venuesRepository.save(venue);
+
+        logger.info(VENUE_DEACTIVATE, "Venue deactivated successfully (id={})", saved.getId());
+
+        return saved;
     }
 
     public Venue getVenue(UUID id) {
+        logger.debug(VENUE_GET, "Get venue requested (id={})", id);
+
         return venuesRepository.findById(id)
-                .orElseThrow(() -> new VenueNotFoundException("Venue not found"));
+                .orElseThrow(() -> {
+                    logger.warn(VENUE_GET, "Venue not found (id={})", id);
+                    return new VenueNotFoundException("Venue not found");
+                });
     }
 
     public List<Venue> searchVenues(VenueSearchDTO criteria) {
+        logger.debug(VENUE_SEARCH,
+                "Search venues requested (onlyActive={}, name={}, city={}, country={}, minCapacity={})",
+                criteria.getOnlyActive(),
+                criteria.getName(),
+                criteria.getCity(),
+                criteria.getCountry(),
+                criteria.getMinCapacity()
+        );
+
         if (criteria.getMinCapacity() != null && criteria.getMinCapacity() < 0) {
+            logger.warn(VENUE_SEARCH, "Invalid minCapacity: {}", criteria.getMinCapacity());
             throw new InvalidVenueException("minCapacity must be >= 0");
         }
 
@@ -87,21 +142,28 @@ public class VenuesService {
         }
 
         if (criteria.getName() != null) {
-            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("name")), "%" + criteria.getName().toLowerCase() + "%"));
+            spec = spec.and((root, query, cb) ->
+                    cb.like(cb.lower(root.get("name")), "%" + criteria.getName().toLowerCase() + "%"));
         }
 
         if (criteria.getCity() != null) {
-            spec = spec.and((root, query, cb) -> cb.equal(cb.lower(root.get("city")), criteria.getCity().toLowerCase()));
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(cb.lower(root.get("city")), criteria.getCity().toLowerCase()));
         }
 
         if (criteria.getCountry() != null) {
-            spec = spec.and((root, query, cb) -> cb.equal(cb.lower(root.get("country")), criteria.getCountry().toLowerCase()));
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(cb.lower(root.get("country")), criteria.getCountry().toLowerCase()));
         }
 
         if (criteria.getMinCapacity() != null) {
-            spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("capacity"), criteria.getMinCapacity()));
+            spec = spec.and((root, query, cb) ->
+                    cb.greaterThanOrEqualTo(root.get("capacity"), criteria.getMinCapacity()));
         }
 
-        return venuesRepository.findAll(spec);
+        List<Venue> results = venuesRepository.findAll(spec);
+
+        logger.debug(VENUE_SEARCH, "Search venues completed (results={})", results.size());
+        return results;
     }
 }
