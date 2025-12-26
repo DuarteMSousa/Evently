@@ -3,13 +3,12 @@ package org.evently.reviews.controllers;
 import org.evently.reviews.dtos.reviewComments.ReviewCommentCreateDTO;
 import org.evently.reviews.dtos.reviewComments.ReviewCommentDTO;
 import org.evently.reviews.dtos.reviewComments.ReviewCommentUpdateDTO;
-
 import org.evently.reviews.exceptions.ReviewCommentNotFoundException;
+import org.evently.reviews.models.Review;
 import org.evently.reviews.models.ReviewComment;
 import org.evently.reviews.services.ReviewCommentsService;
-import org.evently.reviews.services.ReviewsService;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,117 +16,113 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/review-comments")
+@RequestMapping("/reviews/comments")
 public class ReviewCommentsController {
 
     @Autowired
     private ReviewCommentsService reviewCommentsService;
 
-    @Autowired
-    private ReviewsService reviewsService;
-
-    private final ModelMapper modelMapper;
-
-    public ReviewCommentsController() {
-        this.modelMapper = new ModelMapper();
-    }
-
     @GetMapping("/get-comment/{id}")
     public ResponseEntity<?> getReviewComment(@PathVariable("id") UUID id) {
-        /* HttpStatus(produces)
-         * 200 OK - Request processed as expected.
-         * 400 BAD_REQUEST - undefined error
-         * 404 NOT_FOUND - comment not found
+        /*
+         * 200 OK - Comment found.
+         * 404 NOT_FOUND - Comment does not exist.
+         * 400 BAD_REQUEST - Generic error.
          */
-
-        ReviewComment comment;
-
         try {
-            comment = reviewCommentsService.getReviewComment(id);
+            ReviewComment comment = reviewCommentsService.getReviewComment(id);
+            return ResponseEntity.ok(convertToDTO(comment));
         } catch (ReviewCommentNotFoundException e) {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
+    }
 
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(modelMapper.map(comment, ReviewCommentDTO.class));
+    @GetMapping("/review/{reviewId}")
+    public ResponseEntity<Page<ReviewCommentDTO>> getCommentsByReview(
+            @PathVariable("reviewId") UUID reviewId,
+            @RequestParam(value="page", defaultValue = "0") Integer page,
+            @RequestParam(value="size", defaultValue = "10") Integer size) {
+        /*
+         * 200 OK - Paginated list of comments for the specified review retrieved successfully.
+         */
+        Review review = new Review();
+        review.setId(reviewId);
+
+        Page<ReviewComment> commentPage = reviewCommentsService.getReviewCommentsByReview(review, page, size);
+        Page<ReviewCommentDTO> dtoPage = commentPage.map(this::convertToDTO);
+
+        return ResponseEntity.ok(dtoPage);
     }
 
     @PostMapping("/register-comment")
-    public ResponseEntity<?> registerReviewComment(@RequestBody ReviewCommentCreateDTO commentDTO)
-            throws ReviewCommentNotFoundException {
-        /* HttpStatus(produces)
-         * 201 CREATED - Request processed as expected.
-         * 400 BAD_REQUEST - undefined error
-         * 404 NOT_FOUND - review not found
+    public ResponseEntity<?> registerReviewComment(@RequestBody ReviewCommentCreateDTO commentDTO) {
+        /*
+         * 201 CREATED - Comment created successfully.
+         * 404 NOT_FOUND - The Review to which the comment belongs does not exist.
+         * 400 BAD_REQUEST - Invalid data provided.
          */
-
-        ReviewComment newComment;
-
         try {
-            newComment = reviewCommentsService.registerReviewComment(modelMapper.map(commentDTO, ReviewComment.class));
-        } catch (Exception e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
-        }
+            ReviewComment commentRequest = new ReviewComment();
+            commentRequest.setAuthorId(commentDTO.getAuthor());
+            commentRequest.setComment(commentDTO.getComment());
 
-        return new ResponseEntity<>(
-                modelMapper.map(newComment, ReviewCommentDTO.class),
-                HttpStatus.CREATED
-        );
+            Review review = new Review();
+            review.setId(commentDTO.getReviewId());
+            commentRequest.setReview(review);
+
+            ReviewComment saved = reviewCommentsService.registerReviewComment(commentRequest);
+            return ResponseEntity.status(HttpStatus.CREATED).body(convertToDTO(saved));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
     @PutMapping("/update-comment/{id}")
-    public ResponseEntity<?> updateReviewComment(@PathVariable("id") UUID id, @RequestBody ReviewCommentUpdateDTO reviewCommentUpdateDTO) {
-        /* HttpStatus(produces)
-         * 200 OK - Request processed as expected.
-         * 400 BAD_REQUEST - undefined error
-         * 404 NOT_FOUND - comment not found
+    public ResponseEntity<?> updateReviewComment(@PathVariable("id") UUID id, @RequestBody ReviewCommentUpdateDTO dto) {
+        /*
+         * 200 OK - Comment updated.
+         * 404 NOT_FOUND - Comment not found.
+         * 400 BAD_REQUEST - Invalid data.
          */
-
-        ReviewComment updatedReviewComment;
-
         try {
-            updatedReviewComment = reviewCommentsService.updateReviewComment(id ,modelMapper.map(reviewCommentUpdateDTO, ReviewComment.class));
-        } catch (ReviewCommentNotFoundException e) {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
-        }
+            ReviewComment updateData = new ReviewComment();
+            updateData.setComment(dto.getComment());
 
-        return new ResponseEntity<>(modelMapper.map(updatedReviewComment, ReviewCommentDTO.class), HttpStatus.OK);
+            ReviewComment updated = reviewCommentsService.updateReviewComment(id, updateData);
+            return ResponseEntity.ok(convertToDTO(updated));
+        } catch (ReviewCommentNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
     @DeleteMapping("/delete-comment/{id}")
     public ResponseEntity<?> deleteReviewComment(@PathVariable("id") UUID id) {
-        /* HttpStatus(produces)
-         * 204 NO_CONTENT - Request processed as expected.
-         * 400 BAD_REQUEST - undefined error
-         * 404 NOT_FOUND - comment not found
+        /*
+         * 204 NO_CONTENT - Comment removed successfully.
+         * 404 NOT_FOUND - Comment not found.
          */
-
         try {
             reviewCommentsService.deleteReviewComment(id);
+            return ResponseEntity.noContent().build();
         } catch (ReviewCommentNotFoundException e) {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
+    }
 
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    private ReviewCommentDTO convertToDTO(ReviewComment comment) {
+        ReviewCommentDTO dto = new ReviewCommentDTO();
+        dto.setId(comment.getId());
+        dto.setAuthor(comment.getAuthorId());
+        dto.setComment(comment.getComment());
+        if (comment.getReview() != null) {
+            dto.setReviewId(comment.getReview().getId());
+        }
+        return dto;
     }
 }

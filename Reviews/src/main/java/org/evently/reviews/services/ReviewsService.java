@@ -1,6 +1,8 @@
 package org.evently.reviews.services;
 
 import jakarta.transaction.Transactional;
+import org.evently.reviews.exceptions.InvalidPageNumberException;
+import org.evently.reviews.exceptions.InvalidPageSizeException;
 import org.evently.reviews.exceptions.InvalidReviewUpdateException;
 import org.evently.reviews.exceptions.ReviewNotFoundException;
 import org.evently.reviews.models.Review;
@@ -117,6 +119,16 @@ public class ReviewsService {
     }
 
     public Page<Review> getReviewsByAuthor(UUID authorId, Integer pageNumber, Integer pageSize) {
+        if(pageNumber < 0) {
+            logger.warn(REVIEW_GET, "Page number is negative");
+            throw new InvalidPageNumberException("Page number cannot be negative");
+        }
+
+        if(pageSize < 0) {
+            logger.warn(REVIEW_GET, "Page size is negative");
+            throw new InvalidPageSizeException("Page size cannot be negative");
+        }
+
         pageSize = Math.min(pageSize, 50);
         logger.debug(REVIEW_GET, "Fetching reviews by author (authorId={}, page={}, size={})", authorId, pageNumber, pageSize);
 
@@ -125,6 +137,16 @@ public class ReviewsService {
     }
 
     public Page<Review> getReviewsByEntity(UUID entityId, Integer pageNumber, Integer pageSize) {
+        if(pageNumber < 0) {
+            logger.warn(REVIEW_GET, "Page number is negative");
+            throw new InvalidPageNumberException("Page number cannot be negative");
+        }
+
+        if(pageSize < 0) {
+            logger.warn(REVIEW_GET, "Page size is negative");
+            throw new InvalidPageSizeException("Page size cannot be negative");
+        }
+
         pageSize = Math.min(pageSize, 50);
         logger.debug(REVIEW_GET, "Fetching reviews by entity (entityId={}, page={}, size={})", entityId, pageNumber, pageSize);
 

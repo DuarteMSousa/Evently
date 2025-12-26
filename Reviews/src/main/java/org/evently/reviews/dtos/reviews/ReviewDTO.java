@@ -25,6 +25,8 @@ public class ReviewDTO {
 
     private String comment;
 
+    private List<ReviewComment> reviewComments;
+
     private Date createdAt;
 
     private Date updatedAt;
