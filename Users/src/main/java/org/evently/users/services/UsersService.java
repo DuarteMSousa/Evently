@@ -18,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
+
 import java.awt.print.Pageable;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,28 +37,28 @@ public class UsersService {
 
     private Logger logger = LoggerFactory.getLogger(UsersService.class);
 
-    private Marker createMarker = MarkerFactory.getMarker("User create operation");
+    private Marker marker = MarkerFactory.getMarker("UsersService");
 
     @Transactional
     public User createUser(User user) {
-        logger.info(createMarker, "Create user method entered");
+        logger.info(marker, "Create user method entered");
         if (usersRepository.existsByUsername(user.getUsername())) {
-            logger.error("Username {} already exists",user.getUsername());
+            logger.error(marker, "Username {} already exists", user.getUsername());
             throw new UserAlreadyExistsException("User with username " + user.getUsername() + " already exists");
         }
 
         if (usersRepository.existsByEmail(user.getEmail())) {
-            logger.error("Email {} already exists",user.getEmail());
+            logger.error(marker, "Email {} already exists", user.getEmail());
             throw new UserAlreadyExistsException("User with email " + user.getEmail() + " already exists");
         }
 
         if (usersRepository.existsByNif(user.getNif())) {
-            logger.error("Nif {} already exists",user.getNif());
+            logger.error(marker, "Nif {} already exists", user.getNif());
             throw new UserAlreadyExistsException("User with nif " + user.getNif() + " already exists");
         }
 
         if (usersRepository.existsByPhoneNumber(user.getPhoneNumber())) {
-            logger.error("Phone number {} already exists",user.getPhoneNumber());
+            logger.error(marker, "Phone number {} already exists", user.getPhoneNumber());
             throw new UserAlreadyExistsException("User with phone number " + user.getNif() + " already exists");
         }
 
@@ -67,13 +68,35 @@ public class UsersService {
     }
 
     @Transactional
-    public User updateUser(UUID id,User user) {
-        if (!id.equals(user.getId())){
+    public User updateUser(UUID id, User user) {
+        logger.info(marker, "Update user method entered");
+        if (!id.equals(user.getId())) {
+            logger.error(marker, "Parameter id and body id do not correspond, user update failed");
             throw new InvalidUserUpdateException("Parameter id and body id do not correspond");
         }
 
         User existingUser = usersRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        if (!user.getUsername().equals(existingUser.getUsername()) && usersRepository.existsByUsername(user.getUsername())) {
+            logger.error(marker, "Updated Username {} already exists", user.getUsername());
+            throw new UserAlreadyExistsException("User with username " + user.getUsername() + " already exists");
+        }
+
+        if (!user.getEmail().equals(existingUser.getEmail()) && usersRepository.existsByEmail(user.getEmail())) {
+            logger.error(marker, "Updated Email {} already exists", user.getEmail());
+            throw new UserAlreadyExistsException("User with email " + user.getEmail() + " already exists");
+        }
+
+        if (!user.getNif().equals(existingUser.getNif()) && usersRepository.existsByNif(user.getNif())) {
+            logger.error(marker, "Updated Nif {} already exists", user.getNif());
+            throw new UserAlreadyExistsException("User with nif " + user.getNif() + " already exists");
+        }
+
+        if (!user.getPhoneNumber().equals(existingUser.getPhoneNumber()) && usersRepository.existsByPhoneNumber(user.getPhoneNumber())) {
+            logger.error(marker, "Updated Phone number {} already exists", user.getPhoneNumber());
+            throw new UserAlreadyExistsException("User with phone number " + user.getNif() + " already exists");
+        }
 
         existingUser.setUsername(user.getUsername());
         existingUser.setPassword(PasswordUtils.hashPassword(user.getPassword()));
@@ -86,17 +109,20 @@ public class UsersService {
     }
 
     public User getUser(UUID userId) {
+        logger.info(marker, "Get user method entered");
         return usersRepository
                 .findById(userId)
-                .orElseThrow(()-> new UserNotFoundException(""));
+                .orElseThrow(() -> new UserNotFoundException(""));
     }
 
     @Transactional
     public User deactivateUser(UUID userId) {
+        logger.info(marker, "Deactivate user method entered");
         User userToDeactivate = usersRepository.findById(userId)
-                .orElseThrow(()-> new UserNotFoundException(""));
+                .orElseThrow(() -> new UserNotFoundException(""));
 
-        if(!userToDeactivate.isActive()){
+        if (!userToDeactivate.isActive()) {
+            logger.error(marker, "User already deactivated found");
             throw new UserAlreadyDeactivatedException("");
         }
 
@@ -105,22 +131,24 @@ public class UsersService {
     }
 
     public String loginUser(String username, String password) {
+        logger.info(marker, "Login user method entered");
         User user = usersRepository.findByUsername(username)
                 .orElseThrow(() -> new LoginFailedException("User not found"));
 
         if (!PasswordUtils.checkPassword(password, user.getPassword())) {
+            logger.error(marker, "Invalid username or password");
             throw new LoginFailedException("Invalid credentials");
         }
 
-        // gera JWT e devolve
         return jwtUtils.generateToken(user.getId(), user.getUsername());
     }
 
     public Page<User> getUsersPage(Integer pageNumber, Integer pageSize) {
-        if(pageSize>50){
+        logger.info(marker, "Get users page method entered");
+        if (pageSize > 50) {
             pageSize = 50;
         }
-        PageRequest pageable =  PageRequest.of(pageNumber, pageSize);
+        PageRequest pageable = PageRequest.of(pageNumber, pageSize);
         return usersRepository.findAll(pageable);
     }
 }

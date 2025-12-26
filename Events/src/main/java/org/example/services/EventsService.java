@@ -99,9 +99,14 @@ public class EventsService {
     }
 
     public Page<Event> getEventPage(Integer pageNumber, Integer pageSize) {
-        if (pageSize > 50) {
+        if (pageSize > 50 || pageSize < 1) {
             pageSize = 50;
         }
+
+        if(pageNumber < 1) {
+            pageNumber = 1;
+        }
+
         PageRequest pageable = PageRequest.of(pageNumber, pageSize);
         return eventsRepository.findAllByStatus(EventStatus.PUBLISHED, pageable);
     }
