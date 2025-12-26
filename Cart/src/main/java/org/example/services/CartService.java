@@ -7,7 +7,6 @@ import org.example.exceptions.CartNotFoundException;
 import org.example.models.Cart;
 import org.example.models.CartItem;
 import org.example.repositories.CartsRepository;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,13 +20,23 @@ public class CartService {
     @Autowired
     private CartsRepository cartsRepository;
 
-    private ModelMapper modelMapper = new ModelMapper();
+    @Transactional
+    public Cart getCart(UUID userId) {
+        Cart cart = cartsRepository.findById(userId).orElse(null);
+        if (cart == null) {
+            cart = createCart(userId);
+        }
+
+        return cart;
+    }
 
     @Transactional
     public Cart createCart(UUID userId) {
         Cart newCart = new Cart();
 
         newCart.setUserId(userId);
+
+        cartsRepository.save(newCart);
 
         return cartsRepository.save(newCart);
     }

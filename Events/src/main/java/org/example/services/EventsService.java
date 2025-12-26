@@ -78,7 +78,7 @@ public class EventsService {
         Event eventToCancel = eventsRepository.findById(eventId)
                 .orElseThrow(() -> new EventNotFoundException(""));
 
-        if (!eventToCancel.getStatus().equals(EventStatus.CANCELED)) {
+        if (eventToCancel.getStatus().equals(EventStatus.CANCELED)) {
             throw new EventAlreadyCanceledException("Event already cancelled");
         }
 
@@ -92,6 +92,10 @@ public class EventsService {
         Event event = eventsRepository.findById(eventId)
                 .orElseThrow(() -> new EventNotFoundException(""));
 
+        if (event.getStatus().equals(EventStatus.PUBLISHED) || event.getStatus().equals(EventStatus.PENDING_STOCK_GENERATION)) {
+            throw new EventAlreadyPublishedException("Event already cancelled");
+        }
+
         event.setStatus(EventStatus.PENDING_STOCK_GENERATION);
 
         //enviar mensagem
@@ -103,7 +107,7 @@ public class EventsService {
             pageSize = 50;
         }
 
-        if(pageNumber < 1) {
+        if (pageNumber < 1) {
             pageNumber = 1;
         }
 
