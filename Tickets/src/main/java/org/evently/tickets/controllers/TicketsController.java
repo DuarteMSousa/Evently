@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.UUID;
 
 @RestController
@@ -24,7 +25,7 @@ public class TicketsController {
 
     @GetMapping("/get-ticket/{id}")
     public ResponseEntity<?> getTicket(@PathVariable("id") UUID id) {
-        /*
+        /* HttpStatus(produces)
          * 200 OK - Ticket found.
          * 404 NOT_FOUND - No ticket exists with the provided ID.
          * 400 BAD_REQUEST - Unexpected error.
@@ -44,7 +45,7 @@ public class TicketsController {
             @PathVariable("userId") UUID userId,
             @RequestParam(value = "page", defaultValue = "0") Integer page,
             @RequestParam(value = "size", defaultValue = "10") Integer size) {
-        /*
+        /* HttpStatus(produces)
          * 200 OK - Paginated list of tickets for user retrieved successfully.
          */
         Page<Ticket> ticketPage = ticketsService.getTicketsByUser(userId, page, size);
@@ -52,9 +53,9 @@ public class TicketsController {
         return ResponseEntity.ok(dtoPage);
     }
 
-    @PostMapping("/register-ticket")
-    public ResponseEntity<?> registerTicket(@RequestBody TicketCreateDTO ticketDTO) {
-        /*
+    @PostMapping("/issue-ticket")
+    public ResponseEntity<?> issueTicket(@RequestBody TicketCreateDTO ticketDTO) {
+        /* HttpStatus(produces)
          * 201 CREATED - Ticket registered successfully.
          * 400 BAD_REQUEST - Validation error or missing fields.
          */
@@ -67,43 +68,48 @@ public class TicketsController {
             ticketRequest.setSessionId(ticketDTO.getSessionId());
             ticketRequest.setTierId(ticketDTO.getTierId());
             ticketRequest.setStatus(TicketStatus.ISSUED);
+            ticketRequest.setIssuedAt(new Date());
 
-            Ticket savedTicket = ticketsService.registerTicket(ticketRequest);
+            Ticket savedTicket = ticketsService.issueTicket(ticketRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body(convertToDTO(savedTicket));
-        } catch (InvalidTicketUpdateException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
-//    @PutMapping("/update-ticket/{id}")
-//    public ResponseEntity<?> updateTicket(@PathVariable("id") UUID id, @RequestBody TicketCreateDTO ticketDTO) {
-//        /*
-//         * 200 OK - Ticket updated successfully.
-//         * 404 NOT_FOUND - Ticket not found.
-//         * 400 BAD_REQUEST - ID mismatch or validation error.
-//         */
-//        try {
-//            Ticket updateData = new Ticket();
-//            updateData.setReservationId(ticketDTO.getReservationId());
-//            updateData.setOrderId(ticketDTO.getOrderId());
-//            updateData.setUserId(ticketDTO.getUserId());
-//            updateData.setEventId(ticketDTO.getEventId());
-//            updateData.setSessionId(ticketDTO.getSessionId());
-//            updateData.setTierId(ticketDTO.getTierId());
-//            updateData.setStatus(ticketDTO.getStatus());
-//
-//            Ticket updated = ticketsService.updateTicket(id, updateData);
-//            return ResponseEntity.ok(convertToDTO(updated));
-//        } catch (TicketNotFoundException e) {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-//        } catch (InvalidTicketUpdateException e) {
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-//        } catch (Exception e) {
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-//        }
-//    }
+    @PatchMapping("/use-ticket/{id}")
+    public ResponseEntity<?> useTicket(@PathVariable UUID id) {
+        /* HttpStatus(produces)
+         * 200 OK - Ticket validated/used successfully.
+         * 404 NOT_FOUND - No ticket exists with the provided ID.
+         * 400 BAD_REQUEST - Ticket is already used or cancelled.
+         */
+        try {
+            Ticket validatedTicket = ticketsService.useTicket(id);
+            return ResponseEntity.ok(convertToDTO(validatedTicket));
+        } catch (TicketNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (InvalidTicketUpdateException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @PatchMapping("/cancel-ticket/{id}")
+    public ResponseEntity<?> cancelTicket(@PathVariable UUID id) {
+        /* HttpStatus(produces)
+         * 200 OK - Ticket cancelled successfully.
+         * 404 NOT_FOUND - No ticket exists with the provided ID.
+         * 400 BAD_REQUEST - Ticket is already used or already cancelled.
+         */
+        try {
+            Ticket cancelledTicket = ticketsService.cancelTicket(id);
+            return ResponseEntity.ok(convertToDTO(cancelledTicket));
+        } catch (TicketNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (InvalidTicketUpdateException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
 
     private TicketDTO convertToDTO(Ticket ticket) {
         TicketDTO dto = new TicketDTO();

@@ -1,6 +1,7 @@
 package org.evently.tickets.services;
 
 import jakarta.transaction.Transactional;
+import org.evently.tickets.enums.TicketStatus;
 import org.evently.tickets.exceptions.InvalidTicketUpdateException;
 import org.evently.tickets.exceptions.TicketNotFoundException;
 import org.evently.tickets.models.Ticket;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.UUID;
 
 @Service
@@ -23,14 +25,13 @@ public class TicketsService {
     private static final Logger logger = LoggerFactory.getLogger(TicketsService.class);
 
     private static final Marker TICKET_CREATE = MarkerFactory.getMarker("TICKET_CREATE");
-    private static final Marker TICKET_UPDATE = MarkerFactory.getMarker("TICKET_UPDATE");
     private static final Marker TICKET_GET = MarkerFactory.getMarker("TICKET_GET");
+    private static final Marker TICKET_CANCEL = MarkerFactory.getMarker("TICKET_CANCEL");
+    private static final Marker TICKET_USE = MarkerFactory.getMarker("TICKET_USE");
     private static final Marker TICKET_VALIDATION = MarkerFactory.getMarker("TICKET_VALIDATION");
 
     @Autowired
     private TicketsRepository ticketsRepository;
-
-    private final ModelMapper modelMapper = new ModelMapper();
 
     private void validateTicket(Ticket ticket) {
         logger.debug(TICKET_VALIDATION, "Validating ticket payload (userId={}, eventId={})",
@@ -77,7 +78,7 @@ public class TicketsService {
     }
 
     @Transactional
-    public Ticket registerTicket(Ticket ticket) {
+    public Ticket issueTicket(Ticket ticket) {
         logger.info(TICKET_CREATE, "Registering new ticket (userId={}, eventId={}, tierId={})",
                 ticket.getUserId(), ticket.getEventId(), ticket.getTierId());
 
@@ -92,34 +93,59 @@ public class TicketsService {
     }
 
     @Transactional
-    public Ticket updateTicket(UUID id, Ticket ticket) {
-        logger.info(TICKET_UPDATE, "Update ticket requested (id={})", id);
+    public Ticket cancelTicket(UUID id) {
+        logger.info(TICKET_CANCEL, "Cancelling ticket (id={})", id);
 
-        if (ticket.getId() != null && !id.equals(ticket.getId())) {
-            logger.error(TICKET_UPDATE, "ID mismatch: path={}, body={}", id, ticket.getId());
-            throw new InvalidTicketUpdateException("Parameter id and body id do not correspond");
+        Ticket ticket = getTicket(id);
+
+        if (ticket.getStatus() == TicketStatus.USED){
+            throw new InvalidTicketUpdateException("Ticket is already used");
         }
 
-        Ticket existingTicket = ticketsRepository.findById(id)
-                .orElseThrow(() -> {
-                    logger.warn(TICKET_UPDATE, "Ticket not found for update (id={})", id);
-                    return new TicketNotFoundException("Ticket not found");
-                });
+        if (ticket.getStatus() == TicketStatus.CANCELLED) {
+            throw new InvalidTicketUpdateException("Ticket is already cancelled");
+        }
 
-        validateTicket(ticket);
+        ticket.setStatus(TicketStatus.CANCELLED);
 
-        modelMapper.map(ticket, existingTicket);
+        Ticket cancelledTicket = ticketsRepository.save(ticket);
 
-        Ticket updatedTicket = ticketsRepository.save(existingTicket);
+        logger.info(TICKET_CANCEL, "Ticket cancelled successfully (id={})", id);
 
-        logger.info(TICKET_UPDATE, "Ticket updated successfully (id={}, status={})",
-                updatedTicket.getId(), updatedTicket.getStatus());
+        return cancelledTicket;
+    }
+
+    @Transactional
+    public Ticket useTicket(UUID id) {
+        logger.info(TICKET_USE, "Validating/Using ticket (id={})", id);
+
+        Ticket ticket = getTicket(id);
+
+        if (ticket.getStatus() == TicketStatus.USED){
+            throw new InvalidTicketUpdateException("Ticket is already used");
+        }
+
+        if (ticket.getStatus() == TicketStatus.CANCELLED) {
+            throw new InvalidTicketUpdateException("Ticket is already cancelled");
+        }
+
+        ticket.setStatus(TicketStatus.USED);
+        ticket.setValidatedAt(new Date());
+
+        Ticket updatedTicket = ticketsRepository.save(ticket);
+        logger.info(TICKET_USE, "Ticket used successfully (id={})", id);
 
         return updatedTicket;
     }
 
     public Page<Ticket> getTicketsByUser(UUID userId, Integer pageNumber, Integer pageSize) {
-        pageSize = (pageSize > 50) ? 50 : pageSize;
+        if (pageSize > 50 || pageSize < 1) {
+            pageSize = 50;
+        }
+
+        if (pageNumber < 1) {
+            pageNumber = 1;
+        }
 
         logger.debug(TICKET_GET, "Fetching tickets for user (userId={}, page={}, size={})",
                 userId, pageNumber, pageSize);
