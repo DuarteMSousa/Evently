@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.evently.enums.DecisionType;
 
+import java.util.Date;
 import java.util.UUID;
 
 @Setter
@@ -19,5 +20,7 @@ public class RefundDecisionDTO {
     private String description;
 
     private UUID refundRequestId;
+
+    private Date createdAt;
 
 }

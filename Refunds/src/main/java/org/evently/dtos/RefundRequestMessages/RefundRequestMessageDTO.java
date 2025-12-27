@@ -3,6 +3,7 @@ package org.evently.dtos.RefundRequestMessages;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Date;
 import java.util.UUID;
 
 @Setter
@@ -16,4 +17,6 @@ public class RefundRequestMessageDTO {
     private String content;
 
     private UUID refundRequestId;
+
+    private Date createdAt;
 }
