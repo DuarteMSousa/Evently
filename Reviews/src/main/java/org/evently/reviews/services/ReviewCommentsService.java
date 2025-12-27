@@ -116,17 +116,14 @@ public class ReviewCommentsService {
     }
 
     public Page<ReviewComment> getReviewCommentsByReview(org.evently.reviews.models.Review review, Integer pageNumber, Integer pageSize) {
-        if(pageNumber < 0) {
-            logger.warn(COMMENT_GET, "Page number is negative");
-            throw new InvalidPageNumberException("Page number cannot be negative");
+        if (pageSize > 50 || pageSize < 1) {
+            pageSize = 50;
         }
 
-        if(pageSize < 0) {
-            logger.warn(COMMENT_GET, "Page size is negative");
-            throw new InvalidPageSizeException("Page size cannot be negative");
+        if (pageNumber < 1) {
+            pageNumber = 1;
         }
 
-        pageSize = Math.min(pageSize, 50);
         logger.debug(COMMENT_GET, "Fetching comments for review (reviewId={}, page={}, size={})",
                 review.getId(), pageNumber, pageSize);
 

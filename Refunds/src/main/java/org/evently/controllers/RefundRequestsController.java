@@ -3,7 +3,6 @@ package org.evently.controllers;
 import org.evently.dtos.RefundRequests.RefundRequestCreateDTO;
 import org.evently.dtos.RefundRequests.RefundRequestDTO;
 import org.evently.enums.RefundRequestStatus;
-import org.evently.exceptions.InvalidRefundRequestUpdateException;
 import org.evently.exceptions.RefundRequestNotFoundException;
 import org.evently.models.RefundRequest;
 import org.evently.services.RefundRequestsService;
@@ -13,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.UUID;
 
 @RestController
@@ -24,7 +24,7 @@ public class RefundRequestsController {
 
     @GetMapping("/get-refund/{id}")
     public ResponseEntity<?> getRefundRequest(@PathVariable("id") UUID id) {
-        /*
+        /* HttpStatus(produces)
          * 200 OK - Refund request found.
          * 404 NOT_FOUND - No refund request exists with the provided ID.
          * 400 BAD_REQUEST - Unexpected error during processing.
@@ -42,9 +42,9 @@ public class RefundRequestsController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<Page<RefundRequestDTO>> getRefundRequestsByUser(
             @PathVariable("userId") UUID userId,
-            @RequestParam(value = "page", defaultValue = "0") Integer page,
-            @RequestParam(value = "size", defaultValue = "10") Integer size) {
-        /*
+            @RequestParam(value = "page", defaultValue = "1") Integer page,
+            @RequestParam(value = "size", defaultValue = "50") Integer size) {
+        /* HttpStatus(produces)
          * 200 OK - Paginated list of refund requests by user retrieved successfully.
          */
         Page<RefundRequest> refundPage = refundRequestsService.getRefundRequestsByUser(userId, page, size);
@@ -54,7 +54,7 @@ public class RefundRequestsController {
 
     @PostMapping("/register-refund")
     public ResponseEntity<?> registerRefund(@RequestBody RefundRequestCreateDTO refundDTO) {
-        /*
+        /* HttpStatus(produces)
          * 201 CREATED - Refund request registered successfully.
          * 400 BAD_REQUEST - Invalid data or system error.
          */
@@ -65,11 +65,10 @@ public class RefundRequestsController {
             refundRequest.setTitle(refundDTO.getTitle());
             refundRequest.setDescription(refundDTO.getDescription());
             refundRequest.setStatus(RefundRequestStatus.PENDING);
+            refundRequest.setCreatedAt(new Date());
 
             RefundRequest savedRefund = refundRequestsService.createRefundRequest(refundRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body(convertToDTO(savedRefund));
-        } catch (InvalidRefundRequestUpdateException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
@@ -110,6 +109,9 @@ public class RefundRequestsController {
         dto.setTitle(refund.getTitle());
         dto.setDescription(refund.getDescription());
         dto.setStatus(refund.getStatus());
+        dto.setCreatedAt(refund.getCreatedAt());
+        dto.setDecisionAt(refund.getDecisionAt());
+        dto.setProcessedAt(refund.getProcessedAt());
         dto.setCreatedAt(refund.getCreatedAt());
         dto.setDecisionAt(refund.getDecisionAt());
         dto.setProcessedAt(refund.getProcessedAt());

@@ -82,48 +82,27 @@ public class OrdersController {
 
             Order savedOrder = ordersService.createOrder(orderRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body(convertToDTO(savedOrder));
-        } catch (InvalidOrderUpdateException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
-//    @PutMapping("/update-order/{id}")
-//    public ResponseEntity<?> updateOrder(@PathVariable("id") UUID id, @RequestBody OrderCreateDTO orderDTO) {
-//        /*
-//         * 200 OK - Order updated.
-//         * 404 NOT_FOUND - Order not found.
-//         * 400 BAD_REQUEST - ID mismatch or validation error.
-//         */
-//        try {
-//            Order updateData = new Order();
-//            updateData.setUserId(orderDTO.getUserId());
-//            updateData.setStatus(orderDTO.getStatus());
-//            updateData.setTotal(orderDTO.getTotal());
-//
-//            // Mapeamento das linhas para update
-//            if (orderDTO.getLines() != null) {
-//                List<OrderLine> lines = orderDTO.getLines().stream().map(lineDTO -> {
-//                    OrderLine line = new OrderLine();
-//                    line.setId(new OrderLineId(id, lineDTO.getProductId()));
-//                    line.setQuantity(lineDTO.getQuantity());
-//                    line.setUnitPrice(lineDTO.getUnitPrice());
-//                    return line;
-//                }).collect(Collectors.toList());
-//                updateData.setLines(lines);
-//            }
-//
-//            Order updated = ordersService.updateOrder(id, updateData);
-//            return ResponseEntity.ok(convertToDTO(updated));
-//        } catch (OrderNotFoundException e) {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-//        } catch (InvalidOrderUpdateException e) {
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-//        } catch (Exception e) {
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-//        }
-//    }
+    @PatchMapping("/cancel-order/{id}")
+    public ResponseEntity<?> cancelOrder(@PathVariable UUID id) {
+        /* HttpStatus(produces)
+         * 200 OK - Order cancelled successfully.
+         * 404 NOT_FOUND - No order exists with the provided ID.
+         * 400 BAD_REQUEST - Order is already used or already cancelled.
+         */
+        try {
+            Order cancelledOrder = ordersService.cancelOrder(id);
+            return ResponseEntity.ok(convertToDTO(cancelledOrder));
+        } catch (OrderNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (InvalidOrderUpdateException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
 
     private OrderDTO convertToDTO(Order order) {
         OrderDTO dto = new OrderDTO();

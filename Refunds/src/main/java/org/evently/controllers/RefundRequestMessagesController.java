@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.UUID;
 
 @RestController
@@ -24,6 +25,11 @@ public class RefundRequestMessagesController {
 
     @GetMapping("/get-message/{id}")
     public ResponseEntity<?> getMessage(@PathVariable("id") UUID id) {
+        /* HttpStatus(produces)
+         * 200 OK - Refund request message found.
+         * 404 NOT_FOUND - No message exists with the provided ID.
+         * 400 BAD_REQUEST - Unexpected error during processing.
+         */
         try {
             RefundRequestMessage message = messagesService.getRefundRequestMessage(id);
             return ResponseEntity.ok(convertToDTO(message));
@@ -37,9 +43,11 @@ public class RefundRequestMessagesController {
     @GetMapping("/request/{requestId}")
     public ResponseEntity<Page<RefundRequestMessageDTO>> getMessagesByRequest(
             @PathVariable("requestId") UUID requestId,
-            @RequestParam(value = "page", defaultValue = "0") Integer page,
-            @RequestParam(value = "size", defaultValue = "10") Integer size) {
-
+            @RequestParam(value = "page", defaultValue = "1") Integer page,
+            @RequestParam(value = "size", defaultValue = "50") Integer size) {
+        /* HttpStatus(produces)
+         * 200 OK - Paginated list of messages for the refund request retrieved successfully.
+         */
         RefundRequest request = new RefundRequest();
         request.setId(requestId);
 
@@ -50,10 +58,16 @@ public class RefundRequestMessagesController {
 
     @PostMapping("/send-message")
     public ResponseEntity<?> sendMessage(@RequestBody RefundRequestMessageCreateDTO messageDTO) {
+        /* HttpStatus(produces)
+         * 201 CREATED - Message sent successfully.
+         * 404 NOT_FOUND - Refund request not found for the provided ID.
+         * 400 BAD_REQUEST - Invalid data or system error.
+         */
         try {
             RefundRequestMessage message = new RefundRequestMessage();
             message.setUserId(messageDTO.getUser());
             message.setContent(messageDTO.getContent());
+            message.setCreatedAt(new Date());
 
             RefundRequest refundRequest = new RefundRequest();
             refundRequest.setId(messageDTO.getRefundRequestId());

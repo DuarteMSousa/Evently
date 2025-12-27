@@ -77,7 +77,14 @@ public class RefundRequestMessagesService {
     }
 
     public Page<RefundRequestMessage> getRefundRequestMessagesByRequest(org.evently.models.RefundRequest refundRequest, Integer pageNumber, Integer pageSize) {
-        pageSize = Math.min(pageSize, 50);
+        if (pageSize > 50 || pageSize < 1) {
+            pageSize = 50;
+        }
+
+        if (pageNumber < 1) {
+            pageNumber = 1;
+        }
+
         logger.debug(MSG_GET, "Fetching messages for request (requestId={})", refundRequest.getId());
 
         PageRequest pageable = PageRequest.of(pageNumber, pageSize);

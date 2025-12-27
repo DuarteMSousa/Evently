@@ -137,17 +137,14 @@ public class ReviewsService {
     }
 
     public Page<Review> getReviewsByEntity(UUID entityId, Integer pageNumber, Integer pageSize) {
-        if(pageNumber < 0) {
-            logger.warn(REVIEW_GET, "Page number is negative");
-            throw new InvalidPageNumberException("Page number cannot be negative");
+        if (pageSize > 50 || pageSize < 1) {
+            pageSize = 50;
         }
 
-        if(pageSize < 0) {
-            logger.warn(REVIEW_GET, "Page size is negative");
-            throw new InvalidPageSizeException("Page size cannot be negative");
+        if (pageNumber < 1) {
+            pageNumber = 1;
         }
 
-        pageSize = Math.min(pageSize, 50);
         logger.debug(REVIEW_GET, "Fetching reviews by entity (entityId={}, page={}, size={})", entityId, pageNumber, pageSize);
 
         PageRequest pageable = PageRequest.of(pageNumber, pageSize);

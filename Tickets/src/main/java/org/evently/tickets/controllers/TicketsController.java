@@ -43,8 +43,8 @@ public class TicketsController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<Page<TicketDTO>> getTicketsByUser(
             @PathVariable("userId") UUID userId,
-            @RequestParam(value = "page", defaultValue = "0") Integer page,
-            @RequestParam(value = "size", defaultValue = "10") Integer size) {
+            @RequestParam(value = "page", defaultValue = "1") Integer page,
+            @RequestParam(value = "size", defaultValue = "50") Integer size) {
         /* HttpStatus(produces)
          * 200 OK - Paginated list of tickets for user retrieved successfully.
          */

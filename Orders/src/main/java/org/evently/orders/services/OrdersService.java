@@ -1,6 +1,7 @@
 package org.evently.orders.services;
 
 import jakarta.transaction.Transactional;
+import org.evently.orders.enums.OrderStatus;
 import org.evently.orders.exceptions.InvalidOrderUpdateException;
 import org.evently.orders.exceptions.OrderNotFoundException;
 import org.evently.orders.models.Order;
@@ -24,8 +25,9 @@ public class OrdersService {
     private static final Logger logger = LoggerFactory.getLogger(OrdersService.class);
 
     private static final Marker ORDER_CREATE = MarkerFactory.getMarker("ORDER_CREATE");
-    private static final Marker ORDER_UPDATE = MarkerFactory.getMarker("ORDER_UPDATE");
     private static final Marker ORDER_GET = MarkerFactory.getMarker("ORDER_GET");
+    private static final Marker ORDER_CANCEL = MarkerFactory.getMarker("ORDER_CANCEL");
+    private static final Marker ORDER_USE = MarkerFactory.getMarker("ORDER_USE");
     private static final Marker ORDER_VALIDATION = MarkerFactory.getMarker("ORDER_VALIDATION");
 
     @Autowired
@@ -94,30 +96,26 @@ public class OrdersService {
     }
 
     @Transactional
-    public Order updateOrder(UUID id, Order order) {
-        logger.info(ORDER_UPDATE, "Update order requested (id={})", id);
+    public Order cancelOrder(UUID id) {
+        logger.info(ORDER_CANCEL, "Cancelling order (id={})", id);
 
-        if (order.getId() != null && !id.equals(order.getId())) {
-            logger.error(ORDER_UPDATE, "ID mismatch: path={}, body={}", id, order.getId());
-            throw new InvalidOrderUpdateException("Parameter id and body id do not correspond");
+        Order order = getOrder(id);
+
+        if (order.getStatus() == OrderStatus.PAYMENT_SUCCESS){
+            throw new InvalidOrderUpdateException("Order is already payed successfully");
         }
 
-        Order existingOrder = ordersRepository.findById(id)
-                .orElseThrow(() -> {
-                    logger.warn(ORDER_UPDATE, "Order not found for update (id={})", id);
-                    return new OrderNotFoundException("Order not found");
-                });
+        if (order.getStatus() == OrderStatus.CANCELLED) {
+            throw new InvalidOrderUpdateException("Order is already cancelled");
+        }
 
-        validateOrder(order);
+        order.setStatus(OrderStatus.CANCELLED);
 
-        modelMapper.map(order, existingOrder);
+        Order cancelledOrder = ordersRepository.save(order);
 
-        Order updatedOrder = ordersRepository.save(existingOrder);
+        logger.info(ORDER_CANCEL, "Order cancelled successfully (id={})", id);
 
-        logger.info(ORDER_UPDATE, "Order updated successfully (id={}, status={})",
-                updatedOrder.getId(), updatedOrder.getStatus());
-
-        return updatedOrder;
+        return cancelledOrder;
     }
 
     public Page<Order> getOrdersByUser(UUID userId, Integer pageNumber, Integer pageSize) {
