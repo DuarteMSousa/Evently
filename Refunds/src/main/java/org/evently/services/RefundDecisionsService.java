@@ -1,9 +1,13 @@
 package org.evently.services;
 
+import feign.FeignException;
 import jakarta.transaction.Transactional;
+import org.evently.clients.UsersClient;
+import org.evently.exceptions.ExternalServiceException;
 import org.evently.exceptions.InvalidRefundRequestUpdateException;
 import org.evently.exceptions.RefundDecisionNotFoundException;
 import org.evently.exceptions.RefundRequestNotFoundException;
+import org.evently.exceptions.externalServices.UserNotFoundException;
 import org.evently.models.RefundDecision;
 import org.evently.models.RefundRequest;
 import org.evently.repositories.RefundDecisionsRepository;
@@ -34,18 +38,8 @@ public class RefundDecisionsService {
     @Autowired
     private RefundRequestsRepository refundRequestsRepository;
 
-    private void validateDecision(RefundDecision decision) {
-        logger.debug(DECISION_VALIDATION, "Validating decision payload");
-        if (decision.getDecidedBy() == null) {
-            throw new InvalidRefundRequestUpdateException("DecidedBy is required");
-        }
-        if (decision.getDecisionType() == null) {
-            throw new InvalidRefundRequestUpdateException("Decision Type (APPROVE/REJECT) is required");
-        }
-        if (decision.getRefundRequest() == null || decision.getRefundRequest().getId() == null) {
-            throw new InvalidRefundRequestUpdateException("Decision must be linked to a Refund Request");
-        }
-    }
+    @Autowired
+    private UsersClient usersClient;
 
     public RefundDecision getRefundDecision(UUID id) {
         logger.debug(DECISION_GET, "Get decision requested (id={})", id);
@@ -63,6 +57,18 @@ public class RefundDecisionsService {
                 decision.getRefundRequest() != null ? decision.getRefundRequest().getId() : "NULL");
 
         validateDecision(decision);
+
+        try {
+            usersClient.getUser(decision.getDecidedBy());
+        } catch (FeignException.NotFound e) {
+            logger.warn(DECISION_REGISTER, "(RefundDecisionsService): User not found in Users service");
+            throw new UserNotFoundException(
+                    "(RefundDecisionsService): User not found in Users service");
+        } catch (FeignException e) {
+            logger.error(DECISION_REGISTER, "(RefundDecisionsService): Users service error", e);
+            throw new ExternalServiceException(
+                    "(RefundDecisionsService): Users service error");
+        }
 
         if (!refundRequestsRepository.existsById(decision.getRefundRequest().getId())) {
             logger.warn(DECISION_REGISTER, "Parent refund request not found (id={})", decision.getRefundRequest().getId());
@@ -88,5 +94,18 @@ public class RefundDecisionsService {
 
         PageRequest pageable = PageRequest.of(pageNumber, pageSize);
         return refundDecisionsRepository.findAllByRefundRequest(refundRequest, pageable);
+    }
+
+    private void validateDecision(RefundDecision decision) {
+        logger.debug(DECISION_VALIDATION, "Validating decision payload");
+        if (decision.getDecidedBy() == null) {
+            throw new InvalidRefundRequestUpdateException("DecidedBy is required");
+        }
+        if (decision.getDecisionType() == null) {
+            throw new InvalidRefundRequestUpdateException("Decision Type (APPROVE/REJECT) is required");
+        }
+        if (decision.getRefundRequest() == null || decision.getRefundRequest().getId() == null) {
+            throw new InvalidRefundRequestUpdateException("Decision must be linked to a Refund Request");
+        }
     }
 }
