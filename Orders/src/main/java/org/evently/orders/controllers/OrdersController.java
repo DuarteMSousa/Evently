@@ -10,6 +10,10 @@ import org.evently.orders.models.Order;
 import org.evently.orders.models.OrderLine;
 import org.evently.orders.models.OrderLineId;
 import org.evently.orders.services.OrdersService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -24,22 +28,34 @@ import java.util.stream.Collectors;
 @RequestMapping("/orders")
 public class OrdersController {
 
+    private static final Logger logger = LoggerFactory.getLogger(OrdersController.class);
+
+    private static final Marker ORDER_GET = MarkerFactory.getMarker("ORDER_GET");
+    private static final Marker ORDER_CREATE = MarkerFactory.getMarker("ORDER_CREATE");
+    private static final Marker ORDER_PAYMENT = MarkerFactory.getMarker("ORDER_PAYMENT");
+    private static final Marker ORDER_CANCEL = MarkerFactory.getMarker("ORDER_CANCEL");
+
     @Autowired
     private OrdersService ordersService;
 
     @GetMapping("/get-order/{id}")
     public ResponseEntity<?> getOrder(@PathVariable("id") UUID id) {
-        /*
+        /* HttpStatus(produces)
          * 200 OK - Order found.
          * 404 NOT_FOUND - Order does not exist.
          * 400 BAD_REQUEST - System error.
          */
+
+        logger.info(ORDER_GET, "Method getOrder entered (id={})", id);
         try {
             Order order = ordersService.getOrder(id);
+            logger.info(ORDER_GET, "200 OK returned, order found");
             return ResponseEntity.ok(convertToDTO(order));
         } catch (OrderNotFoundException e) {
+            logger.error(ORDER_GET, "OrderNotFoundException caught: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
+            logger.error(ORDER_GET, "Exception caught while getting order: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
@@ -49,20 +65,27 @@ public class OrdersController {
             @PathVariable("userId") UUID userId,
             @RequestParam(value = "page", defaultValue = "0") Integer page,
             @RequestParam(value = "size", defaultValue = "10") Integer size) {
-        /*
+        /* HttpStatus(produces)
          * 200 OK - Paginated list of orders retrieved.
          */
+
+        logger.info(ORDER_GET, "Method getOrdersByUser entered (userId={})", userId);
+
         Page<Order> orderPage = ordersService.getOrdersByUser(userId, page, size);
         Page<OrderDTO> dtoPage = orderPage.map(this::convertToDTO);
+
+        logger.info(ORDER_GET, "200 OK returned, orders page retrieved");
         return ResponseEntity.ok(dtoPage);
     }
 
     @PostMapping("/register-order")
     public ResponseEntity<?> registerOrder(@RequestBody OrderCreateDTO orderDTO) {
-        /*
+        /* HttpStatus(produces)
          * 201 CREATED - Order created.
          * 400 BAD_REQUEST - Validation error.
          */
+
+        logger.info(ORDER_CREATE, "Method registerOrder entered for userId={}", orderDTO.getUserId());
         try {
             Order orderRequest = new Order();
             orderRequest.setUserId(orderDTO.getUserId());
@@ -81,46 +104,60 @@ public class OrdersController {
             }
 
             Order savedOrder = ordersService.createOrder(orderRequest);
+            logger.info(ORDER_CREATE, "201 CREATED returned, order registered (id={})", savedOrder.getId());
             return ResponseEntity.status(HttpStatus.CREATED).body(convertToDTO(savedOrder));
         } catch (Exception e) {
+            logger.error(ORDER_CREATE, "Exception caught while registering order: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
     @PatchMapping("/mark-order-payment-success/{id}")
     public ResponseEntity<?> markAsPaid(@PathVariable UUID id) {
-        /*
+        /* HttpStatus(produces)
          * 200 OK - Payment marked as successful.
          * 404 NOT_FOUND - No order exists with the provided ID.
          * 400 BAD_REQUEST - Order is not in a state that allows payment.
          */
+
+        logger.info(ORDER_PAYMENT, "Method markAsPaid entered (id={})", id);
         try {
             Order updatedOrder = ordersService.markAsPaid(id);
+            logger.info(ORDER_PAYMENT, "200 OK returned, order marked as paid");
             return ResponseEntity.ok(convertToDTO(updatedOrder));
         } catch (OrderNotFoundException e) {
+            logger.error(ORDER_PAYMENT, "OrderNotFoundException caught: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (InvalidOrderUpdateException e) {
+            logger.error(ORDER_PAYMENT, "InvalidOrderUpdateException caught: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
+            logger.error(ORDER_PAYMENT, "Unexpected exception caught in markAsPaid: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
         }
     }
 
     @PatchMapping("/mark-order-payment-failed/{id}")
     public ResponseEntity<?> markAsFailed(@PathVariable UUID id) {
-        /*
+        /* HttpStatus(produces)
          * 200 OK - Order marked as payment failed.
          * 404 NOT_FOUND - No order exists with the provided ID.
          * 400 BAD_REQUEST - Order is not in a state that allows failure.
          */
+
+        logger.info(ORDER_PAYMENT, "Method markAsFailed entered (id={})", id);
         try {
             Order updatedOrder = ordersService.markAsPaymentFailed(id);
+            logger.info(ORDER_PAYMENT, "200 OK returned, order marked as failed");
             return ResponseEntity.ok(convertToDTO(updatedOrder));
         } catch (OrderNotFoundException e) {
+            logger.error(ORDER_PAYMENT, "OrderNotFoundException caught: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (InvalidOrderUpdateException e) {
+            logger.error(ORDER_PAYMENT, "InvalidOrderUpdateException caught: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
+            logger.error(ORDER_PAYMENT, "Unexpected exception caught in markAsFailed: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
         }
     }
@@ -132,12 +169,17 @@ public class OrdersController {
          * 404 NOT_FOUND - No order exists with the provided ID.
          * 400 BAD_REQUEST - Order is already used or already cancelled.
          */
+
+        logger.info(ORDER_CANCEL, "Method cancelOrder entered (id={})", id);
         try {
             Order cancelledOrder = ordersService.cancelOrder(id);
+            logger.info(ORDER_CANCEL, "200 OK returned, order cancelled");
             return ResponseEntity.ok(convertToDTO(cancelledOrder));
         } catch (OrderNotFoundException e) {
+            logger.error(ORDER_CANCEL, "OrderNotFoundException caught: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (InvalidOrderUpdateException e) {
+            logger.error(ORDER_CANCEL, "InvalidOrderUpdateException caught: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
