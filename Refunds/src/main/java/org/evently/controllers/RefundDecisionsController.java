@@ -7,6 +7,10 @@ import org.evently.exceptions.RefundRequestNotFoundException;
 import org.evently.models.RefundDecision;
 import org.evently.models.RefundRequest;
 import org.evently.services.RefundDecisionsService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -20,6 +24,10 @@ import java.util.UUID;
 @RequestMapping("/refunds/decisions")
 public class RefundDecisionsController {
 
+    private static final Logger logger = LoggerFactory.getLogger(RefundDecisionsController.class);
+    private static final Marker DECISION_GET = MarkerFactory.getMarker("DECISION_GET");
+    private static final Marker DECISION_REGISTER = MarkerFactory.getMarker("DECISION_REGISTER");
+
     @Autowired
     private RefundDecisionsService refundDecisionsService;
 
@@ -30,12 +38,17 @@ public class RefundDecisionsController {
          * 404 NOT_FOUND - No decision exists with the provided ID.
          * 400 BAD_REQUEST - Unexpected error during processing.
          */
+
+        logger.info(DECISION_GET, "Method getDecision entered for ID: {}", id);
         try {
             RefundDecision decision = refundDecisionsService.getRefundDecision(id);
+            logger.info(DECISION_GET, "200 OK returned, decision found");
             return ResponseEntity.ok(convertToDTO(decision));
         } catch (RefundDecisionNotFoundException e) {
+            logger.warn(DECISION_GET, "RefundDecisionNotFoundException caught: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
+            logger.error(DECISION_GET, "Exception caught while getting decision: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
@@ -48,11 +61,15 @@ public class RefundDecisionsController {
         /* HttpStatus(produces)
          * 200 OK - Paginated list of decisions for the refund request retrieved successfully.
          */
+
+        logger.info(DECISION_GET, "Method getDecisionsByRequest entered for requestId: {}", requestId);
         RefundRequest request = new RefundRequest();
         request.setId(requestId);
 
         Page<RefundDecision> decisionPage = refundDecisionsService.getRefundDecisionsByRequest(request, page, size);
         Page<RefundDecisionDTO> dtoPage = decisionPage.map(this::convertToDTO);
+
+        logger.info(DECISION_GET, "200 OK returned, decisions list retrieved");
         return ResponseEntity.ok(dtoPage);
     }
 
@@ -63,6 +80,8 @@ public class RefundDecisionsController {
          * 404 NOT_FOUND - Refund request not found for the provided ID.
          * 400 BAD_REQUEST - Invalid data or system error.
          */
+
+        logger.info(DECISION_REGISTER, "Method registerDecision entered for requestId: {}", decisionDTO.getRefundRequestId());
         try {
             RefundDecision decision = new RefundDecision();
             decision.setDecidedBy(decisionDTO.getDecidedBy());
@@ -75,10 +94,13 @@ public class RefundDecisionsController {
             decision.setRefundRequest(refundRequest);
 
             RefundDecision saved = refundDecisionsService.registerRefundDecision(decision);
+            logger.info(DECISION_REGISTER, "201 CREATED returned, decision registered");
             return ResponseEntity.status(HttpStatus.CREATED).body(convertToDTO(saved));
         } catch (RefundRequestNotFoundException e) {
+            logger.warn(DECISION_REGISTER, "RefundRequestNotFoundException caught: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
+            logger.error(DECISION_REGISTER, "Exception caught while registering decision: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }

@@ -7,6 +7,10 @@ import org.evently.exceptions.RefundRequestNotFoundException;
 import org.evently.models.RefundRequest;
 import org.evently.models.RefundRequestMessage;
 import org.evently.services.RefundRequestMessagesService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -20,6 +24,10 @@ import java.util.UUID;
 @RequestMapping("/refunds/messages")
 public class RefundRequestMessagesController {
 
+    private static final Logger logger = LoggerFactory.getLogger(RefundRequestMessagesController.class);
+    private static final Marker MESSAGE_GET = MarkerFactory.getMarker("MESSAGE_GET");
+    private static final Marker MESSAGE_SEND = MarkerFactory.getMarker("MESSAGE_SEND");
+
     @Autowired
     private RefundRequestMessagesService messagesService;
 
@@ -30,12 +38,17 @@ public class RefundRequestMessagesController {
          * 404 NOT_FOUND - No message exists with the provided ID.
          * 400 BAD_REQUEST - Unexpected error during processing.
          */
+
+        logger.info(MESSAGE_GET, "Method getMessage entered for ID: {}", id);
         try {
             RefundRequestMessage message = messagesService.getRefundRequestMessage(id);
+            logger.info(MESSAGE_GET, "200 OK returned, message found");
             return ResponseEntity.ok(convertToDTO(message));
         } catch (RefundRequestMessageNotFoundException e) {
+            logger.warn(MESSAGE_GET, "RefundRequestMessageNotFoundException caught: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
+            logger.error(MESSAGE_GET, "Exception caught while getting message: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
@@ -48,11 +61,15 @@ public class RefundRequestMessagesController {
         /* HttpStatus(produces)
          * 200 OK - Paginated list of messages for the refund request retrieved successfully.
          */
+
+        logger.info(MESSAGE_GET, "Method getMessagesByRequest entered for requestId: {}", requestId);
         RefundRequest request = new RefundRequest();
         request.setId(requestId);
 
         Page<RefundRequestMessage> messagePage = messagesService.getRefundRequestMessagesByRequest(request, page, size);
         Page<RefundRequestMessageDTO> dtoPage = messagePage.map(this::convertToDTO);
+
+        logger.info(MESSAGE_GET, "200 OK returned, messages list retrieved");
         return ResponseEntity.ok(dtoPage);
     }
 
@@ -63,6 +80,8 @@ public class RefundRequestMessagesController {
          * 404 NOT_FOUND - Refund request not found for the provided ID.
          * 400 BAD_REQUEST - Invalid data or system error.
          */
+
+        logger.info(MESSAGE_SEND, "Method sendMessage entered for requestId: {}", messageDTO.getRefundRequestId());
         try {
             RefundRequestMessage message = new RefundRequestMessage();
             message.setUserId(messageDTO.getUser());
@@ -74,10 +93,13 @@ public class RefundRequestMessagesController {
             message.setRefundRequest(refundRequest);
 
             RefundRequestMessage saved = messagesService.sendRefundRequestMessage(message);
+            logger.info(MESSAGE_SEND, "201 CREATED returned, message sent");
             return ResponseEntity.status(HttpStatus.CREATED).body(convertToDTO(saved));
         } catch (RefundRequestNotFoundException e) {
+            logger.warn(MESSAGE_SEND, "RefundRequestNotFoundException caught: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
+            logger.error(MESSAGE_SEND, "Exception caught while sending message: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
