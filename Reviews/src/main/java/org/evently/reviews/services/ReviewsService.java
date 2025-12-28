@@ -1,10 +1,15 @@
 package org.evently.reviews.services;
 
+import feign.FeignException;
 import jakarta.transaction.Transactional;
-import org.evently.reviews.exceptions.InvalidPageNumberException;
-import org.evently.reviews.exceptions.InvalidPageSizeException;
+import org.evently.reviews.clients.EventsClient;
+import org.evently.reviews.clients.OrganizationsClient;
+import org.evently.reviews.clients.UsersClient;
+import org.evently.reviews.clients.VenuesClient;
+import org.evently.reviews.exceptions.ExternalServiceException;
 import org.evently.reviews.exceptions.InvalidReviewUpdateException;
 import org.evently.reviews.exceptions.ReviewNotFoundException;
+import org.evently.reviews.exceptions.externalServices.UserNotFoundException;
 import org.evently.reviews.models.Review;
 import org.evently.reviews.repositories.ReviewsRepository;
 import org.modelmapper.ModelMapper;
@@ -33,33 +38,19 @@ public class ReviewsService {
     @Autowired
     private ReviewsRepository reviewsRepository;
 
+    @Autowired
+    private EventsClient eventsClient;
+
+    @Autowired
+    private UsersClient usersClient;
+
+    @Autowired
+    private VenuesClient venuesClient;
+
+    @Autowired
+    private OrganizationsClient organizationsClient;
+
     private final ModelMapper modelMapper = new ModelMapper();
-
-    private void validateReview(Review review) {
-        logger.debug(REVIEW_VALIDATION, "Validating review payload (authorId={}, entityId={})",
-                review.getAuthorId(), review.getEntityId());
-
-        if (review.getRating() < 1 || review.getRating() > 5) {
-            logger.warn(REVIEW_VALIDATION, "Invalid rating: {}", review.getRating());
-            throw new InvalidReviewUpdateException("Rating must be between 1 and 5");
-        }
-        if (review.getAuthorId() == null) {
-            logger.warn(REVIEW_VALIDATION, "Missing authorId");
-            throw new InvalidReviewUpdateException("Author ID is required");
-        }
-        if (review.getEntityId() == null) {
-            logger.warn(REVIEW_VALIDATION, "Missing entityId");
-            throw new InvalidReviewUpdateException("Entity ID is required");
-        }
-        if(review.getEntityType() == null) {
-            logger.warn(REVIEW_VALIDATION, "Missing entityType");
-            throw new InvalidReviewUpdateException("Entity Type is required");
-        }
-        if (review.getComment() == null || review.getComment().trim().isEmpty()) {
-            logger.warn(REVIEW_VALIDATION, "Comment is empty or null");
-            throw new InvalidReviewUpdateException("Comment cannot be empty");
-        }
-    }
 
     public Review getReview(UUID id) {
         logger.debug(REVIEW_GET, "Get review requested (id={})", id);
@@ -76,6 +67,62 @@ public class ReviewsService {
                 review.getAuthorId(), review.getEntityId());
 
         validateReview(review);
+
+        switch (review.getEntityType()) {
+            case EVENT:
+                try {
+                    eventsClient.searchEvents(review.getEntityId());
+                } catch (FeignException.NotFound e) {
+                    logger.warn(REVIEW_CREATE, "(ReviewsService): Event not found in Events service");
+                    throw new InvalidReviewUpdateException(
+                            "(ReviewsService): Event not found in Events service");
+                } catch (FeignException e) {
+                    logger.error(REVIEW_CREATE, "(ReviewsService): Events service error", e);
+                    throw new ExternalServiceException(
+                            "(ReviewsService): Events service error");
+                }
+                break;
+            case VENUE:
+                try {
+                    venuesClient.getVenue(review.getEntityId());
+                } catch (FeignException.NotFound e) {
+                    logger.warn(REVIEW_CREATE, "(ReviewsService): Venue not found in Venues service");
+                    throw new InvalidReviewUpdateException(
+                            "(ReviewsService): Venue not found in Venues service");
+                } catch (FeignException e) {
+                    logger.error(REVIEW_CREATE, "(ReviewsService): Venues service error", e);
+                    throw new ExternalServiceException(
+                            "(ReviewsService): Venues service error");
+                }
+                break;
+            case ORGANIZATION:
+                try {
+                    organizationsClient.getOrganization(review.getEntityId());
+                } catch (FeignException.NotFound e) {
+                    logger.warn(REVIEW_CREATE, "(ReviewsService): Organization not found in Organizations service");
+                    throw new InvalidReviewUpdateException(
+                            "(ReviewsService): Organization not found in Organizations service");
+                } catch (FeignException e) {
+                    logger.error(REVIEW_CREATE, "(ReviewsService): Organizations service error", e);
+                    throw new ExternalServiceException(
+                            "(ReviewsService): Organizations service error");
+                }
+                break;
+            default:
+                throw new InvalidReviewUpdateException("Unknown entity type: " + review.getEntityType());
+        }
+
+        try {
+            usersClient.getUser(review.getAuthorId());
+        } catch (FeignException.NotFound e) {
+            logger.warn(REVIEW_CREATE, "(ReviewsService): User not found in Users service");
+            throw new UserNotFoundException(
+                    "(ReviewsService): User not found in Users service");
+        } catch (FeignException e) {
+            logger.error(REVIEW_CREATE, "(ReviewsService): Users service error", e);
+            throw new ExternalServiceException(
+                    "(ReviewsService): Users service error");
+        }
 
         Review saved = reviewsRepository.save(review);
         logger.info(REVIEW_CREATE, "Review registered successfully (id={})", saved.getId());
@@ -119,17 +166,14 @@ public class ReviewsService {
     }
 
     public Page<Review> getReviewsByAuthor(UUID authorId, Integer pageNumber, Integer pageSize) {
-        if(pageNumber < 0) {
-            logger.warn(REVIEW_GET, "Page number is negative");
-            throw new InvalidPageNumberException("Page number cannot be negative");
+        if (pageSize > 50 || pageSize < 1) {
+            pageSize = 50;
         }
 
-        if(pageSize < 0) {
-            logger.warn(REVIEW_GET, "Page size is negative");
-            throw new InvalidPageSizeException("Page size cannot be negative");
+        if (pageNumber < 1) {
+            pageNumber = 1;
         }
 
-        pageSize = Math.min(pageSize, 50);
         logger.debug(REVIEW_GET, "Fetching reviews by author (authorId={}, page={}, size={})", authorId, pageNumber, pageSize);
 
         PageRequest pageable = PageRequest.of(pageNumber, pageSize);
@@ -150,5 +194,31 @@ public class ReviewsService {
         PageRequest pageable = PageRequest.of(pageNumber, pageSize);
 
         return reviewsRepository.findAllByEntityId(entityId, pageable);
+    }
+
+    private void validateReview(Review review) {
+        logger.debug(REVIEW_VALIDATION, "Validating review payload (authorId={}, entityId={})",
+                review.getAuthorId(), review.getEntityId());
+
+        if (review.getRating() < 1 || review.getRating() > 5) {
+            logger.warn(REVIEW_VALIDATION, "Invalid rating: {}", review.getRating());
+            throw new InvalidReviewUpdateException("Rating must be between 1 and 5");
+        }
+        if (review.getAuthorId() == null) {
+            logger.warn(REVIEW_VALIDATION, "Missing authorId");
+            throw new InvalidReviewUpdateException("Author ID is required");
+        }
+        if (review.getEntityId() == null) {
+            logger.warn(REVIEW_VALIDATION, "Missing entityId");
+            throw new InvalidReviewUpdateException("Entity ID is required");
+        }
+        if(review.getEntityType() == null) {
+            logger.warn(REVIEW_VALIDATION, "Missing entityType");
+            throw new InvalidReviewUpdateException("Entity Type is required");
+        }
+        if (review.getComment() == null || review.getComment().trim().isEmpty()) {
+            logger.warn(REVIEW_VALIDATION, "Comment is empty or null");
+            throw new InvalidReviewUpdateException("Comment cannot be empty");
+        }
     }
 }

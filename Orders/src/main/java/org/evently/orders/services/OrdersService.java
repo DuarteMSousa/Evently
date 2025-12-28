@@ -36,37 +36,6 @@ public class OrdersService {
 
     private final ModelMapper modelMapper = new ModelMapper();
 
-    private void validateOrder(Order order) {
-        logger.debug(ORDER_VALIDATION, "Validating order payload for user (userId={})", order.getUserId());
-
-        if (order.getUserId() == null) {
-            logger.warn(ORDER_VALIDATION, "Missing userId");
-            throw new InvalidOrderUpdateException("User ID is required");
-        }
-
-        if (order.getTotal() == null || order.getTotal().compareTo(BigDecimal.ZERO) < 0) {
-            logger.warn(ORDER_VALIDATION, "Invalid total amount ({})", order.getTotal());
-            throw new InvalidOrderUpdateException("Total amount must be greater than or equal to 0");
-        }
-
-        if (order.getStatus() == null) {
-            logger.warn(ORDER_VALIDATION, "Missing order status");
-            throw new InvalidOrderUpdateException("Order status is required");
-        }
-
-        if (order.getLines() == null || order.getLines().isEmpty()) {
-            logger.warn(ORDER_VALIDATION, "Order has no lines");
-            throw new InvalidOrderUpdateException("An order must have at least one line item");
-        }
-
-        order.getLines().forEach(line -> {
-            if (line.getQuantity() == null || line.getQuantity() <= 0) {
-                logger.warn(ORDER_VALIDATION, "Invalid quantity in order line");
-                throw new InvalidOrderUpdateException("Line quantity must be greater than 0");
-            }
-        });
-    }
-
     public Order getOrder(UUID id) {
         logger.debug(ORDER_GET, "Get order requested (id={})", id);
 
@@ -162,5 +131,36 @@ public class OrdersService {
 
         PageRequest pageable = PageRequest.of(pageNumber, pageSize);
         return ordersRepository.findAllByUserId(userId, pageable);
+    }
+
+    private void validateOrder(Order order) {
+        logger.debug(ORDER_VALIDATION, "Validating order payload for user (userId={})", order.getUserId());
+
+        if (order.getUserId() == null) {
+            logger.warn(ORDER_VALIDATION, "Missing userId");
+            throw new InvalidOrderUpdateException("User ID is required");
+        }
+
+        if (order.getTotal() == null || order.getTotal().compareTo(BigDecimal.ZERO) < 0) {
+            logger.warn(ORDER_VALIDATION, "Invalid total amount ({})", order.getTotal());
+            throw new InvalidOrderUpdateException("Total amount must be greater than or equal to 0");
+        }
+
+        if (order.getStatus() == null) {
+            logger.warn(ORDER_VALIDATION, "Missing order status");
+            throw new InvalidOrderUpdateException("Order status is required");
+        }
+
+        if (order.getLines() == null || order.getLines().isEmpty()) {
+            logger.warn(ORDER_VALIDATION, "Order has no lines");
+            throw new InvalidOrderUpdateException("An order must have at least one line item");
+        }
+
+        order.getLines().forEach(line -> {
+            if (line.getQuantity() == null || line.getQuantity() <= 0) {
+                logger.warn(ORDER_VALIDATION, "Invalid quantity in order line");
+                throw new InvalidOrderUpdateException("Line quantity must be greater than 0");
+            }
+        });
     }
 }

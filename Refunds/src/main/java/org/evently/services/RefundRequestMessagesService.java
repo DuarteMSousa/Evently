@@ -1,9 +1,13 @@
 package org.evently.services;
 
+import feign.FeignException;
 import jakarta.transaction.Transactional;
+import org.evently.clients.UsersClient;
+import org.evently.exceptions.ExternalServiceException;
 import org.evently.exceptions.InvalidRefundRequestUpdateException;
 import org.evently.exceptions.RefundRequestMessageNotFoundException;
 import org.evently.exceptions.RefundRequestNotFoundException;
+import org.evently.exceptions.externalServices.UserNotFoundException;
 import org.evently.models.RefundRequestMessage;
 import org.evently.repositories.RefundRequestMessagesRepository;
 import org.evently.repositories.RefundRequestsRepository;
@@ -33,22 +37,8 @@ public class RefundRequestMessagesService {
     @Autowired
     private RefundRequestsRepository refundRequestsRepository;
 
-    private void validateMessage(RefundRequestMessage message) {
-        logger.debug(MESSAGE_VALIDATION, "Validating refund request message payload");
-
-        if (message.getUserId() == null) {
-            logger.warn(MESSAGE_VALIDATION, "Missing userId");
-            throw new InvalidRefundRequestUpdateException("User ID is required");
-        }
-        if (message.getContent() == null || message.getContent().trim().isEmpty()) {
-            logger.warn(MESSAGE_VALIDATION, "Message is empty");
-            throw new InvalidRefundRequestUpdateException("Message content cannot be empty");
-        }
-        if (message.getRefundRequest() == null || message.getRefundRequest().getId() == null) {
-            logger.warn(MESSAGE_VALIDATION, "Message is not linked to a refund request");
-            throw new InvalidRefundRequestUpdateException("Message must be linked to a Refund Request");
-        }
-    }
+    @Autowired
+    private UsersClient usersClient;
 
     public RefundRequestMessage getRefundRequestMessage(UUID id) {
         logger.debug(MESSAGE_GET, "Get message requested (id={})", id);
@@ -65,6 +55,18 @@ public class RefundRequestMessagesService {
                 message.getRefundRequest() != null ? message.getRefundRequest().getId() : "NULL");
 
         validateMessage(message);
+
+        try {
+            usersClient.getUser(message.getUserId());
+        } catch (FeignException.NotFound e) {
+            logger.warn(MESSAGE_SEND, "(RefundRequestMessagesService): User not found in Users service");
+            throw new UserNotFoundException(
+                    "(RefundRequestMessagesService): User not found in Users service");
+        } catch (FeignException e) {
+            logger.error(MESSAGE_SEND, "(RefundRequestMessagesService): Users service error", e);
+            throw new ExternalServiceException(
+                    "(RefundRequestMessagesService): Users service error");
+        }
 
         if (!refundRequestsRepository.existsById(message.getRefundRequest().getId())) {
             logger.warn(MESSAGE_SEND, "Parent refund request not found (id={})", message.getRefundRequest().getId());
@@ -89,5 +91,22 @@ public class RefundRequestMessagesService {
 
         PageRequest pageable = PageRequest.of(pageNumber, pageSize);
         return refundRequestMessagesRepository.findAllByRefundRequest(refundRequest, pageable);
+    }
+
+    private void validateMessage(RefundRequestMessage message) {
+        logger.debug(MESSAGE_VALIDATION, "Validating refund request message payload");
+
+        if (message.getUserId() == null) {
+            logger.warn(MESSAGE_VALIDATION, "Missing userId");
+            throw new InvalidRefundRequestUpdateException("User ID is required");
+        }
+        if (message.getContent() == null || message.getContent().trim().isEmpty()) {
+            logger.warn(MESSAGE_VALIDATION, "Message is empty");
+            throw new InvalidRefundRequestUpdateException("Message content cannot be empty");
+        }
+        if (message.getRefundRequest() == null || message.getRefundRequest().getId() == null) {
+            logger.warn(MESSAGE_VALIDATION, "Message is not linked to a refund request");
+            throw new InvalidRefundRequestUpdateException("Message must be linked to a Refund Request");
+        }
     }
 }

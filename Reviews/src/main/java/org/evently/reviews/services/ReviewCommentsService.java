@@ -1,7 +1,10 @@
 package org.evently.reviews.services;
 
+import feign.FeignException;
 import jakarta.transaction.Transactional;
+import org.evently.reviews.clients.UsersClient;
 import org.evently.reviews.exceptions.*;
+import org.evently.reviews.exceptions.externalServices.UserNotFoundException;
 import org.evently.reviews.models.ReviewComment;
 import org.evently.reviews.repositories.ReviewCommentsRepository;
 import org.evently.reviews.repositories.ReviewsRepository;
@@ -34,24 +37,10 @@ public class ReviewCommentsService {
     @Autowired
     private ReviewsRepository reviewsRepository;
 
+    @Autowired
+    private UsersClient usersClient;
+
     private final ModelMapper modelMapper = new ModelMapper();
-
-    private void validateComment(ReviewComment comment) {
-        logger.debug(COMMENT_VALIDATION, "Validating comment payload");
-
-        if (comment.getAuthorId() == null) {
-            logger.warn(COMMENT_VALIDATION, "Missing authorId");
-            throw new InvalidReviewCommentUpdateException("Author ID is required");
-        }
-        if (comment.getComment() == null || comment.getComment().trim().isEmpty()) {
-            logger.warn(COMMENT_VALIDATION, "Comment text is empty");
-            throw new InvalidReviewCommentUpdateException("Comment text cannot be empty");
-        }
-        if (comment.getReview() == null || comment.getReview().getId() == null) {
-            logger.warn(COMMENT_VALIDATION, "Comment is not linked to a review");
-            throw new InvalidReviewCommentUpdateException("A valid Review ID must be associated");
-        }
-    }
 
     public ReviewComment getReviewComment(UUID id) {
         logger.debug(COMMENT_GET, "Get comment requested (id={})", id);
@@ -68,6 +57,18 @@ public class ReviewCommentsService {
                 reviewComment.getReview() != null ? reviewComment.getReview().getId() : "NULL");
 
         validateComment(reviewComment);
+
+        try {
+            usersClient.getUser(reviewComment.getAuthorId());
+        } catch (FeignException.NotFound e) {
+            logger.warn(COMMENT_CREATE, "(ReviewCommentsService): User not found in Users service");
+            throw new UserNotFoundException(
+                    "(ReviewCommentsService): User not found in Users service");
+        } catch (FeignException e) {
+            logger.error(COMMENT_CREATE, "(ReviewCommentsService): Users service error", e);
+            throw new ExternalServiceException(
+                    "(ReviewCommentsService): Users service error");
+        }
 
         if (!reviewsRepository.existsById(reviewComment.getReview().getId())) {
             logger.warn(COMMENT_CREATE, "Parent review not found (id={})", reviewComment.getReview().getId());
@@ -129,5 +130,22 @@ public class ReviewCommentsService {
 
         PageRequest pageable = PageRequest.of(pageNumber, pageSize);
         return reviewCommentsRepository.findAllByReview(review, pageable);
+    }
+
+    private void validateComment(ReviewComment comment) {
+        logger.debug(COMMENT_VALIDATION, "Validating comment payload");
+
+        if (comment.getAuthorId() == null) {
+            logger.warn(COMMENT_VALIDATION, "Missing authorId");
+            throw new InvalidReviewCommentUpdateException("Author ID is required");
+        }
+        if (comment.getComment() == null || comment.getComment().trim().isEmpty()) {
+            logger.warn(COMMENT_VALIDATION, "Comment text is empty");
+            throw new InvalidReviewCommentUpdateException("Comment text cannot be empty");
+        }
+        if (comment.getReview() == null || comment.getReview().getId() == null) {
+            logger.warn(COMMENT_VALIDATION, "Comment is not linked to a review");
+            throw new InvalidReviewCommentUpdateException("A valid Review ID must be associated");
+        }
     }
 }
