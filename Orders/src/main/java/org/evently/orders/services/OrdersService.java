@@ -17,6 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.UUID;
 
 @Service
@@ -27,7 +28,7 @@ public class OrdersService {
     private static final Marker ORDER_CREATE = MarkerFactory.getMarker("ORDER_CREATE");
     private static final Marker ORDER_GET = MarkerFactory.getMarker("ORDER_GET");
     private static final Marker ORDER_CANCEL = MarkerFactory.getMarker("ORDER_CANCEL");
-    private static final Marker ORDER_USE = MarkerFactory.getMarker("ORDER_USE");
+    private static final Marker ORDER_PAYMENT = MarkerFactory.getMarker("ORDER_PAYMENT");
     private static final Marker ORDER_VALIDATION = MarkerFactory.getMarker("ORDER_VALIDATION");
 
     @Autowired
@@ -93,6 +94,41 @@ public class OrdersService {
                 savedOrder.getId(), savedOrder.getStatus());
 
         return savedOrder;
+    }
+
+    @Transactional
+    public Order markAsPaid(UUID id) {
+        logger.info(ORDER_PAYMENT, "Marking order as paid (id={})", id);
+
+        Order order = getOrder(id);
+
+        if (order.getStatus() != OrderStatus.CREATED) {
+            throw new InvalidOrderUpdateException("Cannot pay order in status: " + order.getStatus());
+        }
+
+        order.setStatus(OrderStatus.PAYMENT_SUCCESS);
+        order.setPaidAt(new Date());
+
+        Order updatedOrder = ordersRepository.save(order);
+        logger.info(ORDER_PAYMENT, "Order marked as paid successfully (id={})", id);
+        return updatedOrder;
+    }
+
+    @Transactional
+    public Order markAsPaymentFailed(UUID id) {
+        logger.info(ORDER_PAYMENT, "Marking order as failed (id={})", id);
+
+        Order order = getOrder(id);
+
+        if (order.getStatus() != OrderStatus.CREATED) {
+            throw new InvalidOrderUpdateException("Cannot fail payment for order in status: " + order.getStatus());
+        }
+
+        order.setStatus(OrderStatus.PAYMENT_FAILED);
+
+        Order updatedOrder = ordersRepository.save(order);
+        logger.info(ORDER_PAYMENT, "Order marked as payment failed (id={})", id);
+        return updatedOrder;
     }
 
     @Transactional

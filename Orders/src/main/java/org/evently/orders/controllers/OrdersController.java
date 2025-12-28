@@ -61,7 +61,7 @@ public class OrdersController {
     public ResponseEntity<?> registerOrder(@RequestBody OrderCreateDTO orderDTO) {
         /*
          * 201 CREATED - Order created.
-         * 400 BAD_REQUEST - Validation error (missing lines, negative total, etc).
+         * 400 BAD_REQUEST - Validation error.
          */
         try {
             Order orderRequest = new Order();
@@ -84,6 +84,44 @@ public class OrdersController {
             return ResponseEntity.status(HttpStatus.CREATED).body(convertToDTO(savedOrder));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @PatchMapping("/mark-order-payment-success/{id}")
+    public ResponseEntity<?> markAsPaid(@PathVariable UUID id) {
+        /*
+         * 200 OK - Payment marked as successful.
+         * 404 NOT_FOUND - No order exists with the provided ID.
+         * 400 BAD_REQUEST - Order is not in a state that allows payment.
+         */
+        try {
+            Order updatedOrder = ordersService.markAsPaid(id);
+            return ResponseEntity.ok(convertToDTO(updatedOrder));
+        } catch (OrderNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (InvalidOrderUpdateException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
+        }
+    }
+
+    @PatchMapping("/mark-order-payment-failed/{id}")
+    public ResponseEntity<?> markAsFailed(@PathVariable UUID id) {
+        /*
+         * 200 OK - Order marked as payment failed.
+         * 404 NOT_FOUND - No order exists with the provided ID.
+         * 400 BAD_REQUEST - Order is not in a state that allows failure.
+         */
+        try {
+            Order updatedOrder = ordersService.markAsPaymentFailed(id);
+            return ResponseEntity.ok(convertToDTO(updatedOrder));
+        } catch (OrderNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (InvalidOrderUpdateException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
         }
     }
 
