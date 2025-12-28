@@ -1,10 +1,9 @@
 package org.example.service;
 
+import feign.FeignException;
 import jakarta.transaction.Transactional;
-import org.example.exceptions.MemberNotFoundException;
-import org.example.exceptions.OrganizationNotFoundException;
-import org.example.exceptions.PermissionDeniedException;
-import org.example.exceptions.UserNotFoundException;
+import org.example.clients.UsersClient;
+import org.example.exceptions.*;
 import org.example.models.Member;
 import org.example.models.MemberId;
 import org.example.models.Organization;
@@ -35,6 +34,10 @@ public class OrganizationMembersService {
 
     @Autowired
     private MembersRepository membersRepository;
+
+    @Autowired
+    private UsersClient usersClient;
+
 
     private void checkOwnerPermission(Organization org, UUID requesterId) {
         if (org.getCreatedBy() == null || requesterId == null) {
@@ -84,11 +87,21 @@ public class OrganizationMembersService {
             throw new PermissionDeniedException("Cannot add members to an inactive organization");
         }
 
-        // futuro: validação no microserviço de Users
         if (userId == null) {
             logger.warn(MEMBER_ADD, "User not found (userId=null, orgId={})", orgId);
             throw new UserNotFoundException("User not found");
         }
+
+        try {
+            usersClient.getUser(userId);
+        } catch (FeignException.NotFound e) {
+            logger.warn(MEMBER_ADD, "User not found in Users service (userId={}, orgId={})", userId, orgId);
+            throw new UserNotFoundException("User not found");
+        } catch (FeignException e) {
+            logger.error(MEMBER_ADD, "Users service error (status={}, userId={}, orgId={})", e.status(), userId, orgId);
+            throw new ExternalServiceException("Users service unavailable");
+        }
+
 
         MemberId memberId = new MemberId(orgId, userId);
 
