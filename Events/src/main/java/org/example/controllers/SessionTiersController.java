@@ -1,5 +1,6 @@
 package org.example.controllers;
 
+import org.example.dtos.eventSessions.EventSessionDTO;
 import org.example.dtos.sessionTiers.SessionTierCreateDTO;
 import org.example.dtos.sessionTiers.SessionTierDTO;
 import org.example.dtos.sessionTiers.SessionTierUpdateDTO;
@@ -111,5 +112,29 @@ public class SessionTiersController {
 
         logger.info(marker, "200 OK returned, session tier deleted");
         return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+
+    @GetMapping("/get-session-tier/{id}")
+    public ResponseEntity<?> getSessionTier(@PathVariable("id") UUID id) {
+        /* HttpStatus(produces)
+         * 200 OK - Request processed as expected.
+         * 404 NOT_FOUND - Event not found.
+         * 500 INTERNAL_SERVER_ERROR - undefined error
+         */
+        logger.info(marker, "Method getSessionTier entered");
+        SessionTierDTO sessionTier = null;
+
+        try {
+            sessionTier =modelMapper.map(sessionTiersService.getSessionTier(id),SessionTierDTO.class) ;
+        } catch (SessionTierNotFoundException e) {
+            logger.error(marker, "SessionTierNotFoundException caught while getting session tier: {}", e.getMessage());
+        } catch (Exception e) {
+            logger.error(marker, "Exception caught while getting session tier: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+
+        logger.info(marker, "200 OK returned, session tier found");
+        return ResponseEntity.status(HttpStatus.OK).body(sessionTier);
     }
 }

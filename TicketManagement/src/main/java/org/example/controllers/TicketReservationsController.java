@@ -29,8 +29,6 @@ public class TicketReservationsController {
 
     private Logger logger = LoggerFactory.getLogger(TicketReservationsController.class);
 
-    private Marker reserveMarker = MarkerFactory.getMarker("ReserveTicket");
-
     private static final Marker TICKET_RESERVATION_CREATE = MarkerFactory.getMarker("TICKET_RESERVATION_CREATE");
 
 

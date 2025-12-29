@@ -54,13 +54,13 @@ public class EventsController {
     }
 
     @GetMapping("/get-event/{id}")
-    public ResponseEntity<?> searchEvents(@PathVariable("id") UUID id) {
+    public ResponseEntity<?> getEvent(@PathVariable("id") UUID id) {
         /* HttpStatus(produces)
          * 200 OK - Request processed as expected.
          * 404 NOT_FOUND - Event not found.
          * 500 INTERNAL_SERVER_ERROR - undefined error
          */
-        logger.info(marker, "Method searchEvents entered");
+        logger.info(marker, "Method getEvent entered");
         EventDTO event = null;
 
         try {

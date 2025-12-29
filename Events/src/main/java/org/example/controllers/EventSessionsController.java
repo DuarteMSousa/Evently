@@ -62,7 +62,7 @@ public class EventSessionsController {
         }
 
         logger.info(marker, "200 OK returned, event session created");
-        return ResponseEntity.status(HttpStatus.OK).body(event);
+        return ResponseEntity.status(HttpStatus.OK).body(eventSession);
     }
 
     @PutMapping("/update-event-session/{id}")
@@ -93,7 +93,7 @@ public class EventSessionsController {
         }
 
         logger.info(marker, "200 OK returned, event session updated");
-        return ResponseEntity.status(HttpStatus.OK).body(event);
+        return ResponseEntity.status(HttpStatus.OK).body(eventSession);
     }
 
     @DeleteMapping("/delete-event-session/{id}")
@@ -121,6 +121,30 @@ public class EventSessionsController {
         }
 
         logger.info(marker, "200 OK returned, event updated");
-        return ResponseEntity.status(HttpStatus.OK).body(event);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+
+    @GetMapping("/get-event-session/{id}")
+    public ResponseEntity<?> getEventSession(@PathVariable("id") UUID id) {
+        /* HttpStatus(produces)
+         * 200 OK - Request processed as expected.
+         * 404 NOT_FOUND - Event not found.
+         * 500 INTERNAL_SERVER_ERROR - undefined error
+         */
+        logger.info(marker, "Method getEventSession entered");
+        EventSessionDTO eventSession = null;
+
+        try {
+            eventSession =modelMapper.map(eventSessionsService.getEventSession(id),EventSessionDTO.class) ;
+        } catch (EventSessionNotFoundException e) {
+            logger.error(marker, "EventSessionNotFoundException caught while getting event session: {}", e.getMessage());
+        } catch (Exception e) {
+            logger.error(marker, "Exception caught while getting event session: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+
+        logger.info(marker, "200 OK returned, event session found");
+        return ResponseEntity.status(HttpStatus.OK).body(eventSession);
     }
 }
