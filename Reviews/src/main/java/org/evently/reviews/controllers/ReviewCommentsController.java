@@ -54,11 +54,10 @@ public class ReviewCommentsController {
         }
     }
 
-    @GetMapping("/review/{reviewId}")
+    @GetMapping("/review/{reviewId}/{pageNumber}/{pageSize}")
     public ResponseEntity<Page<ReviewCommentDTO>> getCommentsByReview(
             @PathVariable("reviewId") UUID reviewId,
-            @RequestParam(value="page", defaultValue = "1") Integer page,
-            @RequestParam(value="size", defaultValue = "50") Integer size) {
+            @PathVariable("pageNumber") Integer pageNumber, @PathVariable("pageSize") Integer pageSize) {
         /* HttpStatus(produces)
          * 200 OK - Paginated list of comments for the specified review retrieved successfully.
          */
@@ -68,7 +67,7 @@ public class ReviewCommentsController {
         Review review = new Review();
         review.setId(reviewId);
 
-        Page<ReviewComment> commentPage = reviewCommentsService.getReviewCommentsByReview(review, page, size);
+        Page<ReviewComment> commentPage = reviewCommentsService.getReviewCommentsByReview(review, pageNumber, pageSize);
         Page<ReviewCommentDTO> dtoPage = commentPage.map(this::convertToDTO);
 
         logger.info(COMMENT_GET, "200 OK returned, paginated comments retrieved");

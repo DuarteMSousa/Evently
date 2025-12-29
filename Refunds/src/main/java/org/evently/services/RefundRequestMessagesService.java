@@ -40,6 +40,13 @@ public class RefundRequestMessagesService {
     @Autowired
     private UsersClient usersClient;
 
+    /**
+     * Retrieves a refund request message by its unique identifier.
+     *
+     * @param id refund request message identifier
+     * @return found refund request message
+     * @throws RefundRequestMessageNotFoundException if the message does not exist
+     */
     public RefundRequestMessage getRefundRequestMessage(UUID id) {
         logger.debug(MESSAGE_GET, "Get message requested (id={})", id);
         return refundRequestMessagesRepository.findById(id)
@@ -49,6 +56,17 @@ public class RefundRequestMessagesService {
                 });
     }
 
+    /**
+     * Sends (registers) a new refund request message after validating its data
+     * and verifying related entities.
+     *
+     * @param message refund request message to be sent
+     * @return persisted refund request message
+     * @throws InvalidRefundRequestUpdateException if the message data is invalid
+     * @throws UserNotFoundException if the message author does not exist
+     * @throws RefundRequestNotFoundException if the associated refund request does not exist
+     * @throws ExternalServiceException if the Users service is unavailable or returns an error
+     */
     @Transactional
     public RefundRequestMessage sendRefundRequestMessage(RefundRequestMessage message) {
         logger.info(MESSAGE_SEND, "Sending message for refund request (requestId={})",
@@ -78,6 +96,14 @@ public class RefundRequestMessagesService {
         return saved;
     }
 
+    /**
+     * Retrieves a paginated list of messages associated with a refund request.
+     *
+     * @param refundRequest refund request entity
+     * @param pageNumber page number (1-based)
+     * @param pageSize page size
+     * @return page of refund request messages for the given request
+     */
     public Page<RefundRequestMessage> getRefundRequestMessagesByRequest(org.evently.models.RefundRequest refundRequest, Integer pageNumber, Integer pageSize) {
         if (pageSize > 50 || pageSize < 1) {
             pageSize = 50;
@@ -93,6 +119,12 @@ public class RefundRequestMessagesService {
         return refundRequestMessagesRepository.findAllByRefundRequest(refundRequest, pageable);
     }
 
+    /**
+     * Validates all required fields of a refund request message before sending.
+     *
+     * @param message refund request message to validate
+     * @throws InvalidRefundRequestUpdateException if any required field is missing or invalid
+     */
     private void validateMessage(RefundRequestMessage message) {
         logger.debug(MESSAGE_VALIDATION, "Validating refund request message payload");
 

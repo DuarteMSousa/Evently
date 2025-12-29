@@ -34,8 +34,13 @@ public class OrdersService {
     @Autowired
     private OrdersRepository ordersRepository;
 
-    private final ModelMapper modelMapper = new ModelMapper();
-
+    /**
+     * Retrieves an order by its unique identifier.
+     *
+     * @param id order identifier
+     * @return found order
+     * @throws OrderNotFoundException if the order does not exist
+     */
     public Order getOrder(UUID id) {
         logger.debug(ORDER_GET, "Get order requested (id={})", id);
 
@@ -46,6 +51,13 @@ public class OrdersService {
                 });
     }
 
+    /**
+     * Creates a new order after validating all required fields and associations.
+     *
+     * @param order order to be created
+     * @return persisted order
+     * @throws InvalidOrderUpdateException if the order data is invalid
+     */
     @Transactional
     public Order createOrder(Order order) {
         logger.info(ORDER_CREATE, "Creating order for user (userId={}) with total ({})",
@@ -65,6 +77,14 @@ public class OrdersService {
         return savedOrder;
     }
 
+    /**
+     * Marks an existing order as successfully paid.
+     *
+     * @param id order identifier
+     * @return updated order marked as paid
+     * @throws OrderNotFoundException if the order does not exist
+     * @throws InvalidOrderUpdateException if the order is not in a payable state
+     */
     @Transactional
     public Order markAsPaid(UUID id) {
         logger.info(ORDER_PAYMENT, "Marking order as paid (id={})", id);
@@ -83,6 +103,14 @@ public class OrdersService {
         return updatedOrder;
     }
 
+    /**
+     * Marks an existing order payment as failed.
+     *
+     * @param id order identifier
+     * @return updated order marked as payment failed
+     * @throws OrderNotFoundException if the order does not exist
+     * @throws InvalidOrderUpdateException if the order is not in a payable state
+     */
     @Transactional
     public Order markAsPaymentFailed(UUID id) {
         logger.info(ORDER_PAYMENT, "Marking order as failed (id={})", id);
@@ -100,6 +128,14 @@ public class OrdersService {
         return updatedOrder;
     }
 
+    /**
+     * Cancels an existing order, as long as it has not been successfully paid or already cancelled.
+     *
+     * @param id order identifier
+     * @return cancelled order
+     * @throws OrderNotFoundException if the order does not exist
+     * @throws InvalidOrderUpdateException if the order is already paid or cancelled
+     */
     @Transactional
     public Order cancelOrder(UUID id) {
         logger.info(ORDER_CANCEL, "Cancelling order (id={})", id);
@@ -123,6 +159,14 @@ public class OrdersService {
         return cancelledOrder;
     }
 
+    /**
+     * Retrieves a paginated list of orders associated with a user.
+     *
+     * @param userId user identifier
+     * @param pageNumber page number (0-based)
+     * @param pageSize page size (maximum 50)
+     * @return page of user orders
+     */
     public Page<Order> getOrdersByUser(UUID userId, Integer pageNumber, Integer pageSize) {
         pageSize = Math.min(pageSize, 50);
 
@@ -133,6 +177,12 @@ public class OrdersService {
         return ordersRepository.findAllByUserId(userId, pageable);
     }
 
+    /**
+     * Validates all required order fields before persisting the order.
+     *
+     * @param order order to validate
+     * @throws InvalidOrderUpdateException if any required field or constraint is invalid
+     */
     private void validateOrder(Order order) {
         logger.debug(ORDER_VALIDATION, "Validating order payload for user (userId={})", order.getUserId());
 

@@ -53,11 +53,10 @@ public class RefundRequestMessagesController {
         }
     }
 
-    @GetMapping("/request/{requestId}")
+    @GetMapping("/request/{requestId}/{pageNumber}/{pageSize}")
     public ResponseEntity<Page<RefundRequestMessageDTO>> getMessagesByRequest(
             @PathVariable("requestId") UUID requestId,
-            @RequestParam(value = "page", defaultValue = "1") Integer page,
-            @RequestParam(value = "size", defaultValue = "50") Integer size) {
+            @PathVariable("pageNumber") Integer pageNumber, @PathVariable("pageSize") Integer pageSize) {
         /* HttpStatus(produces)
          * 200 OK - Paginated list of messages for the refund request retrieved successfully.
          */
@@ -66,7 +65,7 @@ public class RefundRequestMessagesController {
         RefundRequest request = new RefundRequest();
         request.setId(requestId);
 
-        Page<RefundRequestMessage> messagePage = messagesService.getRefundRequestMessagesByRequest(request, page, size);
+        Page<RefundRequestMessage> messagePage = messagesService.getRefundRequestMessagesByRequest(request, pageNumber, pageSize);
         Page<RefundRequestMessageDTO> dtoPage = messagePage.map(this::convertToDTO);
 
         logger.info(MESSAGE_GET, "200 OK returned, messages list retrieved");

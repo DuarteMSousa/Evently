@@ -41,6 +41,13 @@ public class RefundDecisionsService {
     @Autowired
     private UsersClient usersClient;
 
+    /**
+     * Retrieves a refund decision by its unique identifier.
+     *
+     * @param id refund decision identifier
+     * @return found refund decision
+     * @throws RefundDecisionNotFoundException if the decision does not exist
+     */
     public RefundDecision getRefundDecision(UUID id) {
         logger.debug(DECISION_GET, "Get decision requested (id={})", id);
         return refundDecisionsRepository.findById(id)
@@ -50,6 +57,16 @@ public class RefundDecisionsService {
                 });
     }
 
+    /**
+     * Registers a new refund decision after validating its data and related entities.
+     *
+     * @param decision refund decision to be registered
+     * @return persisted refund decision
+     * @throws InvalidRefundRequestUpdateException if the decision data is invalid
+     * @throws UserNotFoundException if the deciding user does not exist
+     * @throws RefundRequestNotFoundException if the associated refund request does not exist
+     * @throws ExternalServiceException if the Users service is unavailable or returns an error
+     */
     @Transactional
     public RefundDecision registerRefundDecision(RefundDecision decision) {
         logger.info(DECISION_REGISTER, "Registering decision ({}) for request (requestId={})",
@@ -81,6 +98,14 @@ public class RefundDecisionsService {
         return saved;
     }
 
+    /**
+     * Retrieves a paginated list of refund decisions associated with a refund request.
+     *
+     * @param refundRequest refund request entity
+     * @param pageNumber page number (1-based)
+     * @param pageSize page size
+     * @return page of refund decisions for the given request
+     */
     public Page<RefundDecision> getRefundDecisionsByRequest(RefundRequest refundRequest, Integer pageNumber, Integer pageSize) {
         if (pageSize > 50 || pageSize < 1) {
             pageSize = 50;
@@ -96,6 +121,12 @@ public class RefundDecisionsService {
         return refundDecisionsRepository.findAllByRefundRequest(refundRequest, pageable);
     }
 
+    /***
+     * Validates all required fields of a refund decision before registration.
+     *
+     * @param decision refund decision to validate
+     * @throws InvalidRefundRequestUpdateException if any required field is missing or invalid
+     */
     private void validateDecision(RefundDecision decision) {
         logger.debug(DECISION_VALIDATION, "Validating decision payload");
         if (decision.getDecidedBy() == null) {

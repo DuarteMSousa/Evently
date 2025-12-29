@@ -42,6 +42,13 @@ public class ReviewCommentsService {
 
     private final ModelMapper modelMapper = new ModelMapper();
 
+    /**
+     * Retrieves a review comment by its unique identifier.
+     *
+     * @param id review comment identifier
+     * @return found review comment
+     * @throws ReviewCommentNotFoundException if the comment does not exist
+     */
     public ReviewComment getReviewComment(UUID id) {
         logger.debug(COMMENT_GET, "Get comment requested (id={})", id);
         return reviewCommentsRepository.findById(id)
@@ -51,6 +58,16 @@ public class ReviewCommentsService {
                 });
     }
 
+    /**
+     * Registers a new review comment after validating its data and related entities.
+     *
+     * @param reviewComment review comment to be registered
+     * @return persisted review comment
+     * @throws InvalidReviewCommentUpdateException if the comment data is invalid
+     * @throws UserNotFoundException if the author user does not exist
+     * @throws ReviewNotFoundException if the associated review does not exist
+     * @throws ExternalServiceException if the Users service is unavailable or returns an error
+     */
     @Transactional
     public ReviewComment registerReviewComment(ReviewComment reviewComment) {
         logger.info(COMMENT_CREATE, "Register comment requested for review (id={})",
@@ -80,6 +97,15 @@ public class ReviewCommentsService {
         return saved;
     }
 
+    /**
+     * Updates an existing review comment after validating its data and checking the identifier.
+     *
+     * @param id review comment identifier to update
+     * @param reviewComment review comment data to update
+     * @return updated review comment
+     * @throws InvalidReviewCommentUpdateException if the comment data is invalid or ID mismatch occurs
+     * @throws ReviewCommentNotFoundException if the comment does not exist
+     */
     @Transactional
     public ReviewComment updateReviewComment(UUID id, ReviewComment reviewComment) {
         logger.info(COMMENT_UPDATE, "Update comment requested (id={})", id);
@@ -103,6 +129,12 @@ public class ReviewCommentsService {
         return updated;
     }
 
+    /**
+     * Deletes a review comment by its unique identifier.
+     *
+     * @param id review comment identifier
+     * @throws ReviewCommentNotFoundException if the comment does not exist
+     */
     @Transactional
     public void deleteReviewComment(UUID id) {
         logger.info(COMMENT_DELETE, "Delete comment requested (id={})", id);
@@ -116,6 +148,14 @@ public class ReviewCommentsService {
         logger.info(COMMENT_DELETE, "Comment deleted successfully (id={})", id);
     }
 
+    /**
+     * Retrieves a paginated list of review comments associated with a review.
+     *
+     * @param review review entity
+     * @param pageNumber page number (1-based)
+     * @param pageSize page size
+     * @return page of review comments for the given review
+     */
     public Page<ReviewComment> getReviewCommentsByReview(org.evently.reviews.models.Review review, Integer pageNumber, Integer pageSize) {
         if (pageSize > 50 || pageSize < 1) {
             pageSize = 50;
@@ -132,6 +172,12 @@ public class ReviewCommentsService {
         return reviewCommentsRepository.findAllByReview(review, pageable);
     }
 
+    /**
+     * Validates all required fields of a review comment before registration or update.
+     *
+     * @param comment review comment to validate
+     * @throws InvalidReviewCommentUpdateException if any required field is missing or invalid
+     */
     private void validateComment(ReviewComment comment) {
         logger.debug(COMMENT_VALIDATION, "Validating comment payload");
 

@@ -52,17 +52,16 @@ public class RefundRequestsController {
         }
     }
 
-    @GetMapping("/user/{userId}")
+    @GetMapping("/user/{userId}/{pageNumber}/{pageSize}")
     public ResponseEntity<Page<RefundRequestDTO>> getRefundRequestsByUser(
             @PathVariable("userId") UUID userId,
-            @RequestParam(value = "page", defaultValue = "1") Integer page,
-            @RequestParam(value = "size", defaultValue = "50") Integer size) {
+            @PathVariable("pageNumber") Integer pageNumber, @PathVariable("pageSize") Integer pageSize) {
         /* HttpStatus(produces)
          * 200 OK - Paginated list of refund requests by user retrieved successfully.
          */
 
         logger.info(REFUND_GET, "Method getRefundRequestsByUser entered for user: {}", userId);
-        Page<RefundRequest> refundPage = refundRequestsService.getRefundRequestsByUser(userId, page, size);
+        Page<RefundRequest> refundPage = refundRequestsService.getRefundRequestsByUser(userId, pageNumber, pageSize);
         Page<RefundRequestDTO> dtoPage = refundPage.map(this::convertToDTO);
 
         logger.info(REFUND_GET, "200 OK returned, paginated list retrieved");

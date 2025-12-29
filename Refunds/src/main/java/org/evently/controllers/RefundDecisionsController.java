@@ -53,11 +53,10 @@ public class RefundDecisionsController {
         }
     }
 
-    @GetMapping("/request/{requestId}")
+    @GetMapping("/request/{requestId}/{pageNumber}/{pageSize}")
     public ResponseEntity<Page<RefundDecisionDTO>> getDecisionsByRequest(
             @PathVariable("requestId") UUID requestId,
-            @RequestParam(value = "page", defaultValue = "1") Integer page,
-            @RequestParam(value = "size", defaultValue = "50") Integer size) {
+            @PathVariable("pageNumber") Integer pageNumber, @PathVariable("pageSize") Integer pageSize) {
         /* HttpStatus(produces)
          * 200 OK - Paginated list of decisions for the refund request retrieved successfully.
          */
@@ -66,7 +65,7 @@ public class RefundDecisionsController {
         RefundRequest request = new RefundRequest();
         request.setId(requestId);
 
-        Page<RefundDecision> decisionPage = refundDecisionsService.getRefundDecisionsByRequest(request, page, size);
+        Page<RefundDecision> decisionPage = refundDecisionsService.getRefundDecisionsByRequest(request, pageNumber, pageSize);
         Page<RefundDecisionDTO> dtoPage = decisionPage.map(this::convertToDTO);
 
         logger.info(DECISION_GET, "200 OK returned, decisions list retrieved");
