@@ -56,18 +56,17 @@ public class TicketsController {
         }
     }
 
-    @GetMapping("/user/{userId}")
+    @GetMapping("/user/{userId}/{pageNumber}/{pageSize}")
     public ResponseEntity<Page<TicketDTO>> getTicketsByUser(
             @PathVariable("userId") UUID userId,
-            @RequestParam(value = "page", defaultValue = "1") Integer page,
-            @RequestParam(value = "size", defaultValue = "50") Integer size) {
+            @PathVariable("pageNumber") Integer pageNumber, @PathVariable("pageSize") Integer pageSize) {
         /* HttpStatus(produces)
          * 200 OK - Paginated list of tickets for user retrieved successfully.
          */
 
-        logger.info(TICKET_GET, "Method getTicketsByUser entered for userId: {} (page={}, size={})", userId, page, size);
+        logger.info(TICKET_GET, "Method getTicketsByUser entered for userId: {} (page={}, size={})", userId, pageNumber, pageSize);
 
-        Page<Ticket> ticketPage = ticketsService.getTicketsByUser(userId, page, size);
+        Page<Ticket> ticketPage = ticketsService.getTicketsByUser(userId, pageNumber, pageSize);
         Page<TicketDTO> dtoPage = ticketPage.map(this::convertToDTO);
 
         logger.info(TICKET_GET, "200 OK returned, paginated tickets retrieved");

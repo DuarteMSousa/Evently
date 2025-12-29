@@ -44,6 +44,13 @@ public class RefundRequestsService {
 
     private final ModelMapper modelMapper = new ModelMapper();
 
+    /**
+     * Retrieves a refund request by its unique identifier.
+     *
+     * @param id refund request identifier
+     * @return found refund request
+     * @throws RefundRequestNotFoundException if the refund request does not exist
+     */
     public RefundRequest getRefundRequest(UUID id) {
         logger.debug(REFUND_GET, "Get refund request requested (id={})", id);
         return refundRequestsRepository.findById(id)
@@ -53,6 +60,17 @@ public class RefundRequestsService {
                 });
     }
 
+    /**
+     * Creates a new refund request after validating its data and
+     * verifying related external entities.
+     *
+     * @param refundRequest refund request to be created
+     * @return persisted refund request
+     * @throws InvalidRefundRequestUpdateException if the refund request data is invalid
+     * @throws UserNotFoundException if the requesting user does not exist
+     * @throws PaymentNotFoundException if the associated payment does not exist
+     * @throws ExternalServiceException if the Users or Payments service is unavailable or returns an error
+     */
     @Transactional
     public RefundRequest createRefundRequest(RefundRequest refundRequest) {
         logger.info(REFUND_CREATE, "Creating refund request (user={}, payment={})",
@@ -89,6 +107,15 @@ public class RefundRequestsService {
         return saved;
     }
 
+    /**
+     * Updates an existing refund request identified by its unique identifier.
+     *
+     * @param id refund request identifier
+     * @param request refund request data to update
+     * @return updated refund request
+     * @throws InvalidRefundRequestUpdateException if the request data is invalid or IDs do not match
+     * @throws RefundRequestNotFoundException if the refund request does not exist
+     */
     @Transactional
     public RefundRequest updateRefundRequest(UUID id, RefundRequest request) {
         logger.info(REFUND_UPDATE, "Update refund request requested (id={})", id);
@@ -112,6 +139,14 @@ public class RefundRequestsService {
         return updated;
     }
 
+    /**
+     * Retrieves a paginated list of refund requests associated with a user.
+     *
+     * @param userId user identifier
+     * @param pageNumber page number (1-based)
+     * @param pageSize page size
+     * @return page of refund requests for the given user
+     */
     public Page<RefundRequest> getRefundRequestsByUser(UUID userId, Integer pageNumber, Integer pageSize) {
         if (pageSize > 50 || pageSize < 1) {
             pageSize = 50;
@@ -127,6 +162,12 @@ public class RefundRequestsService {
         return refundRequestsRepository.findAllByUserId(userId, pageable);
     }
 
+    /**
+     * Validates all required fields of a refund request before creation or update.
+     *
+     * @param request refund request to validate
+     * @throws InvalidRefundRequestUpdateException if any required field is missing or invalid
+     */
     private void validateRefundRequest(RefundRequest request) {
         logger.debug(REFUND_VALIDATION, "Validating refund request payload");
 

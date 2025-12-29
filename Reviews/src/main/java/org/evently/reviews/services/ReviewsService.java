@@ -9,7 +9,10 @@ import org.evently.reviews.clients.VenuesClient;
 import org.evently.reviews.exceptions.ExternalServiceException;
 import org.evently.reviews.exceptions.InvalidReviewUpdateException;
 import org.evently.reviews.exceptions.ReviewNotFoundException;
+import org.evently.reviews.exceptions.externalServices.EventNotFoundException;
+import org.evently.reviews.exceptions.externalServices.OrganizationNotFoundException;
 import org.evently.reviews.exceptions.externalServices.UserNotFoundException;
+import org.evently.reviews.exceptions.externalServices.VenueNotFoundException;
 import org.evently.reviews.models.Review;
 import org.evently.reviews.repositories.ReviewsRepository;
 import org.modelmapper.ModelMapper;
@@ -52,6 +55,13 @@ public class ReviewsService {
 
     private final ModelMapper modelMapper = new ModelMapper();
 
+    /**
+     * Retrieves a review by its unique identifier.
+     *
+     * @param id review identifier
+     * @return found review
+     * @throws ReviewNotFoundException if the review does not exist
+     */
     public Review getReview(UUID id) {
         logger.debug(REVIEW_GET, "Get review requested (id={})", id);
         return reviewsRepository.findById(id)
@@ -61,6 +71,18 @@ public class ReviewsService {
                 });
     }
 
+    /**
+     * Registers a new review after validating its data and the existence of all related entities.
+     *
+     * @param review review to be registered
+     * @return persisted review
+     * @throws InvalidReviewUpdateException if the review data is invalid or the entity type is unknown
+     * @throws EventNotFoundException if the target event does not exist
+     * @throws VenueNotFoundException if the target venue does not exist
+     * @throws OrganizationNotFoundException if the target organization does not exist
+     * @throws UserNotFoundException if the review author does not exist
+     * @throws ExternalServiceException if any external service is unavailable or returns an error
+     */
     @Transactional
     public Review registerReview(Review review) {
         logger.info(REVIEW_CREATE, "Register review requested (authorId={}, entityId={})",
@@ -74,8 +96,7 @@ public class ReviewsService {
                     eventsClient.searchEvents(review.getEntityId());
                 } catch (FeignException.NotFound e) {
                     logger.warn(REVIEW_CREATE, "(ReviewsService): Event not found in Events service");
-                    throw new InvalidReviewUpdateException(
-                            "(ReviewsService): Event not found in Events service");
+                    throw new EventNotFoundException("(ReviewsService): Event not found in Events service");
                 } catch (FeignException e) {
                     logger.error(REVIEW_CREATE, "(ReviewsService): Events service error", e);
                     throw new ExternalServiceException(
@@ -87,7 +108,7 @@ public class ReviewsService {
                     venuesClient.getVenue(review.getEntityId());
                 } catch (FeignException.NotFound e) {
                     logger.warn(REVIEW_CREATE, "(ReviewsService): Venue not found in Venues service");
-                    throw new InvalidReviewUpdateException(
+                    throw new VenueNotFoundException(
                             "(ReviewsService): Venue not found in Venues service");
                 } catch (FeignException e) {
                     logger.error(REVIEW_CREATE, "(ReviewsService): Venues service error", e);
@@ -100,7 +121,7 @@ public class ReviewsService {
                     organizationsClient.getOrganization(review.getEntityId());
                 } catch (FeignException.NotFound e) {
                     logger.warn(REVIEW_CREATE, "(ReviewsService): Organization not found in Organizations service");
-                    throw new InvalidReviewUpdateException(
+                    throw new OrganizationNotFoundException(
                             "(ReviewsService): Organization not found in Organizations service");
                 } catch (FeignException e) {
                     logger.error(REVIEW_CREATE, "(ReviewsService): Organizations service error", e);
@@ -129,6 +150,15 @@ public class ReviewsService {
         return saved;
     }
 
+    /**
+     * Updates an existing review with new data.
+     *
+     * @param id review identifier
+     * @param review updated review data
+     * @return updated review
+     * @throws InvalidReviewUpdateException if the request data is invalid or IDs do not match
+     * @throws ReviewNotFoundException if the review does not exist
+     */
     @Transactional
     public Review updateReview(UUID id, Review review) {
         logger.info(REVIEW_UPDATE, "Update review requested (id={})", id);
@@ -152,6 +182,12 @@ public class ReviewsService {
         return updated;
     }
 
+    /**
+     * Deletes a review by its unique identifier.
+     *
+     * @param id review identifier
+     * @throws ReviewNotFoundException if the review does not exist
+     */
     @Transactional
     public void deleteReview(UUID id) {
         logger.info(REVIEW_DELETE, "Delete review requested (id={})", id);
@@ -165,6 +201,14 @@ public class ReviewsService {
         logger.info(REVIEW_DELETE, "Review deleted successfully (id={})", id);
     }
 
+    /**
+     * Retrieves a paginated list of reviews written by a specific author.
+     *
+     * @param authorId author identifier
+     * @param pageNumber page number (1-based)
+     * @param pageSize page size
+     * @return page of reviews created by the given author
+     */
     public Page<Review> getReviewsByAuthor(UUID authorId, Integer pageNumber, Integer pageSize) {
         if (pageSize > 50 || pageSize < 1) {
             pageSize = 50;
@@ -180,6 +224,14 @@ public class ReviewsService {
         return reviewsRepository.findAllByAuthorId(authorId, pageable);
     }
 
+    /**
+     * Retrieves a paginated list of reviews associated with a specific entity.
+     *
+     * @param entityId entity identifier
+     * @param pageNumber page number (1-based)
+     * @param pageSize page size
+     * @return page of reviews for the given entity
+     */
     public Page<Review> getReviewsByEntity(UUID entityId, Integer pageNumber, Integer pageSize) {
         if (pageSize > 50 || pageSize < 1) {
             pageSize = 50;
@@ -196,6 +248,12 @@ public class ReviewsService {
         return reviewsRepository.findAllByEntityId(entityId, pageable);
     }
 
+    /**
+     * Validates all required fields of a review before creation or update.
+     *
+     * @param review review to validate
+     * @throws InvalidReviewUpdateException if any required field is missing or invalid
+     */
     private void validateReview(Review review) {
         logger.debug(REVIEW_VALIDATION, "Validating review payload (authorId={}, entityId={})",
                 review.getAuthorId(), review.getEntityId());

@@ -6,7 +6,6 @@ import org.evently.tickets.exceptions.InvalidTicketUpdateException;
 import org.evently.tickets.exceptions.TicketNotFoundException;
 import org.evently.tickets.models.Ticket;
 import org.evently.tickets.repositories.TicketsRepository;
-import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -33,6 +32,13 @@ public class TicketsService {
     @Autowired
     private TicketsRepository ticketsRepository;
 
+    /**
+     * Retrieves a ticket by its unique identifier.
+     *
+     * @param id ticket identifier
+     * @return found ticket
+     * @throws TicketNotFoundException if the ticket does not exist
+     */
     public Ticket getTicket(UUID id) {
         logger.debug(TICKET_GET, "Get ticket requested (id={})", id);
 
@@ -43,6 +49,13 @@ public class TicketsService {
                 });
     }
 
+    /**
+     * Issues a new ticket after validating all required fields.
+     *
+     * @param ticket ticket to be issued
+     * @return persisted ticket
+     * @throws InvalidTicketUpdateException if the ticket data is invalid
+     */
     @Transactional
     public Ticket issueTicket(Ticket ticket) {
         logger.info(TICKET_CREATE, "Registering new ticket (userId={}, eventId={}, tierId={})",
@@ -58,6 +71,14 @@ public class TicketsService {
         return savedTicket;
     }
 
+    /**
+     * Cancels an existing ticket, as long as it has not been used or already cancelled.
+     *
+     * @param id ticket identifier
+     * @return cancelled ticket
+     * @throws TicketNotFoundException if the ticket does not exist
+     * @throws InvalidTicketUpdateException if the ticket is already used or cancelled
+     */
     @Transactional
     public Ticket cancelTicket(UUID id) {
         logger.info(TICKET_CANCEL, "Cancelling ticket (id={})", id);
@@ -81,6 +102,14 @@ public class TicketsService {
         return cancelledTicket;
     }
 
+    /**
+     * Validates and marks a ticket as used.
+     *
+     * @param id ticket identifier
+     * @return updated ticket marked as used
+     * @throws TicketNotFoundException if the ticket does not exist
+     * @throws InvalidTicketUpdateException if the ticket is already used or cancelled
+     */
     @Transactional
     public Ticket useTicket(UUID id) {
         logger.info(TICKET_USE, "Validating/Using ticket (id={})", id);
@@ -104,6 +133,14 @@ public class TicketsService {
         return updatedTicket;
     }
 
+    /**
+     * Retrieves a paginated list of tickets associated with a user.
+     *
+     * @param userId user identifier
+     * @param pageNumber page number (1-based)
+     * @param pageSize page size
+     * @return page of user tickets
+     */
     public Page<Ticket> getTicketsByUser(UUID userId, Integer pageNumber, Integer pageSize) {
         if (pageSize > 50 || pageSize < 1) {
             pageSize = 50;
@@ -120,6 +157,12 @@ public class TicketsService {
         return ticketsRepository.findAllByUserId(userId, pageable);
     }
 
+    /**
+     * Validates all required ticket fields before issuing the ticket.
+     *
+     * @param ticket ticket to validate
+     * @throws InvalidTicketUpdateException if any required field is missing
+     */
     private void validateTicket(Ticket ticket) {
         logger.debug(TICKET_VALIDATION, "Validating ticket payload (userId={}, eventId={})",
                 ticket.getUserId(), ticket.getEventId());

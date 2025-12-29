@@ -53,34 +53,32 @@ public class ReviewsController {
         }
     }
 
-    @GetMapping("/author/{authorId}")
+    @GetMapping("/author/{authorId}/{pageNumber}/{pageSize}")
     public ResponseEntity<Page<ReviewDTO>> getReviewsByAuthor(
             @PathVariable("authorId") UUID authorId,
-            @RequestParam(value= "page", defaultValue = "1") Integer page,
-            @RequestParam(value= "size", defaultValue = "50") Integer size) {
+            @PathVariable("pageNumber") Integer pageNumber, @PathVariable("pageSize") Integer pageSize) {
         /* HttpStatus(produces)
          * 200 OK - Paginated list of reviews by author retrieved successfully.
          */
 
         logger.info(REVIEW_GET, "Method getReviewsByAuthor entered for Author: {}", authorId);
-        Page<Review> reviewPage = reviewService.getReviewsByAuthor(authorId, page, size);
+        Page<Review> reviewPage = reviewService.getReviewsByAuthor(authorId, pageNumber, pageSize);
         Page<ReviewDTO> dtoPage = reviewPage.map(this::convertToDTO);
 
         logger.info(REVIEW_GET, "200 OK returned, author reviews retrieved");
         return ResponseEntity.ok(dtoPage);
     }
 
-    @GetMapping("/entity/{entityId}")
+    @GetMapping("/entity/{entityId}/{pageNumber}/{pageSize}")
     public ResponseEntity<Page<ReviewDTO>> getReviewsByEntity(
             @PathVariable("entityId") UUID entityId,
-            @RequestParam(value="page", defaultValue = "1") Integer page,
-            @RequestParam(value="size", defaultValue = "50") Integer size) {
+            @PathVariable("pageNumber") Integer pageNumber, @PathVariable("pageSize") Integer pageSize) {
         /* HttpStatus(produces)
          * 200 OK - Paginated list of reviews by entity retrieved successfully.
          */
 
         logger.info(REVIEW_GET, "Method getReviewsByEntity entered for Entity: {}", entityId);
-        Page<Review> reviewPage = reviewService.getReviewsByEntity(entityId, page, size);
+        Page<Review> reviewPage = reviewService.getReviewsByEntity(entityId, pageNumber, pageSize);
         Page<ReviewDTO> dtoPage = reviewPage.map(this::convertToDTO);
 
         logger.info(REVIEW_GET, "200 OK returned, entity reviews retrieved");

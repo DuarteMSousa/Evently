@@ -60,18 +60,17 @@ public class OrdersController {
         }
     }
 
-    @GetMapping("/user/{userId}")
+    @GetMapping("/user/{userId}/{pageNumber}/{pageSize}")
     public ResponseEntity<Page<OrderDTO>> getOrdersByUser(
             @PathVariable("userId") UUID userId,
-            @RequestParam(value = "page", defaultValue = "0") Integer page,
-            @RequestParam(value = "size", defaultValue = "10") Integer size) {
+            @PathVariable("pageNumber") Integer pageNumber, @PathVariable("pageSize") Integer pageSize) {
         /* HttpStatus(produces)
          * 200 OK - Paginated list of orders retrieved.
          */
 
         logger.info(ORDER_GET, "Method getOrdersByUser entered (userId={})", userId);
 
-        Page<Order> orderPage = ordersService.getOrdersByUser(userId, page, size);
+        Page<Order> orderPage = ordersService.getOrdersByUser(userId, pageNumber, pageSize);
         Page<OrderDTO> dtoPage = orderPage.map(this::convertToDTO);
 
         logger.info(ORDER_GET, "200 OK returned, orders page retrieved");
