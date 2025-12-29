@@ -1,10 +1,6 @@
 package org.example.dtos.eventSessions;
 
-import jakarta.persistence.*;
-import org.example.models.Event;
-import org.example.models.SessionTier;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
+import org.example.dtos.sessionTiers.SessionTierDTO;
 
 import java.time.Instant;
 import java.util.Date;
