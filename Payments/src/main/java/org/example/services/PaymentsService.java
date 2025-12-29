@@ -44,9 +44,8 @@ public class PaymentsService {
     private PaymentEventsPublisher paymentEventsPublisher;
 
     @Autowired
-    private PaymentProviderClient paymentProviderClient; // PayPal
+    private PaymentProviderClient paymentProviderClient;
 
-    // ---------- helpers ----------
 
     private void validatePaymentForProcess(Payment payment) {
         logger.debug(PAY_VALIDATE,
@@ -97,7 +96,6 @@ public class PaymentsService {
     }
 
     private void publishEvent(String type, Payment payment) {
-        // wrapper para logar sempre antes/depois
         logger.info(PAY_EVENT, "Publishing payment event (type={}, paymentId={}, orderId={}, status={})",
                 type, payment.getId(), payment.getOrderId(), payment.getStatus());
 
@@ -105,8 +103,6 @@ public class PaymentsService {
 
         logger.debug(PAY_EVENT, "Payment event published (type={}, paymentId={})", type, payment.getId());
     }
-
-    // ---------- use cases ----------
 
     @Transactional
     public Payment processPayment(Payment payment) {
@@ -119,7 +115,6 @@ public class PaymentsService {
 
         validatePaymentForProcess(payment);
 
-        // estado inicial
         payment.setStatus("PENDING");
         Payment saved = paymentsRepository.save(payment);
 
@@ -127,7 +122,6 @@ public class PaymentsService {
                 saved.getId(), saved.getOrderId());
 
         try {
-            // cria ordem no PayPal e preenche providerRef
             logger.info(PAY_PROVIDER, "Creating PayPal order (paymentId={}, orderId={})",
                     saved.getId(), saved.getOrderId());
 
@@ -159,7 +153,6 @@ public class PaymentsService {
             throw e;
 
         } catch (RuntimeException e) {
-            // Se houver falha técnica inesperada, é útil logar claramente
             logger.error(PAY_PROCESS, "Unexpected error while processing payment (paymentId={}, orderId={})",
                     saved.getId(), saved.getOrderId(), e);
             throw e;

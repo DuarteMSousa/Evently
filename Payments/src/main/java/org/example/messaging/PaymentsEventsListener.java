@@ -10,5 +10,9 @@ public class PaymentsEventsListener { //sera para fazer aqui ou nas orders??
     public void handlePaymentEvent(PaymentEventsPublisher.PaymentEventMessage message) {
         // Aqui atualizas o estado da encomenda, etc.
         // Ex.: se eventType = "CAPTURE", marcar Order como PAYED.
+
+
+
+        //NAO É PRECISO SERVE PARA APANHAR O EVENTO
     }
 }

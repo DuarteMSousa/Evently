@@ -5,7 +5,6 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -34,12 +33,17 @@ public class PaymentEventsPublisher {
                 eventType
         );
 
+        // ✅ aqui estava o teu bug: exchange/routingKey não existiam
         rabbitTemplate.convertAndSend(paymentsExchangeName, paymentsRoutingKey, message);
     }
 
-    public static class PaymentEventMessage implements Serializable {
-
-        private static final long serialVersionUID = 1L;
+    /**
+     * Mensagem publicada no broker.
+     *
+     * Nota: NÃO usar Serializable para microserviços.
+     * Com Jackson2JsonMessageConverter, isto vai em JSON.
+     */
+    public static class PaymentEventMessage {
 
         private UUID paymentId;
         private UUID orderId;
