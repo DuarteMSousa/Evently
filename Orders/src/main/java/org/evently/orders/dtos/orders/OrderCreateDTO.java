@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.evently.orders.dtos.orderLines.OrderLineCreateDTO;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -14,7 +13,7 @@ public class OrderCreateDTO {
 
     private UUID userId;
 
-    private BigDecimal total;
+    private float total;
 
     private List<OrderLineCreateDTO> lines;
 

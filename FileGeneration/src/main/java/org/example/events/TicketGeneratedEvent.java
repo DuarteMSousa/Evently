@@ -1,4 +1,4 @@
-package org.example.messages;
+package org.example.events;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,7 +9,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class TicketMessage {
+public class TicketGeneratedEvent {
     private UUID id;
 
     private UUID reservationId;

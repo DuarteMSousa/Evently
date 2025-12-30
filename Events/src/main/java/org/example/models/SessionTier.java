@@ -8,7 +8,6 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.UUID;
 
@@ -32,7 +31,7 @@ public class SessionTier {
     private UUID zoneId;
 
     @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal price;
+    private float price;
 
     private UUID createdBy;
 

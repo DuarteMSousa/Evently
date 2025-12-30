@@ -1,6 +1,7 @@
 package org.example.dtos.externalServices.eventSessions;
 
-import org.example.dtos.sessionTiers.SessionTierDTO;
+
+import org.example.dtos.externalServices.sessionTiers.SessionTierDTO;
 
 import java.time.Instant;
 import java.util.Date;

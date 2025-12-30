@@ -5,7 +5,6 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
 import java.util.UUID;
 
 @Component
@@ -48,14 +47,14 @@ public class PaymentEventsPublisher {
         private UUID paymentId;
         private UUID orderId;
         private UUID userId;
-        private BigDecimal amount;
+        private float amount;
         private String status;
         private String eventType;
 
         public PaymentEventMessage(UUID paymentId,
                                    UUID orderId,
                                    UUID userId,
-                                   BigDecimal amount,
+                                   float amount,
                                    String status,
                                    String eventType) {
             this.paymentId = paymentId;
@@ -75,8 +74,8 @@ public class PaymentEventsPublisher {
         public void setOrderId(UUID orderId) { this.orderId = orderId; }
         public UUID getUserId() { return userId; }
         public void setUserId(UUID userId) { this.userId = userId; }
-        public BigDecimal getAmount() { return amount; }
-        public void setAmount(BigDecimal amount) { this.amount = amount; }
+        public float getAmount() { return amount; }
+        public void setAmount(float amount) { this.amount = amount; }
         public String getStatus() { return status; }
         public void setStatus(String status) { this.status = status; }
         public String getEventType() { return eventType; }

@@ -46,7 +46,7 @@ public class EventSession {
     @LastModifiedDate
     private Date updatedAt;
 
-    @OneToMany(mappedBy = "eventSession",cascade =CascadeType.ALL)
+    @OneToMany(mappedBy = "eventSession", cascade = CascadeType.ALL)
     private List<SessionTier> tiers;
 
 }

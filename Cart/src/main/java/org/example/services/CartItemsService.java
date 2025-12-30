@@ -1,10 +1,13 @@
 package org.example.services;
 
 import jakarta.transaction.Transactional;
+import org.example.clients.EventsClient;
+import org.example.dtos.externalServices.sessionTiers.SessionTierDTO;
 import org.example.exceptions.*;
 import org.example.models.Cart;
 import org.example.models.CartItem;
 import org.example.repositories.CartItemsRepository;
+import org.example.repositories.CartsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -30,6 +33,8 @@ public class CartItemsService {
     @Autowired
     private CartItemsRepository cartItemsRepository;
 
+    @Autowired
+    private EventsClient eventsClient;
 
     @Transactional
     public CartItem addItemToCart(UUID userId, UUID productId, Integer quantity) {
@@ -39,6 +44,13 @@ public class CartItemsService {
         if (quantity <= 0) {
             logger.error(ITEM_ADD, "Invalid quantity to add cartItem");
             throw new InvalidCartItemException("Invalid cart item quantity");
+        }
+
+        SessionTierDTO tier = eventsClient.getSessionTier(productId).getBody();
+
+        if (tier == null) {
+            logger.error(ITEM_ADD, "Product not found");
+            throw new ProductNotFoundException("Product not found");
         }
 
         Optional<CartItem> item = cart.getItems().stream()
@@ -53,6 +65,7 @@ public class CartItemsService {
             itemToAdd = new CartItem();
             itemToAdd.setProductId(productId);
             itemToAdd.setQuantity(quantity);
+            itemToAdd.setUnitPrice(tier.getPrice());
         }
 
         return cartItemsRepository.save(itemToAdd);
@@ -94,8 +107,13 @@ public class CartItemsService {
         CartItem itemToRemove = cart.getItems().stream()
                 .filter(i -> i.getProductId().equals(productId))
                 .findFirst()
-                .orElseThrow(() -> new CartItemNotFoundException("Item not found in cart"));
+                .orElse(null);
 
+
+        if (itemToRemove == null) {
+            logger.error(ITEM_REMOVE, "Item not found in cart");
+            throw new CartItemNotFoundException("Item not found in cart");
+        }
 
         cartItemsRepository.delete(itemToRemove);
     }

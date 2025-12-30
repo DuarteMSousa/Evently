@@ -1,8 +1,6 @@
 package org.example.dtos.sessionTiers;
 
 
-import java.math.BigDecimal;
-import java.util.Date;
 import java.util.UUID;
 
 public class SessionTierCreateDTO {
@@ -11,6 +9,6 @@ public class SessionTierCreateDTO {
 
     private UUID zoneId;
 
-    private BigDecimal price;
+    private float price;
 
 }

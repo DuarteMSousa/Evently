@@ -1,7 +1,9 @@
 package org.example.clients;
 
 
+import org.example.dtos.externalServices.eventSessions.EventSessionDTO;
 import org.example.dtos.externalServices.events.EventDTO;
+import org.example.dtos.externalServices.sessionTiers.SessionTierDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,8 +18,8 @@ public interface EventsClient {
     ResponseEntity<EventDTO> getEvent(@PathVariable("id") UUID id);
 
     @GetMapping("/sessions/get-event-session/{id}")
-    ResponseEntity<EventDTO> getEventSession(@PathVariable("id") UUID id);
+    ResponseEntity<EventSessionDTO> getEventSession(@PathVariable("id") UUID id);
 
     @GetMapping("/sessions/tiers/get-session-tier/{id}")
-    ResponseEntity<EventDTO> getSessionTier(@PathVariable("id") UUID id);
+    ResponseEntity<SessionTierDTO> getSessionTier(@PathVariable("id") UUID id);
 }

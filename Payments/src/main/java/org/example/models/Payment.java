@@ -8,7 +8,6 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -32,7 +31,7 @@ public class Payment {
     private UUID userId;
 
     @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal amount;
+    private float amount;
 
     @Column(nullable = false, length = 20)
     private String status;

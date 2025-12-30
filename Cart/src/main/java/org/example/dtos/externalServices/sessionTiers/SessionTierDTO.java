@@ -1,10 +1,12 @@
 package org.example.dtos.externalServices.sessionTiers;
 
 
-import java.math.BigDecimal;
+import lombok.Getter;
+
 import java.util.Date;
 import java.util.UUID;
 
+@Getter
 public class SessionTierDTO {
 
     private UUID id;
@@ -13,7 +15,7 @@ public class SessionTierDTO {
 
     private UUID zoneId;
 
-    private BigDecimal price;
+    private float price;
 
     private UUID createdBy;
 

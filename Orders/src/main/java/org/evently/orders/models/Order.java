@@ -8,7 +8,6 @@ import org.evently.orders.enums.OrderStatus;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -33,7 +32,7 @@ public class Order {
     private OrderStatus status;
 
     @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal total;
+    private float total;
 
     @CreatedDate
     private Date createdAt;

@@ -145,7 +145,7 @@ public class UsersService {
 
     public Page<User> getUsersPage(Integer pageNumber, Integer pageSize) {
         logger.info(USERS_GET, "Get users page method entered");
-        if (pageSize > 50) {
+        if (pageSize > 50 || pageSize <= 0) {
             pageSize = 50;
         }
         PageRequest pageable = PageRequest.of(pageNumber, pageSize);

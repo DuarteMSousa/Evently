@@ -69,8 +69,7 @@ public class CategoriesService {
             throw new InvalidCategoryException("Empty category name");
         }
 
-        //VERIFICAR SE ALTERA CORRETAMENTE
-        modelMapper.map(category, existingCategory);
+        existingCategory.setName(category.getName());
 
         return categoriesRepository.save(existingCategory);
     }

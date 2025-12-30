@@ -3,6 +3,7 @@ package org.example.services;
 import jakarta.transaction.Transactional;
 import org.example.enums.StockMovementType;
 import org.example.enums.TicketReservationStatus;
+import org.example.exceptions.InvalidTicketReservationException;
 import org.example.exceptions.TicketReservationNotFoundException;
 import org.example.exceptions.TicketStockNotFoundException;
 import org.example.models.StockMovement;
@@ -43,12 +44,17 @@ public class TicketReservationsService {
     @Transactional
     public TicketReservation createTicketReservation(TicketReservation ticketReservation) {
 
-        logger.info(TICKET_RESERVATION_CREATE,"createTicketReservation method entered");
+        logger.info(TICKET_RESERVATION_CREATE, "createTicketReservation method entered");
 
         ticketReservation.setStatus(TicketReservationStatus.HELD);
         ticketReservation.setExpiresAt(null);
         ticketReservation.setReleasedAt(null);
         ticketReservation.setConfirmedAt(null);
+
+        if (ticketReservation.getQuantity() <= 0) {
+            logger.info(TICKET_RESERVATION_CREATE, "Quantity must be greater than 0");
+            throw new InvalidTicketReservationException("Quantity must be greater than 0");
+        }
 
         createStockMovement(ticketReservation, StockMovementType.OUT);
 
@@ -57,10 +63,14 @@ public class TicketReservationsService {
 
     @Transactional
     public TicketReservation confirmTicketReservation(UUID id) {
-        logger.info(TICKET_RESERVATION_CONFIRM,"confirmTicketReservation method entered");
+        logger.info(TICKET_RESERVATION_CONFIRM, "confirmTicketReservation method entered");
         TicketReservation ticketReservation = ticketReservationsRepository.findById(id)
                 .orElseThrow(() -> new TicketReservationNotFoundException("Ticket Reservation not found"));
 
+        if (TicketReservationStatus.CONFIRMED.equals(ticketReservation.getStatus())) {
+            logger.error(TICKET_RESERVATION_CONFIRM, "Ticket Reservation status is CONFIRMED already");
+            throw new InvalidTicketReservationException("Ticket Reservation status is CONFIRMED already");
+        }
 
         ticketReservation.setStatus(TicketReservationStatus.CONFIRMED);
         ticketReservation.setConfirmedAt(OffsetDateTime.now());
@@ -70,9 +80,14 @@ public class TicketReservationsService {
 
     @Transactional
     public TicketReservation releaseTicketReservation(UUID id) {
-        logger.info(TICKET_RESERVATION_RELEASE,"releaseTicketReservation method entered");
+        logger.info(TICKET_RESERVATION_RELEASE, "releaseTicketReservation method entered");
         TicketReservation ticketReservation = ticketReservationsRepository.findById(id)
                 .orElseThrow(() -> new TicketReservationNotFoundException("Ticket Reservation not found"));
+
+        if (TicketReservationStatus.RELEASED.equals(ticketReservation.getStatus())) {
+            logger.error(TICKET_RESERVATION_RELEASE, "Ticket Reservation status is RELEASED already");
+            throw new InvalidTicketReservationException("Ticket Reservation status is RELEASED already");
+        }
 
         ticketReservation.setStatus(TicketReservationStatus.RELEASED);
         ticketReservation.setReleasedAt(OffsetDateTime.now());
@@ -83,7 +98,7 @@ public class TicketReservationsService {
     }
 
     public TicketReservation getTicketReservation(UUID reservationId) {
-        logger.info(TICKET_RESERVATION_GET,"getTicketReservation method entered");
+        logger.info(TICKET_RESERVATION_GET, "getTicketReservation method entered");
         return ticketReservationsRepository
                 .findById(reservationId)
                 .orElseThrow(() -> new TicketReservationNotFoundException("Ticket Reservation not found"));

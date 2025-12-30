@@ -2,6 +2,7 @@ package org.example.services;
 
 import jakarta.transaction.Transactional;
 import org.example.enums.StockMovementType;
+import org.example.exceptions.InvalidStockMovementException;
 import org.example.exceptions.TicketStockAlreadyExistsException;
 import org.example.exceptions.TicketStockNotFoundException;
 import org.example.models.StockMovement;
@@ -29,10 +30,10 @@ public class TicketStocksService {
     @Transactional
     public TicketStock createTicketStock(TicketStock ticketStock) {
 
-        logger.info(TICKET_STOCK_CREATE,"createTicketStock method entered");
+        logger.info(TICKET_STOCK_CREATE, "createTicketStock method entered");
 
         if (ticketStocksRepository.existsById(ticketStock.getId())) {
-            logger.error(TICKET_STOCK_CREATE,"Ticket Stock already exists");
+            logger.error(TICKET_STOCK_CREATE, "Ticket Stock already exists");
             throw new TicketStockAlreadyExistsException("Ticket stock already exists");
         }
 
@@ -43,7 +44,7 @@ public class TicketStocksService {
 
     @Transactional
     public TicketStock addStockMovement(StockMovement movement) {
-        logger.info(TICKET_STOCK_MOVEMENT_ADD,"addStockMovement method entered");
+        logger.info(TICKET_STOCK_MOVEMENT_ADD, "addStockMovement method entered");
 
         TicketStock ticketStock = ticketStocksRepository
                 .findById(movement.getTicketStock().getId())
@@ -55,6 +56,11 @@ public class TicketStocksService {
         Integer addedQuantity = movement.getType().equals(StockMovementType.IN) ? movement.getQuantity() : -movement.getQuantity();
 
         ticketStock.setAvailableQuantity(ticketStock.getAvailableQuantity() + addedQuantity);
+
+        if (ticketStock.getAvailableQuantity() < 0) {
+            logger.error(TICKET_STOCK_MOVEMENT_ADD,"Ticket Stock cannot be negative");
+            throw new InvalidStockMovementException("Ticket stock not found");
+        }
 
         return ticketStocksRepository.save(ticketStock);
     }

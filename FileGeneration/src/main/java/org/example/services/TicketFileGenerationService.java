@@ -1,8 +1,8 @@
 package org.example.services;
 
 import com.google.zxing.WriterException;
+import org.example.events.TicketGeneratedEvent;
 import org.example.exceptions.*;
-import org.example.messages.TicketMessage;
 import org.example.models.TicketInformation;
 import org.example.utils.FileGenerationUtils;
 import org.slf4j.Logger;
@@ -30,7 +30,7 @@ public class TicketFileGenerationService {
     private static final Marker TICKET_FILE_SAVE = MarkerFactory.getMarker("TICKET_FILE_SAVE");
     private static final Marker TICKET_FILE_GET = MarkerFactory.getMarker("TICKET_FILE_GET");
 
-    public byte[] generateTicketFile(TicketMessage ticket) {
+    private byte[] generateTicketFile(TicketGeneratedEvent ticket) {
         logger.info(TICKET_FILE_GENERATION, "generateTicketFile method entered");
 
         BufferedImage qrCode;
@@ -83,7 +83,7 @@ public class TicketFileGenerationService {
         return file;
     }
 
-    public void saveTicketFile(TicketMessage ticket) {
+    public void saveTicketFile(TicketGeneratedEvent ticket) {
         logger.info(TICKET_FILE_SAVE, "saveTicketFile method entered");
         byte[] pdfBytes = generateTicketFile(ticket);
         File pdfDir = new File(TICKET_FILE_PATH);

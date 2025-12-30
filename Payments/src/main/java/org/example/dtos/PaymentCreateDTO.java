@@ -3,7 +3,6 @@ package org.example.dtos;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.math.BigDecimal;
 import java.util.UUID;
 
 @Getter
@@ -12,6 +11,6 @@ public class PaymentCreateDTO {
 
     private UUID orderId;
     private UUID userId;
-    private BigDecimal amount;
+    private float amount;
     private String provider;
 }

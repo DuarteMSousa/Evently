@@ -15,7 +15,6 @@ import org.slf4j.MarkerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -65,7 +64,7 @@ public class PaymentsService {
             logger.warn(PAY_VALIDATE, "Missing userId (orderId={})", payment.getOrderId());
             throw new InvalidPaymentException("UserId is required");
         }
-        if (payment.getAmount() == null || payment.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+        if (payment.getAmount() <= 0) {
             logger.warn(PAY_VALIDATE, "Invalid amount={} (orderId={}, userId={})",
                     payment.getAmount(), payment.getOrderId(), payment.getUserId());
             throw new InvalidPaymentException("Amount must be greater than 0");

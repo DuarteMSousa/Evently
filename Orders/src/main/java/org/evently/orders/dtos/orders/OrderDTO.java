@@ -5,7 +5,6 @@ import lombok.Setter;
 import org.evently.orders.dtos.orderLines.OrderLineDTO;
 import org.evently.orders.enums.OrderStatus;
 
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -20,7 +19,7 @@ public class OrderDTO {
 
     private OrderStatus status;
 
-    private BigDecimal total;
+    private float total;
 
     private Date createdAt;
 

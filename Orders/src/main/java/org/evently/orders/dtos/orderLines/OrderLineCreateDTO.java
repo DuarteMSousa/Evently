@@ -3,7 +3,6 @@ package org.evently.orders.dtos.orderLines;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.math.BigDecimal;
 import java.util.UUID;
 
 @Getter
@@ -14,6 +13,6 @@ public class OrderLineCreateDTO {
 
     private Integer quantity;
 
-    private BigDecimal unitPrice;
+    private float unitPrice;
 
 }

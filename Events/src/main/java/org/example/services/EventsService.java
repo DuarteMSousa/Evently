@@ -1,6 +1,9 @@
 package org.example.services;
 
 import jakarta.transaction.Transactional;
+import jdk.vm.ci.code.site.Mark;
+import org.example.clients.OrganizationsClient;
+import org.example.dtos.externalServices.organizations.OrganizationDTO;
 import org.example.enums.EventStatus;
 import org.example.exceptions.*;
 import org.example.models.Event;
@@ -24,6 +27,9 @@ public class EventsService {
     @Autowired
     private EventsRepository eventsRepository;
 
+    @Autowired
+    private OrganizationsClient organizationsClient;
+
     private ModelMapper modelMapper = new ModelMapper();
 
     private Logger logger = LoggerFactory.getLogger(EventsService.class);
@@ -40,24 +46,14 @@ public class EventsService {
     public Event createEvent(Event event) {
         logger.info(EVENT_CREATE, "createEvent method entered");
 
-        if (event.getName() == null || event.getName().isEmpty()) {
-            logger.error(EVENT_CREATE, "Empty category name");
-            throw new InvalidEventException("Empty category name");
-        }
-
-        if (event.getDescription() == null || event.getDescription().isEmpty()) {
-            logger.error(EVENT_CREATE, "Empty description");
-            throw new InvalidEventException("Empty description");
-        }
-
         if (eventsRepository.existsByName(event.getName())) {
             logger.error(EVENT_CREATE, "Event with name {} already exists", event.getName());
             throw new EventAlreadyExistsException("Event with name " + event.getName() + " already exists");
         }
 
-        event.setStatus(EventStatus.DRAFT);
+        validateEvent(event,EVENT_CREATE);
 
-        //createdby para ver organization
+        event.setStatus(EventStatus.DRAFT);
 
         return eventsRepository.save(event);
     }
@@ -71,16 +67,6 @@ public class EventsService {
             throw new InvalidEventUpdateException("Parameter id and body id do not correspond");
         }
 
-        if (event.getName() == null || event.getName().isEmpty()) {
-            logger.error(EVENT_UPDATE, "Empty category name");
-            throw new InvalidEventException("Empty category name");
-        }
-
-        if (event.getDescription() == null || event.getDescription().isEmpty()) {
-            logger.error(EVENT_UPDATE, "Empty description");
-            throw new InvalidEventException("Empty description");
-        }
-
         Event existingEvent = eventsRepository.findById(id)
                 .orElse(null);
 
@@ -89,8 +75,13 @@ public class EventsService {
             throw new EventNotFoundException("Event not found");
         }
 
-        //VERIFICAR SE ALTERA CORRETAMENTE
+        validateEvent(event,EVENT_UPDATE);
+
+        EventStatus status = existingEvent.getStatus();
+
         modelMapper.map(event, existingEvent);
+
+        existingEvent.setStatus(status);
 
         return eventsRepository.save(existingEvent);
     }
@@ -151,5 +142,25 @@ public class EventsService {
 
         PageRequest pageable = PageRequest.of(pageNumber, pageSize);
         return eventsRepository.findAllByStatus(EventStatus.PUBLISHED, pageable);
+    }
+
+
+    private void validateEvent(Event event, Marker marker) {
+        if (event.getName() == null || event.getName().isEmpty()) {
+            logger.error(marker, "Empty category name");
+            throw new InvalidEventException("Empty category name");
+        }
+
+        if (event.getDescription() == null || event.getDescription().isEmpty()) {
+            logger.error(marker, "Empty description");
+            throw new InvalidEventException("Empty description");
+        }
+
+        OrganizationDTO organization = organizationsClient.getOrganization(event.getOrganizationId()).getBody();
+
+        if (organization == null) {
+            logger.error(marker, "Organization not found");
+            throw new InvalidEventException("Organization with not found");
+        }
     }
 }

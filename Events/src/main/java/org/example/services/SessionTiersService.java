@@ -1,9 +1,11 @@
 package org.example.services;
 
 import jakarta.transaction.Transactional;
-import org.example.exceptions.InvalidSessionTierUpdateException;
-import org.example.exceptions.SessionTierAlreadyExistsException;
-import org.example.exceptions.SessionTierNotFoundException;
+import org.example.clients.VenuesClient;
+import org.example.dtos.externalServices.venueszone.VenueZoneDTO;
+import org.example.exceptions.*;
+import org.example.models.Event;
+import org.example.models.EventSession;
 import org.example.models.SessionTier;
 import org.example.repositories.SessionTiersRepository;
 import org.slf4j.Logger;
@@ -21,6 +23,12 @@ public class SessionTiersService {
     @Autowired
     private SessionTiersRepository sessionTiersRepository;
 
+    @Autowired
+    private EventSessionsService eventSessionsService;
+
+    @Autowired
+    private VenuesClient venuesClient;
+
     private Logger logger = LoggerFactory.getLogger(EventsService.class);
 
     private static final Marker TIER_GET = MarkerFactory.getMarker("TIER_GET");
@@ -37,8 +45,7 @@ public class SessionTiersService {
             throw new SessionTierAlreadyExistsException("Session tier already exists");
         }
 
-
-        //createdby para ver organization
+        validateSessionTier(sessionTier,TIER_CREATE);
 
         return sessionTiersRepository.save(sessionTier);
     }
@@ -59,7 +66,7 @@ public class SessionTiersService {
             throw new SessionTierNotFoundException("Session tier not found");
         }
 
-        //VERIFICAR SE ALTERA CORRETAMENTE
+        validateSessionTier(sessionTier,TIER_UPDATE);
 
         return sessionTiersRepository.save(existingSessionTier);
     }
@@ -89,7 +96,35 @@ public class SessionTiersService {
             throw new SessionTierNotFoundException("Session tier not found");
         }
 
+        //falta check aos stocks se ha reservas
+
         sessionTiersRepository.delete(sessionTierToDelete);
     }
 
+
+    public void validateSessionTier(SessionTier sessionTier, Marker marker) {
+        if (sessionTier.getPrice() <= 0) {
+            logger.error(marker, "Session tier price must be greater than 0");
+            throw new InvalidSessionTierException("Session tier price must be greater than 0");
+        }
+        EventSession eventSession;
+        try {
+            eventSession = eventSessionsService.getEventSession(sessionTier.getEventSession().getId());
+        } catch (EventSessionNotFoundException e) {
+            logger.error(marker, "Event session not found");
+            throw new InvalidSessionTierException("Event session not found");
+        }
+
+        VenueZoneDTO zone = venuesClient.getZone(sessionTier.getZoneId()).getBody();
+
+        if (zone == null) {
+            logger.error(marker, "Zone not found");
+            throw new InvalidSessionTierException("Zone not found");
+        }
+
+        if (!zone.getVenueId().equals(eventSession.getVenueId())) {
+            logger.error(marker, "Invalid zone, does not correspond to venue");
+            throw new InvalidSessionTierException("Invalid zone, does not correspond to venue");
+        }
+    }
 }

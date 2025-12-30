@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.math.BigDecimal;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -24,7 +23,7 @@ public class OrderLine {
     private Integer quantity;
 
     @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal unitPrice;
+    private float unitPrice;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("orderId")

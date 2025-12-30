@@ -6,7 +6,6 @@ import org.evently.orders.exceptions.InvalidOrderUpdateException;
 import org.evently.orders.exceptions.OrderNotFoundException;
 import org.evently.orders.models.Order;
 import org.evently.orders.repositories.OrdersRepository;
-import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -16,7 +15,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.UUID;
 
@@ -82,7 +80,7 @@ public class OrdersService {
      *
      * @param id order identifier
      * @return updated order marked as paid
-     * @throws OrderNotFoundException if the order does not exist
+     * @throws OrderNotFoundException      if the order does not exist
      * @throws InvalidOrderUpdateException if the order is not in a payable state
      */
     @Transactional
@@ -108,7 +106,7 @@ public class OrdersService {
      *
      * @param id order identifier
      * @return updated order marked as payment failed
-     * @throws OrderNotFoundException if the order does not exist
+     * @throws OrderNotFoundException      if the order does not exist
      * @throws InvalidOrderUpdateException if the order is not in a payable state
      */
     @Transactional
@@ -133,7 +131,7 @@ public class OrdersService {
      *
      * @param id order identifier
      * @return cancelled order
-     * @throws OrderNotFoundException if the order does not exist
+     * @throws OrderNotFoundException      if the order does not exist
      * @throws InvalidOrderUpdateException if the order is already paid or cancelled
      */
     @Transactional
@@ -142,7 +140,7 @@ public class OrdersService {
 
         Order order = getOrder(id);
 
-        if (order.getStatus() == OrderStatus.PAYMENT_SUCCESS){
+        if (order.getStatus() == OrderStatus.PAYMENT_SUCCESS) {
             throw new InvalidOrderUpdateException("Order is already payed successfully");
         }
 
@@ -162,9 +160,9 @@ public class OrdersService {
     /**
      * Retrieves a paginated list of orders associated with a user.
      *
-     * @param userId user identifier
+     * @param userId     user identifier
      * @param pageNumber page number (0-based)
-     * @param pageSize page size (maximum 50)
+     * @param pageSize   page size (maximum 50)
      * @return page of user orders
      */
     public Page<Order> getOrdersByUser(UUID userId, Integer pageNumber, Integer pageSize) {
@@ -191,7 +189,7 @@ public class OrdersService {
             throw new InvalidOrderUpdateException("User ID is required");
         }
 
-        if (order.getTotal() == null || order.getTotal().compareTo(BigDecimal.ZERO) < 0) {
+        if (order.getTotal() <= 0) {
             logger.warn(ORDER_VALIDATION, "Invalid total amount ({})", order.getTotal());
             throw new InvalidOrderUpdateException("Total amount must be greater than or equal to 0");
         }

@@ -1,6 +1,5 @@
 package org.example.dtos.cartItems;
 
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.UUID;
 
@@ -11,7 +10,7 @@ public class CartItemDTO {
 
     private int quantity;
 
-    private BigDecimal unitPrice;
+    private float unitPrice;
 
     private Date createdAt;
 
