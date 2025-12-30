@@ -31,8 +31,12 @@ public class UsersController {
 
     private Logger logger = LoggerFactory.getLogger(UsersController.class);
 
-    private Marker marker = MarkerFactory.getMarker("UsersController");
-
+    private static final Marker USER_LOGIN = MarkerFactory.getMarker("USER_LOGIN");
+    private static final Marker USERS_GET = MarkerFactory.getMarker("USERS_GET");
+    private static final Marker USER_GET = MarkerFactory.getMarker("USER_GET");
+    private static final Marker USER_DEACTIVATE = MarkerFactory.getMarker("USER_DEACTIVATE");
+    private static final Marker USER_UPDATE = MarkerFactory.getMarker("USER_UPDATE");
+    private static final Marker USER_CREATE = MarkerFactory.getMarker("USER_CREATE");
 
     @GetMapping("/get-user/{id}")
     public ResponseEntity<?> getUser(@PathVariable("id") UUID id) {
@@ -41,20 +45,20 @@ public class UsersController {
          * 400 BAD_REQUEST - undefined error
          * 404 NOT_FOUND - user not found
          */
-        logger.info(marker, "Method get user entered");
+        logger.info(USER_GET, "Method get user entered");
         User user;
 
         try {
             user = usersService.getUser(id);
         } catch (UserNotFoundException e) {
-            logger.error(marker, "UserNotFoundException caught while getting user {}", id);
+            logger.error(USER_GET, "UserNotFoundException caught while getting user {}", id);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
-            logger.error(marker, "Exception caught while getting user {}: {}", id, e.getMessage());
+            logger.error(USER_GET, "Exception caught while getting user {}: {}", id, e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
 
-        logger.info(marker, "200 OK returned, user found");
+        logger.info(USER_GET, "200 OK returned, user found");
         return ResponseEntity.status(HttpStatus.OK).body(
                 modelMapper.map(user, UserDTO.class)
         );
@@ -68,20 +72,20 @@ public class UsersController {
          * 400 INTERNAL_SERVER_ERROR - undefined error
          * 404 NOT_FOUND - user not found
          */
-        logger.info(marker, "Method create user entered");
+        logger.info(USER_CREATE, "Method create user entered");
         User newUser;
 
         try {
             newUser = usersService.createUser(modelMapper.map(userCreateDTO, User.class));
         } catch (UserAlreadyExistsException e) {
-            logger.error(marker, "UserAlreadyExistsException caught while creating user");
+            logger.error(USER_CREATE, "UserAlreadyExistsException caught while creating user");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
-            logger.error(marker, "Exception caught while creating user: {}", e.getMessage());
+            logger.error(USER_CREATE, "Exception caught while creating user: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
 
-        logger.info(marker, "200 OK returned, user created");
+        logger.info(USER_CREATE, "200 OK returned, user created");
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 modelMapper.map(newUser, UserDTO.class)
         );
@@ -95,20 +99,20 @@ public class UsersController {
          * 400 BAD_REQUEST - undefined error
          * 404 NOT_FOUND - user not found
          */
-        logger.info(marker, "Method update user entered");
+        logger.info(USER_UPDATE, "Method update user entered");
         User updatedUser;
 
         try {
             updatedUser = usersService.updateUser(id, modelMapper.map(userUpdateDTO, User.class));
         } catch (UserNotFoundException e) {
-            logger.error(marker, "UserNotFoundException caught while updating user");
+            logger.error(USER_UPDATE, "UserNotFoundException caught while updating user");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
-            logger.error(marker, "Exception caught while updating user {}: {}", id, e.getMessage());
+            logger.error(USER_UPDATE, "Exception caught while updating user {}: {}", id, e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
 
-        logger.info(marker, "200 OK returned, user updated");
+        logger.info(USER_UPDATE, "200 OK returned, user updated");
         return ResponseEntity.status(HttpStatus.OK).body(
                 modelMapper.map(updatedUser, UserDTO.class)
         );
@@ -122,23 +126,23 @@ public class UsersController {
          * 409 CONFLICT - user already deactivated
          * 404 NOT_FOUND - user not found
          */
-        logger.info(marker, "Method deactivate user entered");
+        logger.info(USER_DEACTIVATE, "Method deactivate user entered");
         User updatedUser;
 
         try {
             updatedUser = usersService.deactivateUser(id);
         } catch (UserNotFoundException e) {
-            logger.error(marker, "UserNotFoundException caught while deactivating user");
+            logger.error(USER_DEACTIVATE, "UserNotFoundException caught while deactivating user");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (UserAlreadyDeactivatedException e) {
-            logger.error(marker, "UserAlreadyDeactivatedException caught while deactivating user");
+            logger.error(USER_DEACTIVATE, "UserAlreadyDeactivatedException caught while deactivating user");
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         } catch (Exception e) {
-            logger.error(marker, "Exception caught while deactivating user {}: {}", id, e.getMessage());
+            logger.error(USER_DEACTIVATE, "Exception caught while deactivating user {}: {}", id, e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
 
-        logger.info(marker, "200 OK returned, user deactivated");
+        logger.info(USER_DEACTIVATE, "200 OK returned, user deactivated");
         return ResponseEntity.status(HttpStatus.OK).body(modelMapper.map(updatedUser, UserDTO.class));
     }
 
@@ -148,33 +152,33 @@ public class UsersController {
          * 200 OK - Request processed as expected.
          * 400 BAD_REQUEST - undefined error
          */
-        logger.info(marker, "Method getUsersPage entered");
+        logger.info(USERS_GET, "Method getUsersPage entered");
         Page<UserDTO> usersPage;
 
         try {
             usersPage = usersService.getUsersPage(pageNumber, pageSize)
                     .map(user -> modelMapper.map(user, UserDTO.class));
         } catch (Exception e) {
-            logger.error(marker, "Exception caught while getting users page {}",e.getMessage());
+            logger.error(USERS_GET, "Exception caught while getting users page {}",e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
 
-        logger.info(marker, "200 OK returned, users page found");
+        logger.info(USERS_GET, "200 OK returned, users page found");
         return ResponseEntity.status(HttpStatus.OK).body(usersPage);
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody UserLoginRequestDTO dto) {
-        logger.info(marker, "Method login entered");
+        logger.info(USER_LOGIN, "Method login entered");
         try {
             String token = usersService.loginUser(dto.getUsername(), dto.getPassword());
-            logger.info(marker, "200 OK returned, user logged in");
+            logger.info(USER_LOGIN, "200 OK returned, user logged in");
             return ResponseEntity.ok(new UserLoginResponseDTO(token));
         } catch (LoginFailedException e) {
-            logger.error(marker, "LoginFailedException caught while logging in");
+            logger.error(USER_LOGIN, "LoginFailedException caught while logging in");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         } catch (Exception e) {
-            logger.error(marker, "Exception caught while logging in user {}: {}", dto.getUsername(), e.getMessage());
+            logger.error(USER_LOGIN, "Exception caught while logging in user {}: {}", dto.getUsername(), e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }

@@ -29,9 +29,8 @@ public class CartsController {
 
     private Logger logger = LoggerFactory.getLogger(CartsController.class);
 
-    private Marker getMarker = MarkerFactory.getMarker("GetCart");
-
-    private Marker clearMarker = MarkerFactory.getMarker("ClearCart");
+    private static final Marker CART_GET = MarkerFactory.getMarker("CART_GET");
+    private static final Marker CART_CLEAR = MarkerFactory.getMarker("CART_CLEAR");
 
 
     @GetMapping("/get-cart/{userId}")
@@ -40,17 +39,17 @@ public class CartsController {
          * 200 OK - Request processed as expected.
          * 500 INTERNAL_SERVER_ERROR - Internal server error.
          */
-        logger.info(getMarker, "Method getCart entered");
+        logger.info(CART_GET, "Method getCart entered");
         CartDTO cart;
 
         try {
             cart = modelMapper.map(cartService.getCart(userId), CartDTO.class);
         } catch (Exception e) {
-            logger.error(getMarker, "Exception caught while getting cart: {}", e.getMessage());
+            logger.error(CART_GET, "Exception caught while getting cart: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
 
-        logger.info(getMarker, "200 OK returned, cart found");
+        logger.info(CART_GET, "200 OK returned, cart found");
         return ResponseEntity.status(HttpStatus.OK).body(cart);
     }
 
@@ -61,20 +60,20 @@ public class CartsController {
          * 404 NOT_FOUND - Cart not found.
          * 500 INTERNAL_SERVER_ERROR - Internal server error.
          */
-        logger.info(clearMarker, "Method clearCart entered");
+        logger.info(CART_CLEAR, "Method clearCart entered");
         CartDTO cart;
 
         try {
             cart = modelMapper.map(cartService.clearCart(userId), CartDTO.class);
         } catch (CartNotFoundException e) {
-            logger.error(clearMarker, "CartNotFoundException caught while clearing cart");
+            logger.error(CART_CLEAR, "CartNotFoundException caught while clearing cart");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
-            logger.error(clearMarker, "Exception caught while clearing cart: {}", e.getMessage());
+            logger.error(CART_CLEAR, "Exception caught while clearing cart: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
 
-        logger.info(clearMarker, "200 OK returned, cart clear");
+        logger.info(CART_CLEAR, "200 OK returned, cart clear");
         return ResponseEntity.status(HttpStatus.OK).body(cart);
     }
 

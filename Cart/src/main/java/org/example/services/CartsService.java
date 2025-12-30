@@ -21,19 +21,20 @@ public class CartsService {
 
     private Logger logger = LoggerFactory.getLogger(CartsService.class);
 
-    private Marker getMarker = MarkerFactory.getMarker("GetCart");
+    private static final Marker CART_GET = MarkerFactory.getMarker("CART_GET");
+    private static final Marker CART_CLEAR = MarkerFactory.getMarker("CART_CLEAR");
+    private static final Marker CART_CREATE = MarkerFactory.getMarker("CART_CREATE");
 
-    private Marker createMarker = MarkerFactory.getMarker("CreateCart");
 
     @Autowired
     private CartsRepository cartsRepository;
 
     @Transactional
     public Cart getCart(UUID userId) {
-        logger.info(getMarker, "Method getCart entered");
+        logger.info(CART_GET, "Method getCart entered");
         Cart cart = cartsRepository.findById(userId).orElse(null);
         if (cart == null) {
-            logger.info(getMarker, "Cart not found, creating a new one");
+            logger.info(CART_GET, "Cart not found, creating a new one");
             cart = createCart(userId);
         }
 
@@ -42,10 +43,10 @@ public class CartsService {
 
     @Transactional
     public Cart createCart(UUID userId) {
-        logger.info(createMarker, "CreateCartMethod entered");
+        logger.info(CART_CREATE, "CreateCart Method entered");
 
         if (cartsRepository.existsById(userId)) {
-            logger.error(createMarker, "Cart for user {} already exists",userId);
+            logger.error(CART_CREATE, "Cart for user {} already exists",userId);
             throw new CartAlreadyExistsException("Cart already exists");
         }
 
@@ -61,6 +62,8 @@ public class CartsService {
 
     @Transactional
     public Cart clearCart(UUID userId) {
+        logger.info(CART_CLEAR, "clearCart method entered");
+
         Cart cartToClear = cartsRepository
                 .findById(userId)
                 .orElseThrow(() -> new CartNotFoundException("Cart not found"));

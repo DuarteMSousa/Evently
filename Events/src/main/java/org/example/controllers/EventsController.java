@@ -31,7 +31,13 @@ public class EventsController {
 
     private Logger logger = LoggerFactory.getLogger(EventsController.class);
 
-    private Marker marker = MarkerFactory.getMarker("EventsController");
+    private static final Marker EVENTS_PAGE_GET = MarkerFactory.getMarker("EVENTS_GET");
+    private static final Marker EVENT_GET = MarkerFactory.getMarker("EVENT_GET");
+    private static final Marker EVENT_DELETE = MarkerFactory.getMarker("EVENT_DELETE");
+    private static final Marker EVENT_UPDATE = MarkerFactory.getMarker("EVENT_UPDATE");
+    private static final Marker EVENT_CREATE = MarkerFactory.getMarker("EVENT_CREATE");
+    private static final Marker EVENT_CANCEL = MarkerFactory.getMarker("EVENT_CANCEL");
+    private static final Marker EVENT_PUBLISH = MarkerFactory.getMarker("EVENT_PUBLISH");
 
     @GetMapping("/get-events-page/{pageNumber}/{pageSize}")
     public ResponseEntity<?> searchEvents(@PathVariable("pageNumber") Integer pageNumber, @PathVariable("pageSize") Integer pageSize) {
@@ -39,17 +45,17 @@ public class EventsController {
          * 200 OK - Request processed as expected.
          * 500 INTERNAL_SERVER_ERROR - undefined error
          */
-        logger.info(marker, "Method searchEvents entered");
+        logger.info(EVENTS_PAGE_GET, "Method searchEvents entered");
         Page<EventDTO> eventsPage;
 
         try {
             eventsPage = eventsService.getEventPage(pageNumber, pageSize).map(event -> modelMapper.map(event, EventDTO.class));
         } catch (Exception e) {
-            logger.error(marker, "Exception caught while getting events: {}", e.getMessage());
+            logger.error(EVENTS_PAGE_GET, "Exception caught while getting events: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
 
-        logger.info(marker, "200 OK returned, events found");
+        logger.info(EVENTS_PAGE_GET, "200 OK returned, events found");
         return ResponseEntity.status(HttpStatus.OK).body(eventsPage);
     }
 
@@ -60,19 +66,19 @@ public class EventsController {
          * 404 NOT_FOUND - Event not found.
          * 500 INTERNAL_SERVER_ERROR - undefined error
          */
-        logger.info(marker, "Method getEvent entered");
+        logger.info(EVENT_GET, "Method getEvent entered");
         EventDTO event = null;
 
         try {
             event =modelMapper.map(eventsService.getEvent(id),EventDTO.class) ;
         } catch (EventNotFoundException e) {
-            logger.error(marker, "EventNotFoundException caught while getting event: {}", e.getMessage());
+            logger.error(EVENT_GET, "EventNotFoundException caught while getting event: {}", e.getMessage());
         } catch (Exception e) {
-            logger.error(marker, "Exception caught while getting event: {}", e.getMessage());
+            logger.error(EVENT_GET, "Exception caught while getting event: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
 
-        logger.info(marker, "200 OK returned, event found");
+        logger.info(EVENT_GET, "200 OK returned, event found");
         return ResponseEntity.status(HttpStatus.OK).body(event);
     }
 
@@ -83,24 +89,24 @@ public class EventsController {
          * 400 BAD_REQUEST - Invalid event creation.
          * 500 INTERNAL_SERVER_ERROR - Internal server error.
          */
-        logger.info(marker, "Method createEvent entered");
+        logger.info(EVENT_CREATE, "Method createEvent entered");
         Event eventToCreate = modelMapper.map(createDTO, Event.class);
         EventDTO event = null;
 
         try {
             event = modelMapper.map(eventsService.createEvent(eventToCreate), EventDTO.class);
         } catch (EventAlreadyExistsException e) {
-            logger.error(marker, "EventAlreadyExistsException caught while creating Event");
+            logger.error(EVENT_CREATE, "EventAlreadyExistsException caught while creating Event");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (InvalidEventException e) {
-            logger.error(marker, "InvalidEventException caught while creating Event");
+            logger.error(EVENT_CREATE, "InvalidEventException caught while creating Event");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
-            logger.error(marker, "Exception caught while creating Event: {}", e.getMessage());
+            logger.error(EVENT_CREATE, "Exception caught while creating Event: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
 
-        logger.info(marker, "200 OK returned, event created");
+        logger.info(EVENT_CREATE, "200 OK returned, event created");
         return ResponseEntity.status(HttpStatus.OK).body(event);
     }
 
@@ -111,27 +117,27 @@ public class EventsController {
          * 400 BAD_REQUEST - Invalid event update.
          * 500 INTERNAL_SERVER_ERROR - Internal server error.
          */
-        logger.info(marker, "Method updateEvent entered");
+        logger.info(EVENT_UPDATE, "Method updateEvent entered");
         Event eventToUpdate = modelMapper.map(updateDTO, Event.class);
         EventDTO event = null;
 
         try {
             event = modelMapper.map(eventsService.updateEvent(id, eventToUpdate), EventDTO.class);
         } catch (InvalidEventUpdateException e) {
-            logger.error(marker, "InvalidEventUpdateException caught while updating Event");
+            logger.error(EVENT_UPDATE, "InvalidEventUpdateException caught while updating Event");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (EventAlreadyExistsException e) {
-            logger.error(marker, "EventAlreadyExistsException caught while updating Event");
+            logger.error(EVENT_UPDATE, "EventAlreadyExistsException caught while updating Event");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (InvalidEventException e) {
-            logger.error(marker, "InvalidEventException caught while updating Event");
+            logger.error(EVENT_UPDATE, "InvalidEventException caught while updating Event");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
-            logger.error(marker, "Exception caught while updating Event: {}", e.getMessage());
+            logger.error(EVENT_UPDATE, "Exception caught while updating Event: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
 
-        logger.info(marker, "200 OK returned, event updated");
+        logger.info(EVENT_UPDATE, "200 OK returned, event updated");
         return ResponseEntity.status(HttpStatus.OK).body(event);
     }
 
@@ -142,23 +148,23 @@ public class EventsController {
          * 400 BAD_REQUEST - Invalid event cancellation.
          * 500 INTERNAL_SERVER_ERROR - Internal server error.
          */
-        logger.info(marker, "Method cancelEvent entered");
+        logger.info(EVENT_CANCEL, "Method cancelEvent entered");
         EventDTO event = null;
 
         try {
             event = modelMapper.map(eventsService.cancelEvent(id), EventDTO.class);
         } catch (EventAlreadyCanceledException e) {
-            logger.error(marker, "EventAlreadyCanceledException caught while canceling Event");
+            logger.error(EVENT_CANCEL, "EventAlreadyCanceledException caught while canceling Event");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (EventNotFoundException e) {
-            logger.error(marker, "EventNotFoundException caught while canceling Event");
+            logger.error(EVENT_CANCEL, "EventNotFoundException caught while canceling Event");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
-            logger.error(marker, "Exception caught while cancelling Event: {}", e.getMessage());
+            logger.error(EVENT_CANCEL, "Exception caught while cancelling Event: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
 
-        logger.info(marker, "200 OK returned, event cancelled");
+        logger.info(EVENT_CANCEL, "200 OK returned, event cancelled");
         return ResponseEntity.status(HttpStatus.OK).body(event);
     }
 
@@ -170,20 +176,20 @@ public class EventsController {
          * 400 BAD_REQUEST - Invalid event publish.
          * 500 INTERNAL_SERVER_ERROR - Internal server error.
          */
-        logger.info(marker, "Method publishEvent entered");
+        logger.info(EVENT_PUBLISH, "Method publishEvent entered");
         EventDTO event = null;
 
         try {
             event = modelMapper.map(eventsService.publishEvent(id), EventDTO.class);
         } catch (EventAlreadyPublishedException e) {
-            logger.error(marker, "EventAlreadyPublishedException caught while canceling Event");
+            logger.error(EVENT_PUBLISH, "EventAlreadyPublishedException caught while canceling Event");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
-            logger.error(marker, "Exception caught while publishing Event: {}", e.getMessage());
+            logger.error(EVENT_PUBLISH, "Exception caught while publishing Event: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
 
-        logger.info(marker, "200 OK returned, event published");
+        logger.info(EVENT_PUBLISH, "200 OK returned, event published");
         return ResponseEntity.status(HttpStatus.OK).body(event);
     }
 }

@@ -37,13 +37,20 @@ public class CategoriesController {
 
     private Marker marker = MarkerFactory.getMarker("CategoriesController");
 
+    private static final Marker CATEGORIES_GET = MarkerFactory.getMarker("CATEGORIES_GET");
+    private static final Marker CATEGORY_GET = MarkerFactory.getMarker("CATEGORY_GET");
+    private static final Marker CATEGORY_DELETE = MarkerFactory.getMarker("CATEGORY_DELETE");
+    private static final Marker CATEGORY_UPDATE = MarkerFactory.getMarker("CATEGORY_UPDATE");
+    private static final Marker CATEGORY_CREATE = MarkerFactory.getMarker("CATEGORY_CREATE");
+
+
     @GetMapping("/get-categories")
     public ResponseEntity<?> getCategories() {
         /* HttpStatus(produces)
          * 200 OK - Request processed as expected.
          * 400 BAD_REQUEST - undefined error
          */
-        logger.info(marker, "Method getCategories entered");
+        logger.info(CATEGORIES_GET, "Method getCategories entered");
         List<CategoryDTO> categories = new ArrayList<>();
 
         try {
@@ -52,11 +59,11 @@ public class CategoriesController {
                     .map(category -> modelMapper.map(category, CategoryDTO.class))
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            logger.error(marker, "Exception caught while getting categories: {}", e.getMessage());
+            logger.error(CATEGORIES_GET, "Exception caught while getting categories: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
 
-        logger.info(marker, "200 OK returned, categories found");
+        logger.info(CATEGORIES_GET, "200 OK returned, categories found");
         return ResponseEntity.status(HttpStatus.OK).body(categories);
     }
 
@@ -67,20 +74,20 @@ public class CategoriesController {
          * 404 NOT_FOUND - Category not found
          * 500 INTERNAL_SERVER_ERROR - Internal server error.
          */
-        logger.info(marker, "Method getCategoryById entered");
+        logger.info(CATEGORY_GET, "Method getCategoryById entered");
         CategoryDTO category = null;
 
         try {
             category = modelMapper.map(categoriesService.getCategory(id), CategoryDTO.class);
         } catch (CategoryNotFoundException e) {
-            logger.error(marker, "CategoryNotFoundException caught while getting category");
+            logger.error(CATEGORY_GET, "CategoryNotFoundException caught while getting category");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
-            logger.error(marker, "Exception caught while getting category");
+            logger.error(CATEGORY_GET, "Exception caught while getting category");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
 
-        logger.info(marker, "200 OK returned, category found");
+        logger.info(CATEGORY_GET, "200 OK returned, category found");
         return ResponseEntity.status(HttpStatus.OK).body(category);
     }
 
@@ -91,7 +98,7 @@ public class CategoriesController {
          * 400 BAD_REQUEST - Invalid category creation
          * 500 INTERNAL_SERVER_ERROR - Internal server error.
          */
-        logger.info(marker, "Method createCategory entered");
+        logger.info(CATEGORY_CREATE, "Method createCategory entered");
 
         Category categoryToCreate = modelMapper.map(createDTO, Category.class);
 
@@ -100,17 +107,17 @@ public class CategoriesController {
         try {
             createdCategory = modelMapper.map(categoriesService.createCategory(categoryToCreate), CategoryDTO.class);
         } catch (CategoryAlreadyExistsException e) {
-            logger.error(marker, "CategoryAlreadyExistsException caught while creating category");
+            logger.error(CATEGORY_CREATE, "CategoryAlreadyExistsException caught while creating category");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (InvalidCategoryException e) {
-            logger.error(marker, "InvalidCategoryException caught while getting category");
+            logger.error(CATEGORY_CREATE, "InvalidCategoryException caught while getting category");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
-            logger.error(marker, "Exception caught while creating category");
+            logger.error(CATEGORY_CREATE, "Exception caught while creating category");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
 
-        logger.info(marker, "200 OK returned, category created");
+        logger.info(CATEGORY_CREATE, "200 OK returned, category created");
         return ResponseEntity.status(HttpStatus.OK).body(createdCategory);
     }
 
@@ -121,19 +128,19 @@ public class CategoriesController {
          * 404 NOT_FOUND - Category not found
          * 500 INTERNAL_SERVER_ERROR - Internal server error.
          */
-        logger.info(marker, "Method deleteCategory entered");
+        logger.info(CATEGORY_DELETE, "Method deleteCategory entered");
 
         try {
             categoriesService.deleteCategory(id);
         } catch (CategoryNotFoundException e) {
-            logger.error(marker, "CategoryNotFoundException caught while deleting category");
+            logger.error(CATEGORY_DELETE, "CategoryNotFoundException caught while deleting category");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
-            logger.error(marker, "Exception caught while deleting category");
+            logger.error(CATEGORY_DELETE, "Exception caught while deleting category");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
 
-        logger.info(marker, "200 OK returned, category deleted");
+        logger.info(CATEGORY_DELETE, "200 OK returned, category deleted");
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
@@ -144,7 +151,7 @@ public class CategoriesController {
          * 400 BAD_REQUEST - Invalid category creation
          * 500 INTERNAL_SERVER_ERROR - Internal server error.
          */
-        logger.info(marker, "Method updateCategory entered");
+        logger.info(CATEGORY_UPDATE, "Method updateCategory entered");
 
         Category categoryToUpdate = modelMapper.map(updateDTO, Category.class);
 
@@ -153,20 +160,20 @@ public class CategoriesController {
         try {
             updatedCategory = modelMapper.map(categoriesService.updateCategory(id, categoryToUpdate), CategoryDTO.class);
         } catch (InvalidCategoryUpdateException e) {
-            logger.error(marker, "InvalidCategoryUpdateException caught while updating category");
+            logger.error(CATEGORY_UPDATE, "InvalidCategoryUpdateException caught while updating category");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (CategoryNotFoundException e) {
-            logger.error(marker, "CategoryNotFoundException caught while updating category");
+            logger.error(CATEGORY_UPDATE, "CategoryNotFoundException caught while updating category");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (InvalidCategoryException e) {
-            logger.error(marker, "InvalidCategoryException caught while updating category");
+            logger.error(CATEGORY_UPDATE, "InvalidCategoryException caught while updating category");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
-            logger.error(marker, "Exception caught while updating category");
+            logger.error(CATEGORY_UPDATE, "Exception caught while updating category");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
 
-        logger.info(marker, "200 OK returned, category updated");
+        logger.info(CATEGORY_UPDATE, "200 OK returned, category updated");
         return ResponseEntity.status(HttpStatus.OK).body(updatedCategory);
     }
 

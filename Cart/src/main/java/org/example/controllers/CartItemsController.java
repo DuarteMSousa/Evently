@@ -1,12 +1,10 @@
 package org.example.controllers;
 
-import org.example.dtos.cart.CartDTO;
 import org.example.dtos.cartItems.CartItemDTO;
 import org.example.exceptions.CartItemAlreadyExistsException;
 import org.example.exceptions.CartItemNotFoundException;
 import org.example.exceptions.CartNotFoundException;
 import org.example.services.CartItemsService;
-import org.example.services.CartsService;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,11 +28,9 @@ public class CartItemsController {
 
     private Logger logger = LoggerFactory.getLogger(CartItemsController.class);
 
-    private Marker addMarker = MarkerFactory.getMarker("AddCartItem");
-
-    private Marker updateMarker = MarkerFactory.getMarker("UpdateCartItem");
-
-    private Marker removeMarker = MarkerFactory.getMarker("RemoveCartItem");
+    private static final Marker ITEM_ADD = MarkerFactory.getMarker("ITEM_ADD");
+    private static final Marker ITEM_UPDATE = MarkerFactory.getMarker("ITEM_UPDATE");
+    private static final Marker ITEM_REMOVE = MarkerFactory.getMarker("ITEM_REMOVE");
     
     
     @PostMapping("/add-item/{userId}/{itemId}/{quantity}")
@@ -44,23 +40,23 @@ public class CartItemsController {
          * 400 BAD_REQUEST - Invalid cart item add.
          * 500 INTERNAL_SERVER_ERROR - Internal server error.
          */
-        logger.info(addMarker, "Method addCartItem entered");
+        logger.info(ITEM_ADD, "Method addCartItem entered");
         CartItemDTO cartItemDto;
 
         try {
             cartItemDto = modelMapper.map(cartItemsService.addItemToCart(userId, itemId, quantity), CartItemDTO.class);
         } catch (CartNotFoundException e) {
-            logger.error(addMarker, "CartNotFoundException caught while adding item to cart");
+            logger.error(ITEM_ADD, "CartNotFoundException caught while adding item to cart");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (CartItemAlreadyExistsException e) {
-            logger.error(addMarker, "CartItemAlreadyExistsException caught while adding item to cart");
+            logger.error(ITEM_ADD, "CartItemAlreadyExistsException caught while adding item to cart");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
-            logger.error(addMarker, "Exception caught while adding item to cart: {}", e.getMessage());
+            logger.error(ITEM_ADD, "Exception caught while adding item to cart: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
 
-        logger.info(addMarker, "200 OK returned, cart item added");
+        logger.info(ITEM_ADD, "200 OK returned, cart item added");
         return ResponseEntity.status(HttpStatus.OK).body(cartItemDto);
     }
 
@@ -71,23 +67,23 @@ public class CartItemsController {
          * 400 BAD_REQUEST - Invalid cart item update.
          * 500 INTERNAL_SERVER_ERROR - Internal server error.
          */
-        logger.info(updateMarker, "Method updateCartItem entered");
+        logger.info(ITEM_UPDATE, "Method updateCartItem entered");
         CartItemDTO cartItemDto;
 
         try {
             cartItemDto = modelMapper.map(cartItemsService.updateCartItem(userId, itemId, quantity), CartItemDTO.class);
         } catch (CartNotFoundException e) {
-            logger.error(updateMarker, "CartNotFoundException caught while updating cart item");
+            logger.error(ITEM_UPDATE, "CartNotFoundException caught while updating cart item");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (CartItemNotFoundException e) {
-            logger.error(updateMarker, "CartItemNotFoundException caught while updating cart item");
+            logger.error(ITEM_UPDATE, "CartItemNotFoundException caught while updating cart item");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
-            logger.error(updateMarker, "Exception caught while updating cart item: {}", e.getMessage());
+            logger.error(ITEM_UPDATE, "Exception caught while updating cart item: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
 
-        logger.info(updateMarker, "200 OK returned, cart item updated");
+        logger.info(ITEM_UPDATE, "200 OK returned, cart item updated");
         return ResponseEntity.status(HttpStatus.OK).body(cartItemDto);
     }
 
@@ -98,23 +94,23 @@ public class CartItemsController {
          * 400 BAD_REQUEST - Invalid event cancellation.
          * 500 INTERNAL_SERVER_ERROR - Internal server error.
          */
-        logger.info(removeMarker, "Method removeCartItem entered");
+        logger.info(ITEM_REMOVE, "Method removeCartItem entered");
         CartItemDTO cartItemDto;
 
         try {
             cartItemsService.removeItemFromCart(userId, itemId);
         } catch (CartNotFoundException e) {
-            logger.error(removeMarker, "CartNotFoundException caught while removing item from cart");
+            logger.error(ITEM_REMOVE, "CartNotFoundException caught while removing item from cart");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (CartItemNotFoundException e) {
-            logger.error(removeMarker, "CartItemNotFoundException caught while removing item from cart");
+            logger.error(ITEM_REMOVE, "CartItemNotFoundException caught while removing item from cart");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
-            logger.error(removeMarker, "Exception caught while removing item from cart: {}", e.getMessage());
+            logger.error(ITEM_REMOVE, "Exception caught while removing item from cart: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
 
-        logger.info(removeMarker, "200 OK returned, cart item removed");
+        logger.info(ITEM_REMOVE, "200 OK returned, cart item removed");
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 

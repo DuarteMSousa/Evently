@@ -1,13 +1,15 @@
 package org.example.services;
 
 import jakarta.transaction.Transactional;
-import org.example.exceptions.EventSessionNotFoundException;
 import org.example.exceptions.InvalidSessionTierUpdateException;
 import org.example.exceptions.SessionTierAlreadyExistsException;
 import org.example.exceptions.SessionTierNotFoundException;
-import org.example.models.EventSession;
 import org.example.models.SessionTier;
 import org.example.repositories.SessionTiersRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,11 +21,22 @@ public class SessionTiersService {
     @Autowired
     private SessionTiersRepository sessionTiersRepository;
 
+    private Logger logger = LoggerFactory.getLogger(EventsService.class);
+
+    private static final Marker TIER_GET = MarkerFactory.getMarker("TIER_GET");
+    private static final Marker TIER_DELETE = MarkerFactory.getMarker("TIER_DELETE");
+    private static final Marker TIER_UPDATE = MarkerFactory.getMarker("TIER_UPDATE");
+    private static final Marker TIER_CREATE = MarkerFactory.getMarker("TIER_CREATE");
+
     @Transactional
     public SessionTier createSessionTier(SessionTier sessionTier) {
+        logger.info(TIER_CREATE, "createSessionTier method entered");
+
         if (sessionTiersRepository.existsByEventSessionAndZoneId(sessionTier.getEventSession(), sessionTier.getZoneId())) {
+            logger.error(TIER_CREATE, "Session tier already exists");
             throw new SessionTierAlreadyExistsException("Session tier already exists");
         }
+
 
         //createdby para ver organization
 
@@ -32,12 +45,19 @@ public class SessionTiersService {
 
     @Transactional
     public SessionTier updateSessionTier(UUID id, SessionTier sessionTier) {
+        logger.info(TIER_UPDATE, "updateSessionTier method entered");
         if (!id.equals(sessionTier.getId())) {
+            logger.error(TIER_UPDATE, "Parameter id and body id do not correspond");
             throw new InvalidSessionTierUpdateException("Parameter id and body id do not correspond");
         }
 
         SessionTier existingSessionTier = sessionTiersRepository.findById(id)
-                .orElseThrow(() -> new SessionTierNotFoundException("Event not found"));
+                .orElse(null);
+
+        if (existingSessionTier == null) {
+            logger.error(TIER_UPDATE, "Session tier not found");
+            throw new SessionTierNotFoundException("Session tier not found");
+        }
 
         //VERIFICAR SE ALTERA CORRETAMENTE
 
@@ -45,16 +65,28 @@ public class SessionTiersService {
     }
 
     public SessionTier getSessionTier(UUID sessionTierId) {
-        return sessionTiersRepository
+        logger.info(TIER_GET, "getSessionTier method entered");
+
+        SessionTier sessionTier = sessionTiersRepository
                 .findById(sessionTierId)
-                .orElseThrow(() -> new SessionTierNotFoundException("Event not found"));
+                .orElse(null);
+
+        if (sessionTier == null) {
+            logger.error(TIER_GET, "Session tier not found");
+            throw new SessionTierNotFoundException("Session tier not found");
+        }
+
+        return sessionTier;
     }
 
     public void deleteSessionTier(UUID id) {
+        logger.info(TIER_DELETE, "deleteSessionTier method entered");
+
         SessionTier sessionTierToDelete = sessionTiersRepository.findById(id).orElse(null);
 
         if (sessionTierToDelete == null) {
-            throw new SessionTierNotFoundException("Event Session not found");
+            logger.error(TIER_DELETE, "Session tier not found");
+            throw new SessionTierNotFoundException("Session tier not found");
         }
 
         sessionTiersRepository.delete(sessionTierToDelete);

@@ -20,11 +20,9 @@ public class CartItemsService {
 
     private Logger logger = LoggerFactory.getLogger(CartItemsService.class);
 
-    private Marker addMarker = MarkerFactory.getMarker("AddCartItem");
-
-    private Marker updateMarker = MarkerFactory.getMarker("UpdateCartItem");
-
-    private Marker removeMarker = MarkerFactory.getMarker("RemoveCartItem");
+    private static final Marker ITEM_ADD = MarkerFactory.getMarker("ITEM_ADD");
+    private static final Marker ITEM_UPDATE = MarkerFactory.getMarker("ITEM_UPDATE");
+    private static final Marker ITEM_REMOVE = MarkerFactory.getMarker("ITEM_REMOVE");
 
     @Autowired
     private CartsService cartService;
@@ -35,11 +33,11 @@ public class CartItemsService {
 
     @Transactional
     public CartItem addItemToCart(UUID userId, UUID productId, Integer quantity) {
-        logger.info(addMarker, "Method addItemToCart entered");
+        logger.info(ITEM_ADD, "Method addItemToCart entered");
         Cart cart = cartService.getCart(userId);
 
         if (quantity <= 0) {
-            logger.error(addMarker, "Invalid quantity to add cartItem");
+            logger.error(ITEM_ADD, "Invalid quantity to add cartItem");
             throw new InvalidCartItemException("Invalid cart item quantity");
         }
 
@@ -49,7 +47,7 @@ public class CartItemsService {
 
         CartItem itemToAdd;
         if (item.isPresent()) {
-            logger.error(addMarker, "Cart item already exists");
+            logger.error(ITEM_ADD, "Cart item already exists");
             throw new CartItemAlreadyExistsException("Cart Item already exists");
         } else {
             itemToAdd = new CartItem();
@@ -62,11 +60,11 @@ public class CartItemsService {
 
     @Transactional
     public CartItem updateCartItem(UUID userId, UUID productId, Integer quantity) {
-        logger.info(updateMarker, "Method updateCartItem entered");
+        logger.info(ITEM_UPDATE, "Method updateCartItem entered");
         Cart cart = cartService.getCart(userId);
 
         if (quantity <= 0) {
-            logger.error(updateMarker, "Invalid quantity to update cartItem");
+            logger.error(ITEM_UPDATE, "Invalid quantity to update cartItem");
             throw new InvalidCartItemException("Invalid cart item quantity");
         }
 
@@ -80,7 +78,7 @@ public class CartItemsService {
             i = item.get();
             i.setQuantity(quantity);
         } else {
-            logger.error(updateMarker, "Cart item not found");
+            logger.error(ITEM_UPDATE, "Cart item not found");
             throw new CartItemNotFoundException("Cart Item not found");
         }
 
@@ -90,7 +88,7 @@ public class CartItemsService {
 
     @Transactional
     public void removeItemFromCart(UUID userId, UUID productId) {
-        logger.info(removeMarker, "Method removeItemFromCart entered");
+        logger.info(ITEM_REMOVE, "Method removeItemFromCart entered");
         Cart cart = cartService.getCart(userId);
 
         CartItem itemToRemove = cart.getItems().stream()

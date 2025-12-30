@@ -5,6 +5,10 @@ import org.example.exceptions.*;
 import org.example.messages.TicketMessage;
 import org.example.models.TicketInformation;
 import org.example.utils.FileGenerationUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.imageio.ImageIO;
@@ -20,11 +24,20 @@ public class TicketFileGenerationService {
     private final String IMAGES_PATH = "images";
     private final String TEMPLATES_PATH = "templates";
 
+    private Logger logger = LoggerFactory.getLogger(TicketFileGenerationService.class);
+
+    private static final Marker TICKET_FILE_GENERATION = MarkerFactory.getMarker("TICKET_FILE_GENERATION");
+    private static final Marker TICKET_FILE_SAVE = MarkerFactory.getMarker("TICKET_FILE_SAVE");
+    private static final Marker TICKET_FILE_GET = MarkerFactory.getMarker("TICKET_FILE_GET");
+
     public byte[] generateTicketFile(TicketMessage ticket) {
+        logger.info(TICKET_FILE_GENERATION, "generateTicketFile method entered");
+
         BufferedImage qrCode;
         try {
             qrCode = FileGenerationUtils.generateQRCodeImage(ticket.getId().toString(), 150, 150);
         } catch (WriterException ex) {
+            logger.error(TICKET_FILE_GENERATION, "Error generating QR Code Image: {}", ex.getMessage());
             throw new QrCodeGenerationException("");
         }
 
@@ -37,31 +50,41 @@ public class TicketFileGenerationService {
         BufferedImage logo;
         try (InputStream logoStream = getClass().getResourceAsStream("/" +
                 IMAGES_PATH + "/evently.jpg")) {
-            if (logoStream == null) throw new LogoNotFoundException("Logo não encontrado");
+            if (logoStream == null) {
+                logger.error(TICKET_FILE_GENERATION, "LOGO not found");
+                throw new LogoNotFoundException("Logo not found");
+            }
             logo = ImageIO.read(logoStream);
         } catch (IOException e) {
-            throw new LogoNotFoundException("Erro ao ler logo");
+            logger.error(TICKET_FILE_GENERATION, "Error loading logo");
+            throw new LogoNotFoundException("Error loading logo");
         }
 
         String htmlTemplate;
         try (InputStream templateStream = getClass().getResourceAsStream("/" + TEMPLATES_PATH + "/ticketTemplate.html")) {
-            if (templateStream == null) throw new TemplateNotFoundException("Template HTML não encontrado");
+            if (templateStream == null) {
+                logger.error(TICKET_FILE_GENERATION, "Template not found");
+                throw new TemplateNotFoundException("Template not found");
+            }
             htmlTemplate = new String(templateStream.readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new TemplateNotFoundException("Erro ao ler template HTML");
+            logger.error(TICKET_FILE_GENERATION, "Error loading template: {}", e.getMessage());
+            throw new TemplateNotFoundException("Error loading template");
         }
 
         byte[] file;
         try {
             file = FileGenerationUtils.generateTicketPdf(htmlTemplate, qrCode, logo, information);
         } catch (Exception e) {
-            throw new FileGenerationException("");
+            logger.error(TICKET_FILE_GENERATION, "Error generating file: {}", e.getMessage());
+            throw new FileGenerationException("Error generating file");
         }
 
         return file;
     }
 
     public void saveTicketFile(TicketMessage ticket) {
+        logger.info(TICKET_FILE_SAVE, "saveTicketFile method entered");
         byte[] pdfBytes = generateTicketFile(ticket);
         File pdfDir = new File(TICKET_FILE_PATH);
         if (!pdfDir.exists()) {
@@ -74,19 +97,23 @@ public class TicketFileGenerationService {
             fos.write(pdfBytes);
             fos.flush();
         } catch (IOException e) {
-            throw new FileSaveException("Erro ao guardar PDF");
+            logger.error(TICKET_FILE_SAVE, "Error saving file: {}", e.getMessage());
+            throw new FileSaveException("Error saving file");
         }
     }
 
     public byte[] getTicketPdf(UUID ticketId) {
+        logger.info(TICKET_FILE_GET, "getTicketPdf method entered");
         File pdfFile = new File(TICKET_FILE_PATH + "/" + ticketId + ".pdf");
         if (!pdfFile.exists()) {
-            throw new TicketFileNotFoundException("PDF não encontrado para o ticket " + ticketId);
+            logger.error(TICKET_FILE_GET, "Ticket file not found: {}", ticketId.toString());
+            throw new TicketFileNotFoundException("Ticket file not found");
         }
         try (FileInputStream fis = new FileInputStream(pdfFile)) {
             return fis.readAllBytes();
         } catch (IOException e) {
-            throw new TicketFileNotFoundException("Erro ao ler PDF");
+            logger.error(TICKET_FILE_GET, "Error reading file: {}", e.getMessage());
+            throw new TicketFileNotFoundException("Error loading pdf");
         }
     }
 }
