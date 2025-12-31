@@ -158,4 +158,36 @@ public class OrganizationsController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
+    @GetMapping("/by-user/{userId}")
+    public ResponseEntity<?> getOrganizationsByUser(@PathVariable("userId") UUID userId) {
+        /* HttpStatus(produces)
+         * 200 OK - List of organizations for the specified user retrieved successfully.
+         * 404 NOT_FOUND - User not found or user has no organizations.
+         * 400 BAD_REQUEST - Generic error.
+         */
+
+        logger.info(ORGS_LIST, "GET /organizations/by-user/{} requested", userId);
+
+        try {
+            List<OrganizationDTO> orgs = organizationsService.getOrganizationsByUser(userId)
+                    .stream()
+                    .map(this::toOrganizationDTO)
+                    .collect(Collectors.toList());
+
+            logger.info(ORGS_LIST, "200 OK returned, organizations by user retrieved (userId={}, results={})",
+                    userId, orgs.size());
+
+            return ResponseEntity.ok(orgs);
+
+        } catch (OrganizationNotFoundException e) {
+            logger.warn(ORGS_LIST, "404 NOT_FOUND: No organizations found for user (userId={})", userId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+
+        } catch (Exception e) {
+            logger.error(ORGS_LIST, "400 BAD_REQUEST: Exception caught while getting organizations by user: {}",
+                    e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
 }

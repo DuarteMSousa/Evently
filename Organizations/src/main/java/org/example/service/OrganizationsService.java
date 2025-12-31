@@ -14,9 +14,11 @@ import org.slf4j.MarkerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 public class OrganizationsService {
@@ -266,5 +268,33 @@ public class OrganizationsService {
                     logger.warn(ORG_GET, "Organization not found (orgId={})", orgId);
                     return new OrganizationNotFoundException("Organization not found");
                 });
+    }
+
+    /**
+     * Retrieves all organizations associated with a given user (member of organization).
+     *
+     * Note: if the user does not belong to any organization, an empty list is returned.
+     *
+     * @param userId user identifier
+     * @return list of organizations for the user (empty if none found)
+     */
+    public List<Organization> getOrganizationsByUser(UUID userId) {
+
+        logger.info(ORG_LIST, "Get organizations by user requested (userId={})", userId);
+
+        List<Member> memberships = membersRepository.findById_UserId(userId);
+
+        if (memberships.isEmpty()) {
+            logger.warn(ORG_LIST, "No organizations found for user (userId={})", userId);
+            return Collections.emptyList();
+        }
+
+        List<Organization> orgs = memberships.stream()
+                .map(Member::getOrganization)
+                .collect(Collectors.toList());
+
+        logger.info(ORG_LIST, "Get organizations by user completed (userId={}, results={})", userId, orgs.size());
+
+        return orgs;
     }
 }
