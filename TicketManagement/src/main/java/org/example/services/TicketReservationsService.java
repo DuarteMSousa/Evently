@@ -104,6 +104,19 @@ public class TicketReservationsService {
                 .orElseThrow(() -> new TicketReservationNotFoundException("Ticket Reservation not found"));
     }
 
+    public boolean eventHasReservations(UUID eventId) {
+        return ticketReservationsRepository.existsByEventId(eventId);
+    }
+
+    public boolean sessionHasReservations(UUID sessionId) {
+        return ticketReservationsRepository.existsBySessionId(sessionId);
+    }
+
+    public boolean tierHasReservations(UUID tierId) {
+        return ticketReservationsRepository.existsByTierId((tierId));
+    }
+
+
     private void createStockMovement(TicketReservation ticketReservation, StockMovementType stockMovementType) {
         StockMovement stockMovement = new StockMovement();
         TicketStockId ticketStockId = new TicketStockId(ticketReservation.getEventId(), ticketReservation.getSessionId(), ticketReservation.getTierId());
@@ -114,6 +127,5 @@ public class TicketReservationsService {
         stockMovement.setType(stockMovementType);
         ticketStocksService.addStockMovement(stockMovement);
     }
-
 
 }

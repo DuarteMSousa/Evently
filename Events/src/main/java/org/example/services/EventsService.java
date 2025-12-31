@@ -1,10 +1,11 @@
 package org.example.services;
 
 import jakarta.transaction.Transactional;
-import jdk.vm.ci.code.site.Mark;
 import org.example.clients.OrganizationsClient;
+import org.example.clients.TicketReservationsClient;
 import org.example.dtos.externalServices.organizations.OrganizationDTO;
 import org.example.enums.EventStatus;
+import org.example.events.EventUpdatedEvent;
 import org.example.exceptions.*;
 import org.example.models.Event;
 import org.example.repositories.EventsRepository;
@@ -13,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -30,13 +32,18 @@ public class EventsService {
     @Autowired
     private OrganizationsClient organizationsClient;
 
+    @Autowired
+    private TicketReservationsClient ticketReservationsClient;
+
+    @Autowired
+    private RabbitTemplate template;
+
     private ModelMapper modelMapper = new ModelMapper();
 
     private Logger logger = LoggerFactory.getLogger(EventsService.class);
 
-    private static final Marker EVENTS_PAGE_GET = MarkerFactory.getMarker("EVENTS_GET");
+    private static final Marker EVENTS_PAGE_GET = MarkerFactory.getMarker("EVENTS_PAGE_GET");
     private static final Marker EVENT_GET = MarkerFactory.getMarker("EVENT_GET");
-    private static final Marker EVENT_DELETE = MarkerFactory.getMarker("EVENT_DELETE");
     private static final Marker EVENT_UPDATE = MarkerFactory.getMarker("EVENT_UPDATE");
     private static final Marker EVENT_CREATE = MarkerFactory.getMarker("EVENT_CREATE");
     private static final Marker EVENT_CANCEL = MarkerFactory.getMarker("EVENT_CANCEL");
@@ -51,7 +58,7 @@ public class EventsService {
             throw new EventAlreadyExistsException("Event with name " + event.getName() + " already exists");
         }
 
-        validateEvent(event,EVENT_CREATE);
+        validateEvent(event, EVENT_CREATE);
 
         event.setStatus(EventStatus.DRAFT);
 
@@ -67,7 +74,7 @@ public class EventsService {
             throw new InvalidEventUpdateException("Parameter id and body id do not correspond");
         }
 
-        Event existingEvent = eventsRepository.findById(id)
+        Event existingEvent = eventsRepository.findByIdWithSessionsAndTiers(id)
                 .orElse(null);
 
         if (existingEvent == null) {
@@ -75,7 +82,7 @@ public class EventsService {
             throw new EventNotFoundException("Event not found");
         }
 
-        validateEvent(event,EVENT_UPDATE);
+        validateEvent(event, EVENT_UPDATE);
 
         EventStatus status = existingEvent.getStatus();
 
@@ -104,8 +111,21 @@ public class EventsService {
 
     @Transactional
     public Event cancelEvent(UUID eventId) {
-        Event eventToCancel = eventsRepository.findById(eventId)
-                .orElseThrow(() -> new EventNotFoundException(""));
+        logger.info(EVENT_CANCEL, "cancelEvent method entered");
+        Event eventToCancel = eventsRepository.findByIdWithSessionsAndTiers(eventId)
+                .orElse(null);
+
+        Boolean hasReservations = ticketReservationsClient.checkEventReservations(eventId).getBody();
+
+        if(hasReservations.booleanValue()){
+            logger.error(EVENT_CANCEL, "Event already has reservations");
+            throw new InvalidEventUpdateException("Event already has reservations");
+        }
+
+        if (eventToCancel == null) {
+            logger.error(EVENT_CANCEL, "Event not found");
+            throw new EventNotFoundException("Event not found");
+        }
 
         if (eventToCancel.getStatus().equals(EventStatus.CANCELED)) {
             throw new EventAlreadyCanceledException("Event already cancelled");
@@ -113,25 +133,45 @@ public class EventsService {
 
         //enviar mensagem
         eventToCancel.setStatus(EventStatus.CANCELED);
+
+        EventUpdatedEvent eventUpdatedEvent = new EventUpdatedEvent();
+        modelMapper.map(eventToCancel, eventUpdatedEvent);
+
+        template.convertAndSend(eventUpdatedEvent);
+
         return eventsRepository.save(eventToCancel);
     }
 
     @Transactional
     public Event publishEvent(UUID eventId) {
-        Event event = eventsRepository.findById(eventId)
-                .orElseThrow(() -> new EventNotFoundException(""));
+        logger.info(EVENT_PUBLISH, "publishEvent method entered");
+        Event event = eventsRepository.findByIdWithSessionsAndTiers(eventId)
+                .orElse(null);
+
+        if(event==null) {
+            logger.error(EVENT_PUBLISH, "Event not found");
+            throw new EventNotFoundException("Event not found");
+        }
 
         if (event.getStatus().equals(EventStatus.PUBLISHED) || event.getStatus().equals(EventStatus.PENDING_STOCK_GENERATION)) {
-            throw new EventAlreadyPublishedException("Event already cancelled");
+            logger.error(EVENT_PUBLISH, "Event already Published");
+            throw new EventAlreadyPublishedException("Event already Published");
         }
 
         event.setStatus(EventStatus.PENDING_STOCK_GENERATION);
 
-        //enviar mensagem
+        EventUpdatedEvent eventUpdatedEvent = new EventUpdatedEvent();
+
+        modelMapper.map(event, eventUpdatedEvent);
+
+        logger.info(EVENT_PUBLISH, "Sending event published message");
+        template.convertAndSend(eventUpdatedEvent);
+
         return eventsRepository.save(event);
     }
 
     public Page<Event> getEventPage(Integer pageNumber, Integer pageSize) {
+        logger.info(EVENTS_PAGE_GET, "getEventPage method entered");
         if (pageSize > 50 || pageSize < 1) {
             pageSize = 50;
         }

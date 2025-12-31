@@ -15,5 +15,4 @@ public class EventSessionCreateDTO {
 
     private Instant endsAt;
 
-    private List<SessionTierCreateDTO> tiers;
 }

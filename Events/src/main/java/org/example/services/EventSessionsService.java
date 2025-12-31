@@ -1,6 +1,7 @@
 package org.example.services;
 
 import jakarta.transaction.Transactional;
+import org.example.clients.TicketReservationsClient;
 import org.example.clients.VenuesClient;
 import org.example.dtos.externalServices.venues.VenueDTO;
 import org.example.exceptions.*;
@@ -24,6 +25,9 @@ public class EventSessionsService {
 
     @Autowired
     private EventsService eventsService;
+
+    @Autowired
+    private TicketReservationsClient ticketReservationsClient;
 
     private Logger logger = LoggerFactory.getLogger(CategoriesService.class);
 
@@ -97,6 +101,14 @@ public class EventSessionsService {
             logger.error(SESSION_DELETE, "Event Session not found");
             throw new EventSessionNotFoundException("Event Session not found");
         }
+
+        Boolean hasReservations = ticketReservationsClient.checkSessionReservations(id).getBody();
+
+        if(hasReservations.booleanValue()){
+            logger.error(SESSION_DELETE, "Session already has reservations");
+            throw new InvalidEventSessionUpdateException("Session already has reservations");
+        }
+
 
         eventSessionsRepository.delete(eventSessionToDelete);
     }

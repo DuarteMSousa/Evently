@@ -17,13 +17,4 @@ public class EventSessionUpdateDTO {
 
     private Instant endsAt;
 
-    private UUID createdBy;
-
-    private Date createdAt;
-
-    private UUID updatedBy;
-
-    private Date updatedAt;
-
-    private List<SessionTierUpdateDTO> tiers;
 }

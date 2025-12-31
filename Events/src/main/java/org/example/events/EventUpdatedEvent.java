@@ -7,7 +7,7 @@ import org.example.enums.EventStatus;
 import java.util.List;
 import java.util.UUID;
 
-public class EventPublishedEvent {
+public class EventUpdatedEvent {
 
     private UUID id;
 

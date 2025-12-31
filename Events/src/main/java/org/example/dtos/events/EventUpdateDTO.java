@@ -16,7 +16,5 @@ public class EventUpdateDTO {
 
     private EventStatus status;
 
-    private List<EventSessionUpdateDTO> sessions;
-
     private List<Category> categories;
 }

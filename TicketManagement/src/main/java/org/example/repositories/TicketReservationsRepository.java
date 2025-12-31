@@ -7,4 +7,9 @@ import java.util.UUID;
 
 public interface TicketReservationsRepository extends JpaRepository<TicketReservation, UUID> {
 
+    boolean existsByEventId(UUID eventId);
+
+    boolean existsBySessionId(UUID sessionId);
+
+    boolean existsByTierId(UUID tierId);
 }

@@ -18,7 +18,5 @@ public class EventCreateDTO {
 
     private EventStatus status;
 
-    private List<EventSessionCreateDTO> sessions;
-
     private List<CategoryDTO> categories;
 }

@@ -7,7 +7,6 @@ import org.example.exceptions.*;
 import org.example.models.Cart;
 import org.example.models.CartItem;
 import org.example.repositories.CartItemsRepository;
-import org.example.repositories.CartsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;

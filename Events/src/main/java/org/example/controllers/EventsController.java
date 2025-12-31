@@ -33,7 +33,6 @@ public class EventsController {
 
     private static final Marker EVENTS_PAGE_GET = MarkerFactory.getMarker("EVENTS_GET");
     private static final Marker EVENT_GET = MarkerFactory.getMarker("EVENT_GET");
-    private static final Marker EVENT_DELETE = MarkerFactory.getMarker("EVENT_DELETE");
     private static final Marker EVENT_UPDATE = MarkerFactory.getMarker("EVENT_UPDATE");
     private static final Marker EVENT_CREATE = MarkerFactory.getMarker("EVENT_CREATE");
     private static final Marker EVENT_CANCEL = MarkerFactory.getMarker("EVENT_CANCEL");

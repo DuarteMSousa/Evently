@@ -1,10 +1,10 @@
 package org.example.services;
 
 import jakarta.transaction.Transactional;
+import org.example.clients.TicketReservationsClient;
 import org.example.clients.VenuesClient;
 import org.example.dtos.externalServices.venueszone.VenueZoneDTO;
 import org.example.exceptions.*;
-import org.example.models.Event;
 import org.example.models.EventSession;
 import org.example.models.SessionTier;
 import org.example.repositories.SessionTiersRepository;
@@ -28,6 +28,9 @@ public class SessionTiersService {
 
     @Autowired
     private VenuesClient venuesClient;
+
+    @Autowired
+    private TicketReservationsClient ticketReservationsClient;
 
     private Logger logger = LoggerFactory.getLogger(EventsService.class);
 
@@ -96,7 +99,12 @@ public class SessionTiersService {
             throw new SessionTierNotFoundException("Session tier not found");
         }
 
-        //falta check aos stocks se ha reservas
+        Boolean hasReservations = ticketReservationsClient.checkTierReservations(id).getBody();
+
+        if(hasReservations.booleanValue()){
+            logger.error(TIER_DELETE, "Tier already has reservations");
+            throw new InvalidEventSessionUpdateException("Tier already has reservations");
+        }
 
         sessionTiersRepository.delete(sessionTierToDelete);
     }
