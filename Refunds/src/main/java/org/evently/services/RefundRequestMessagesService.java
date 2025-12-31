@@ -3,10 +3,7 @@ package org.evently.services;
 import feign.FeignException;
 import jakarta.transaction.Transactional;
 import org.evently.clients.UsersClient;
-import org.evently.exceptions.ExternalServiceException;
-import org.evently.exceptions.InvalidRefundRequestUpdateException;
-import org.evently.exceptions.RefundRequestMessageNotFoundException;
-import org.evently.exceptions.RefundRequestNotFoundException;
+import org.evently.exceptions.*;
 import org.evently.exceptions.externalServices.UserNotFoundException;
 import org.evently.models.RefundRequestMessage;
 import org.evently.repositories.RefundRequestMessagesRepository;
@@ -62,7 +59,7 @@ public class RefundRequestMessagesService {
      *
      * @param message refund request message to be sent
      * @return persisted refund request message
-     * @throws InvalidRefundRequestUpdateException if the message data is invalid
+     * @throws InvalidRefundRequestMessageException if the message data is invalid
      * @throws UserNotFoundException if the message author does not exist
      * @throws RefundRequestNotFoundException if the associated refund request does not exist
      * @throws ExternalServiceException if the Users service is unavailable or returns an error
@@ -123,22 +120,22 @@ public class RefundRequestMessagesService {
      * Validates all required fields of a refund request message before sending.
      *
      * @param message refund request message to validate
-     * @throws InvalidRefundRequestUpdateException if any required field is missing or invalid
+     * @throws InvalidRefundRequestMessageException if any required field is missing or invalid
      */
     private void validateMessage(RefundRequestMessage message) {
         logger.debug(MESSAGE_VALIDATION, "Validating refund request message payload");
 
         if (message.getUserId() == null) {
             logger.warn(MESSAGE_VALIDATION, "Missing userId");
-            throw new InvalidRefundRequestUpdateException("User ID is required");
+            throw new InvalidRefundRequestMessageException("User ID is required");
         }
         if (message.getContent() == null || message.getContent().trim().isEmpty()) {
             logger.warn(MESSAGE_VALIDATION, "Message is empty");
-            throw new InvalidRefundRequestUpdateException("Message content cannot be empty");
+            throw new InvalidRefundRequestMessageException("Message content cannot be empty");
         }
         if (message.getRefundRequest() == null || message.getRefundRequest().getId() == null) {
             logger.warn(MESSAGE_VALIDATION, "Message is not linked to a refund request");
-            throw new InvalidRefundRequestUpdateException("Message must be linked to a Refund Request");
+            throw new InvalidRefundRequestMessageException("Message must be linked to a Refund Request");
         }
     }
 }

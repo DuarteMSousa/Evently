@@ -2,6 +2,7 @@ package org.evently.controllers;
 
 import org.evently.dtos.RefundRequestMessages.RefundRequestMessageCreateDTO;
 import org.evently.dtos.RefundRequestMessages.RefundRequestMessageDTO;
+import org.evently.exceptions.InvalidRefundRequestMessageException;
 import org.evently.exceptions.RefundRequestMessageNotFoundException;
 import org.evently.exceptions.RefundRequestNotFoundException;
 import org.evently.models.RefundRequest;
@@ -97,6 +98,9 @@ public class RefundRequestMessagesController {
         } catch (RefundRequestNotFoundException e) {
             logger.warn(MESSAGE_SEND, "RefundRequestNotFoundException caught: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (InvalidRefundRequestMessageException e){
+            logger.warn(MESSAGE_SEND, "InvalidRefundRequestMessageException caught: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
             logger.error(MESSAGE_SEND, "Exception caught while sending message: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());

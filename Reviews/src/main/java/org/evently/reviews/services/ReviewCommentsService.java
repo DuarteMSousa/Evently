@@ -63,7 +63,7 @@ public class ReviewCommentsService {
      *
      * @param reviewComment review comment to be registered
      * @return persisted review comment
-     * @throws InvalidReviewCommentUpdateException if the comment data is invalid
+     * @throws InvalidReviewCommentException if the comment data is invalid
      * @throws UserNotFoundException if the author user does not exist
      * @throws ReviewNotFoundException if the associated review does not exist
      * @throws ExternalServiceException if the Users service is unavailable or returns an error
@@ -103,7 +103,7 @@ public class ReviewCommentsService {
      * @param id review comment identifier to update
      * @param reviewComment review comment data to update
      * @return updated review comment
-     * @throws InvalidReviewCommentUpdateException if the comment data is invalid or ID mismatch occurs
+     * @throws InvalidReviewCommentException if the comment data is invalid or ID mismatch occurs
      * @throws ReviewCommentNotFoundException if the comment does not exist
      */
     @Transactional
@@ -112,7 +112,7 @@ public class ReviewCommentsService {
 
         if (reviewComment.getId() != null && !id.equals(reviewComment.getId())) {
             logger.error(COMMENT_UPDATE, "ID mismatch: path={}, body={}", id, reviewComment.getId());
-            throw new InvalidReviewCommentUpdateException("Parameter id and body id do not correspond");
+            throw new InvalidReviewCommentException("Parameter id and body id do not correspond");
         }
 
         ReviewComment existingComment = reviewCommentsRepository.findById(id)
@@ -176,22 +176,22 @@ public class ReviewCommentsService {
      * Validates all required fields of a review comment before registration or update.
      *
      * @param comment review comment to validate
-     * @throws InvalidReviewCommentUpdateException if any required field is missing or invalid
+     * @throws InvalidReviewCommentException if any required field is missing or invalid
      */
     private void validateComment(ReviewComment comment) {
         logger.debug(COMMENT_VALIDATION, "Validating comment payload");
 
         if (comment.getAuthorId() == null) {
             logger.warn(COMMENT_VALIDATION, "Missing authorId");
-            throw new InvalidReviewCommentUpdateException("Author ID is required");
+            throw new InvalidReviewCommentException("Author ID is required");
         }
         if (comment.getComment() == null || comment.getComment().trim().isEmpty()) {
             logger.warn(COMMENT_VALIDATION, "Comment text is empty");
-            throw new InvalidReviewCommentUpdateException("Comment text cannot be empty");
+            throw new InvalidReviewCommentException("Comment text cannot be empty");
         }
         if (comment.getReview() == null || comment.getReview().getId() == null) {
             logger.warn(COMMENT_VALIDATION, "Comment is not linked to a review");
-            throw new InvalidReviewCommentUpdateException("A valid Review ID must be associated");
+            throw new InvalidReviewCommentException("A valid Review ID must be associated");
         }
     }
 }

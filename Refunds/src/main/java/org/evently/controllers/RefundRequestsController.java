@@ -3,6 +3,7 @@ package org.evently.controllers;
 import org.evently.dtos.RefundRequests.RefundRequestCreateDTO;
 import org.evently.dtos.RefundRequests.RefundRequestDTO;
 import org.evently.enums.RefundRequestStatus;
+import org.evently.exceptions.InvalidRefundRequestException;
 import org.evently.exceptions.RefundRequestNotFoundException;
 import org.evently.models.RefundRequest;
 import org.evently.services.RefundRequestsService;
@@ -52,7 +53,7 @@ public class RefundRequestsController {
         }
     }
 
-    @GetMapping("/user/{userId}/{pageNumber}/{pageSize}")
+    @GetMapping("/get-by-user/{userId}/{pageNumber}/{pageSize}")
     public ResponseEntity<Page<RefundRequestDTO>> getRefundRequestsByUser(
             @PathVariable("userId") UUID userId,
             @PathVariable("pageNumber") Integer pageNumber, @PathVariable("pageSize") Integer pageSize) {
@@ -74,7 +75,6 @@ public class RefundRequestsController {
          * 201 CREATED - Refund request registered successfully.
          * 400 BAD_REQUEST - Invalid data or system error.
          */
-
         logger.info(REFUND_CREATE, "Method registerRefund entered for user: {}", refundDTO.getUser());
         try {
             RefundRequest refundRequest = new RefundRequest();
@@ -88,6 +88,9 @@ public class RefundRequestsController {
             RefundRequest savedRefund = refundRequestsService.createRefundRequest(refundRequest);
             logger.info(REFUND_CREATE, "201 CREATED returned, refund request registered");
             return ResponseEntity.status(HttpStatus.CREATED).body(convertToDTO(savedRefund));
+        }catch (InvalidRefundRequestException e){
+            logger.warn(REFUND_CREATE, "InvalidRefundRequestException caught: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
             logger.error(REFUND_CREATE, "Exception caught while registering refund: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());

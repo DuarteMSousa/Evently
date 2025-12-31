@@ -7,7 +7,7 @@ import org.evently.reviews.clients.OrganizationsClient;
 import org.evently.reviews.clients.UsersClient;
 import org.evently.reviews.clients.VenuesClient;
 import org.evently.reviews.exceptions.ExternalServiceException;
-import org.evently.reviews.exceptions.InvalidReviewUpdateException;
+import org.evently.reviews.exceptions.InvalidReviewException;
 import org.evently.reviews.exceptions.ReviewNotFoundException;
 import org.evently.reviews.exceptions.externalServices.EventNotFoundException;
 import org.evently.reviews.exceptions.externalServices.OrganizationNotFoundException;
@@ -76,7 +76,7 @@ public class ReviewsService {
      *
      * @param review review to be registered
      * @return persisted review
-     * @throws InvalidReviewUpdateException if the review data is invalid or the entity type is unknown
+     * @throws InvalidReviewException if the review data is invalid or the entity type is unknown
      * @throws EventNotFoundException if the target event does not exist
      * @throws VenueNotFoundException if the target venue does not exist
      * @throws OrganizationNotFoundException if the target organization does not exist
@@ -130,7 +130,7 @@ public class ReviewsService {
                 }
                 break;
             default:
-                throw new InvalidReviewUpdateException("Unknown entity type: " + review.getEntityType());
+                throw new InvalidReviewException("Unknown entity type: " + review.getEntityType());
         }
 
         try {
@@ -156,7 +156,7 @@ public class ReviewsService {
      * @param id review identifier
      * @param review updated review data
      * @return updated review
-     * @throws InvalidReviewUpdateException if the request data is invalid or IDs do not match
+     * @throws InvalidReviewException if the request data is invalid or IDs do not match
      * @throws ReviewNotFoundException if the review does not exist
      */
     @Transactional
@@ -165,7 +165,7 @@ public class ReviewsService {
 
         if (review.getId() != null && !id.equals(review.getId())) {
             logger.error(REVIEW_UPDATE, "ID mismatch: path={}, body={}", id, review.getId());
-            throw new InvalidReviewUpdateException("Parameter id and body id do not correspond");
+            throw new InvalidReviewException("Parameter id and body id do not correspond");
         }
 
         Review existingReview = reviewsRepository.findById(id)
@@ -252,7 +252,7 @@ public class ReviewsService {
      * Validates all required fields of a review before creation or update.
      *
      * @param review review to validate
-     * @throws InvalidReviewUpdateException if any required field is missing or invalid
+     * @throws InvalidReviewException if any required field is missing or invalid
      */
     private void validateReview(Review review) {
         logger.debug(REVIEW_VALIDATION, "Validating review payload (authorId={}, entityId={})",
@@ -260,23 +260,23 @@ public class ReviewsService {
 
         if (review.getRating() < 1 || review.getRating() > 5) {
             logger.warn(REVIEW_VALIDATION, "Invalid rating: {}", review.getRating());
-            throw new InvalidReviewUpdateException("Rating must be between 1 and 5");
+            throw new InvalidReviewException("Rating must be between 1 and 5");
         }
         if (review.getAuthorId() == null) {
             logger.warn(REVIEW_VALIDATION, "Missing authorId");
-            throw new InvalidReviewUpdateException("Author ID is required");
+            throw new InvalidReviewException("Author ID is required");
         }
         if (review.getEntityId() == null) {
             logger.warn(REVIEW_VALIDATION, "Missing entityId");
-            throw new InvalidReviewUpdateException("Entity ID is required");
+            throw new InvalidReviewException("Entity ID is required");
         }
         if(review.getEntityType() == null) {
             logger.warn(REVIEW_VALIDATION, "Missing entityType");
-            throw new InvalidReviewUpdateException("Entity Type is required");
+            throw new InvalidReviewException("Entity Type is required");
         }
         if (review.getComment() == null || review.getComment().trim().isEmpty()) {
             logger.warn(REVIEW_VALIDATION, "Comment is empty or null");
-            throw new InvalidReviewUpdateException("Comment cannot be empty");
+            throw new InvalidReviewException("Comment cannot be empty");
         }
     }
 }

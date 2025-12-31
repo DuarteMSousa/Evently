@@ -4,8 +4,9 @@ import feign.FeignException;
 import jakarta.transaction.Transactional;
 import org.evently.clients.PaymentsClient;
 import org.evently.clients.UsersClient;
+import org.evently.enums.RefundRequestStatus;
 import org.evently.exceptions.ExternalServiceException;
-import org.evently.exceptions.InvalidRefundRequestUpdateException;
+import org.evently.exceptions.InvalidRefundRequestException;
 import org.evently.exceptions.RefundRequestNotFoundException;
 import org.evently.exceptions.externalServices.PaymentNotFoundException;
 import org.evently.exceptions.externalServices.UserNotFoundException;
@@ -21,6 +22,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -66,7 +68,7 @@ public class RefundRequestsService {
      *
      * @param refundRequest refund request to be created
      * @return persisted refund request
-     * @throws InvalidRefundRequestUpdateException if the refund request data is invalid
+     * @throws InvalidRefundRequestException if the refund request data is invalid
      * @throws UserNotFoundException if the requesting user does not exist
      * @throws PaymentNotFoundException if the associated payment does not exist
      * @throws ExternalServiceException if the Users or Payments service is unavailable or returns an error
@@ -77,6 +79,8 @@ public class RefundRequestsService {
                 refundRequest.getUserId(), refundRequest.getPaymentId());
 
         validateRefundRequest(refundRequest);
+        validateNoActiveRefund(refundRequest.getPaymentId());
+        refundRequest.setStatus(RefundRequestStatus.PENDING);
 
         try {
             usersClient.getUser(refundRequest.getUserId());
@@ -113,7 +117,7 @@ public class RefundRequestsService {
      * @param id refund request identifier
      * @param request refund request data to update
      * @return updated refund request
-     * @throws InvalidRefundRequestUpdateException if the request data is invalid or IDs do not match
+     * @throws InvalidRefundRequestException if the request data is invalid or IDs do not match
      * @throws RefundRequestNotFoundException if the refund request does not exist
      */
     @Transactional
@@ -122,7 +126,7 @@ public class RefundRequestsService {
 
         if (request.getId() != null && !id.equals(request.getId())) {
             logger.error(REFUND_UPDATE, "ID mismatch: path={}, body={}", id, request.getId());
-            throw new InvalidRefundRequestUpdateException("Parameter id and body id do not correspond");
+            throw new InvalidRefundRequestException("Parameter id and body id do not correspond");
         }
 
         RefundRequest existing = refundRequestsRepository.findById(id)
@@ -166,30 +170,49 @@ public class RefundRequestsService {
      * Validates all required fields of a refund request before creation or update.
      *
      * @param request refund request to validate
-     * @throws InvalidRefundRequestUpdateException if any required field is missing or invalid
+     * @throws InvalidRefundRequestException if any required field is missing or invalid
      */
     private void validateRefundRequest(RefundRequest request) {
         logger.debug(REFUND_VALIDATION, "Validating refund request payload");
 
         if (request.getPaymentId() == null) {
             logger.warn(REFUND_VALIDATION, "Missing paymentId");
-            throw new InvalidRefundRequestUpdateException("Payment ID is required");
+            throw new InvalidRefundRequestException("Payment ID is required");
         }
         if (request.getUserId() == null) {
             logger.warn(REFUND_VALIDATION, "Missing userId");
-            throw new InvalidRefundRequestUpdateException("User ID is required");
+            throw new InvalidRefundRequestException("User ID is required");
         }
         if (request.getTitle() == null || request.getTitle().trim().isEmpty()) {
             logger.warn(REFUND_VALIDATION, "Title is empty");
-            throw new InvalidRefundRequestUpdateException("Title is required");
+            throw new InvalidRefundRequestException("Title is required");
         }
         if(request.getDescription() == null || request.getDescription().trim().isEmpty()) {
             logger.warn(REFUND_VALIDATION, "Description is empty");
-            throw new InvalidRefundRequestUpdateException("Description is required");
-        }
-        if (request.getStatus() == null) {
-            logger.warn(REFUND_VALIDATION, "Status is null");
-            throw new InvalidRefundRequestUpdateException("Initial status is required");
+            throw new InvalidRefundRequestException("Description is required");
         }
     }
+
+    /**
+     * Validates if there isn´t already an active or processed refund to the given payment.
+     *
+     * @param paymentId payment to validate
+     * @throws InvalidRefundRequestException if any required field is missing or invalid
+     */
+    private void validateNoActiveRefund(UUID paymentId) {
+        RefundRequestStatus[]  statuses = { RefundRequestStatus.PENDING, RefundRequestStatus.APPROVED,
+                RefundRequestStatus.PROCESSED};
+
+        boolean existsActive =
+                refundRequestsRepository.existsByPaymentIdAndStatusIn(paymentId, statuses);
+
+        if (existsActive) {
+            logger.warn(REFUND_VALIDATION,
+                    "Active or processed refund already exists for paymentId={}", paymentId);
+            throw new InvalidRefundRequestException(
+                    "There is already an active or processed refund for this payment"
+            );
+        }
+    }
+
 }

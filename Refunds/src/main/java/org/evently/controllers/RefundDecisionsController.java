@@ -2,7 +2,8 @@ package org.evently.controllers;
 
 import org.evently.dtos.RefundDecisions.RefundDecisionCreateDTO;
 import org.evently.dtos.RefundDecisions.RefundDecisionDTO;
-import org.evently.exceptions.RefundDecisionNotFoundException;
+import org.evently.exceptions.InvalidRefundRequestDecisionException;
+import org.evently.exceptions.RefundRequestDecisionNotFoundException;
 import org.evently.exceptions.RefundRequestNotFoundException;
 import org.evently.models.RefundDecision;
 import org.evently.models.RefundRequest;
@@ -44,32 +45,13 @@ public class RefundDecisionsController {
             RefundDecision decision = refundDecisionsService.getRefundDecision(id);
             logger.info(DECISION_GET, "200 OK returned, decision found");
             return ResponseEntity.ok(convertToDTO(decision));
-        } catch (RefundDecisionNotFoundException e) {
-            logger.warn(DECISION_GET, "RefundDecisionNotFoundException caught: {}", e.getMessage());
+        } catch (RefundRequestDecisionNotFoundException e) {
+            logger.warn(DECISION_GET, "RefundRequestDecisionNotFoundException caught: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
             logger.error(DECISION_GET, "Exception caught while getting decision: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
-    }
-
-    @GetMapping("/request/{requestId}/{pageNumber}/{pageSize}")
-    public ResponseEntity<Page<RefundDecisionDTO>> getDecisionsByRequest(
-            @PathVariable("requestId") UUID requestId,
-            @PathVariable("pageNumber") Integer pageNumber, @PathVariable("pageSize") Integer pageSize) {
-        /* HttpStatus(produces)
-         * 200 OK - Paginated list of decisions for the refund request retrieved successfully.
-         */
-
-        logger.info(DECISION_GET, "Method getDecisionsByRequest entered for requestId: {}", requestId);
-        RefundRequest request = new RefundRequest();
-        request.setId(requestId);
-
-        Page<RefundDecision> decisionPage = refundDecisionsService.getRefundDecisionsByRequest(request, pageNumber, pageSize);
-        Page<RefundDecisionDTO> dtoPage = decisionPage.map(this::convertToDTO);
-
-        logger.info(DECISION_GET, "200 OK returned, decisions list retrieved");
-        return ResponseEntity.ok(dtoPage);
     }
 
     @PostMapping("/register-decision")
@@ -98,6 +80,9 @@ public class RefundDecisionsController {
         } catch (RefundRequestNotFoundException e) {
             logger.warn(DECISION_REGISTER, "RefundRequestNotFoundException caught: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }catch (InvalidRefundRequestDecisionException e){
+            logger.warn(DECISION_REGISTER, "InvalidRefundRequestDecisionException caught: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
             logger.error(DECISION_REGISTER, "Exception caught while registering decision: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());

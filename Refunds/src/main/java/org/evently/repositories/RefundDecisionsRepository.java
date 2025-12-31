@@ -12,4 +12,6 @@ public interface RefundDecisionsRepository extends JpaRepository<RefundDecision,
 
     Page<RefundDecision> findAllByRefundRequest(RefundRequest refundRequest, PageRequest pageRequest);
 
+    boolean existsByRefundRequest_Id(UUID refundRequestId);
+
 }

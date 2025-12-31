@@ -3,24 +3,24 @@ package org.evently.services;
 import feign.FeignException;
 import jakarta.transaction.Transactional;
 import org.evently.clients.UsersClient;
-import org.evently.exceptions.ExternalServiceException;
-import org.evently.exceptions.InvalidRefundRequestUpdateException;
-import org.evently.exceptions.RefundDecisionNotFoundException;
-import org.evently.exceptions.RefundRequestNotFoundException;
+import org.evently.config.MQConfig;
+import org.evently.enums.DecisionType;
+import org.evently.enums.RefundRequestStatus;
+import org.evently.exceptions.*;
 import org.evently.exceptions.externalServices.UserNotFoundException;
+import org.evently.messages.RefundToProcessMessage;
 import org.evently.models.RefundDecision;
-import org.evently.models.RefundRequest;
 import org.evently.repositories.RefundDecisionsRepository;
 import org.evently.repositories.RefundRequestsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.UUID;
 
 @Service
@@ -41,19 +41,22 @@ public class RefundDecisionsService {
     @Autowired
     private UsersClient usersClient;
 
+    @Autowired
+    private RabbitTemplate template;
+
     /**
      * Retrieves a refund decision by its unique identifier.
      *
      * @param id refund decision identifier
      * @return found refund decision
-     * @throws RefundDecisionNotFoundException if the decision does not exist
+     * @throws RefundRequestDecisionNotFoundException if the decision does not exist
      */
     public RefundDecision getRefundDecision(UUID id) {
         logger.debug(DECISION_GET, "Get decision requested (id={})", id);
         return refundDecisionsRepository.findById(id)
                 .orElseThrow(() -> {
                     logger.warn(DECISION_GET, "Decision not found (id={})", id);
-                    return new RefundDecisionNotFoundException("Refund Decision not found");
+                    return new RefundRequestDecisionNotFoundException("Refund Decision not found");
                 });
     }
 
@@ -62,7 +65,7 @@ public class RefundDecisionsService {
      *
      * @param decision refund decision to be registered
      * @return persisted refund decision
-     * @throws InvalidRefundRequestUpdateException if the decision data is invalid
+     * @throws InvalidRefundRequestDecisionException if the decision data is invalid
      * @throws UserNotFoundException if the deciding user does not exist
      * @throws RefundRequestNotFoundException if the associated refund request does not exist
      * @throws ExternalServiceException if the Users service is unavailable or returns an error
@@ -95,48 +98,56 @@ public class RefundDecisionsService {
         RefundDecision saved = refundDecisionsRepository.save(decision);
         logger.info(DECISION_REGISTER, "Decision registered successfully (id={}, type={})",
                 saved.getId(), saved.getDecisionType());
+
+        /// Changing refund request status based on the decision
+        if (decision.getDecisionType() == DecisionType.APPROVE) {
+            saved.getRefundRequest().setStatus(RefundRequestStatus.APPROVED);
+        } else {
+            saved.getRefundRequest().setStatus(RefundRequestStatus.REJECTED);
+        }
+
+        /// Setting the decision date
+        saved.getRefundRequest().setDecisionAt(new Date());
+
+        refundRequestsRepository.save(saved.getRefundRequest());
+
+        /// Sending a message with the payment to be refunded
+        if (saved.getDecisionType().equals(DecisionType.APPROVE)) {
+            RefundToProcessMessage refundToProcessMessage = new RefundToProcessMessage();
+            refundToProcessMessage.setPaymentId(saved.getRefundRequest().getPaymentId());
+
+            template.convertAndSend(
+                    MQConfig.EXCHANGE,
+                    MQConfig.ROUTING_KEY,
+                    refundToProcessMessage
+            );
+        }
+
         return saved;
-    }
-
-    /**
-     * Retrieves a paginated list of refund decisions associated with a refund request.
-     *
-     * @param refundRequest refund request entity
-     * @param pageNumber page number (1-based)
-     * @param pageSize page size
-     * @return page of refund decisions for the given request
-     */
-    public Page<RefundDecision> getRefundDecisionsByRequest(RefundRequest refundRequest, Integer pageNumber, Integer pageSize) {
-        if (pageSize > 50 || pageSize < 1) {
-            pageSize = 50;
-        }
-
-        if (pageNumber < 1) {
-            pageNumber = 1;
-        }
-
-        logger.debug(DECISION_GET, "Fetching decisions for request (requestId={})", refundRequest.getId());
-
-        PageRequest pageable = PageRequest.of(pageNumber, pageSize);
-        return refundDecisionsRepository.findAllByRefundRequest(refundRequest, pageable);
     }
 
     /***
      * Validates all required fields of a refund decision before registration.
      *
      * @param decision refund decision to validate
-     * @throws InvalidRefundRequestUpdateException if any required field is missing or invalid
+     * @throws InvalidRefundRequestDecisionException if any required field is missing or invalid
      */
     private void validateDecision(RefundDecision decision) {
         logger.debug(DECISION_VALIDATION, "Validating decision payload");
         if (decision.getDecidedBy() == null) {
-            throw new InvalidRefundRequestUpdateException("DecidedBy is required");
+            throw new InvalidRefundRequestDecisionException("DecidedBy is required");
         }
         if (decision.getDecisionType() == null) {
-            throw new InvalidRefundRequestUpdateException("Decision Type (APPROVE/REJECT) is required");
+            throw new InvalidRefundRequestDecisionException("Decision Type (APPROVE/REJECT) is required");
         }
         if (decision.getRefundRequest() == null || decision.getRefundRequest().getId() == null) {
-            throw new InvalidRefundRequestUpdateException("Decision must be linked to a Refund Request");
+            throw new InvalidRefundRequestDecisionException("Decision must be linked to a Refund Request");
+        }
+        if (refundDecisionsRepository.existsByRefundRequest_Id(decision.getRefundRequest().getId())) {
+            throw new InvalidRefundRequestDecisionException("This refund request already has a decision");
+        }
+        if (!decision.getRefundRequest().getStatus().equals(RefundRequestStatus.PENDING)) {
+            throw new InvalidRefundRequestDecisionException("Only PENDING refund requests can be decided");
         }
     }
 }
