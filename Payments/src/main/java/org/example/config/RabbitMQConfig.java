@@ -43,13 +43,11 @@ public class RabbitMQConfig {
                 .with(paymentsRoutingKey);
     }
 
-    // --- ✅ JSON converter ---
     @Bean
     public Jackson2JsonMessageConverter jackson2JsonMessageConverter() {
         return new Jackson2JsonMessageConverter();
     }
 
-    // --- ✅ publisher usa JSON ---
     @Bean
     public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory,
                                          Jackson2JsonMessageConverter converter) {
@@ -58,7 +56,6 @@ public class RabbitMQConfig {
         return template;
     }
 
-    // --- ✅ listeners usam JSON ---
     @Bean(name = "rabbitListenerContainerFactory")
     public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(
             ConnectionFactory connectionFactory,
@@ -68,5 +65,27 @@ public class RabbitMQConfig {
         factory.setConnectionFactory(connectionFactory);
         factory.setMessageConverter(converter);
         return factory;
+    }
+
+    @Bean
+    public TopicExchange refundsExchange(@Value("${app.refunds.exchange}") String name) {
+        return new TopicExchange(name);
+    }
+
+    @Bean
+    public Queue refundsQueue(@Value("${app.refunds.queue}") String name) {
+        return new Queue(name, true);
+    }
+
+    @Bean
+    public Binding refundsBinding(
+            Queue refundsQueue,
+            TopicExchange refundsExchange,
+            @Value("${app.refunds.routing-key}") String routingKey) {
+
+        return BindingBuilder
+                .bind(refundsQueue)
+                .to(refundsExchange)
+                .with(routingKey);
     }
 }

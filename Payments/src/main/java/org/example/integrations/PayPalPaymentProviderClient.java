@@ -77,7 +77,7 @@ public class PayPalPaymentProviderClient implements PaymentProviderClient {
 
         Map<String, String> amount = new HashMap<>();
         amount.put("currency_code", "EUR");
-        amount.put("value", payment.getAmount().toString());
+        amount.put("value", String.valueOf(payment.getAmount()));
         purchaseUnit.put("amount", amount);
 
         body.put("purchase_units", Collections.singletonList(purchaseUnit));

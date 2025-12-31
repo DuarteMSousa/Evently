@@ -392,4 +392,37 @@ public class PaymentsService {
 
         return updated;
     }
+
+    @Transactional
+    public void onRefundProcessed(UUID paymentId, float amount, UUID refundId) {
+        Payment payment = paymentsRepository.findById(paymentId)
+                .orElseThrow(() -> new PaymentNotFoundException("Payment not found"));
+
+        // regra: só CAPTURED pode virar REFUNDED (ajusta ao teu caso)
+        if (!"CAPTURED".equalsIgnoreCase(payment.getStatus())) {
+            // podes ignorar, logar, ou lançar erro
+            return;
+        }
+
+        payment.setStatus("REFUNDED");
+        Payment updated = paymentsRepository.save(payment);
+
+        createEvent(updated, "REFUND", 200);
+        publishEvent("REFUND", updated);
+    }
+
+    @Transactional
+    public void onRefundFailed(UUID paymentId, UUID refundId) {
+        Payment payment = paymentsRepository.findById(paymentId)
+                .orElseThrow(() -> new PaymentNotFoundException("Payment not found"));
+
+        // aqui decides o que faz sentido:
+        // - manter CAPTURED
+        // - marcar REFUND_FAILED
+        payment.setStatus("REFUND_FAILED");
+        Payment updated = paymentsRepository.save(payment);
+
+        createEvent(updated, "REFUND_FAILED", 409);
+        publishEvent("REFUND_FAILED", updated);
+    }
 }

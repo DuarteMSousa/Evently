@@ -10,6 +10,4 @@ public class PaymentEventMessage {
     private String status;
     private String provider;
     private String providerRef;
-
-    // getters/setters
 }
