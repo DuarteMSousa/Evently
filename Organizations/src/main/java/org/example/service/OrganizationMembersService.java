@@ -38,7 +38,16 @@ public class OrganizationMembersService {
     @Autowired
     private UsersClient usersClient;
 
-
+    /**
+     * Verifies if the requester has permission to manage members of the organization.
+     *
+     * Current rule:
+     * - requester must be the creator of the organization (org.createdBy == requesterId).
+     *
+     * @param org organization to validate ownership against
+     * @param requesterId requester identifier (typically the user performing the action)
+     * @throws PermissionDeniedException if requester is null, org createdBy is null, or requester is not the creator
+     */
     private void checkOwnerPermission(Organization org, UUID requesterId) {
         if (org.getCreatedBy() == null || requesterId == null) {
             logger.warn(PERMISSION, "Permission check failed due to missing ids (orgId={}, orgCreatedBy={}, requesterId={})",
@@ -55,6 +64,13 @@ public class OrganizationMembersService {
         logger.debug(PERMISSION, "Permission granted (orgId={}, requesterId={})", org.getId(), requesterId);
     }
 
+    /**
+     * Retrieves all members of a given organization.
+     *
+     * @param orgId organization identifier
+     * @return list of members belonging to the organization
+     * @throws OrganizationNotFoundException if the organization does not exist
+     */
     public List<Member> getMembers(UUID orgId) {
         logger.debug(MEMBERS_GET, "Get members requested (orgId={})", orgId);
 
@@ -69,6 +85,25 @@ public class OrganizationMembersService {
         return members;
     }
 
+    /**
+     * Adds a user as a member of an organization.
+     *
+     * Business rules:
+     * - organization must exist
+     * - requester must be the organization creator
+     * - organization must be active
+     * - user must exist in Users service
+     * - if user is already a member, returns the existing member instead of creating a duplicate
+     *
+     * @param orgId organization identifier
+     * @param userId user identifier to be added as a member
+     * @param requesterId requester identifier (must be org creator)
+     * @return persisted member (or existing member if already present)
+     * @throws OrganizationNotFoundException if the organization does not exist
+     * @throws PermissionDeniedException if requester lacks permissions or organization is inactive
+     * @throws UserNotFoundException if userId is null or the user does not exist in Users service
+     * @throws ExternalServiceException if Users service returns an error/unavailability (non-404)
+     */
     @Transactional
     public Member addMember(UUID orgId, UUID userId, UUID requesterId) {
         logger.info(MEMBER_ADD, "Add member requested (orgId={}, userId={}, requesterId={})",
@@ -122,6 +157,21 @@ public class OrganizationMembersService {
         return saved;
     }
 
+    /**
+     * Removes a member from an organization.
+     *
+     * Business rules:
+     * - organization must exist
+     * - requester must be the organization creator
+     * - member must exist
+     *
+     * @param orgId organization identifier
+     * @param userId user identifier to be removed
+     * @param requesterId requester identifier (must be org creator)
+     * @throws OrganizationNotFoundException if the organization does not exist
+     * @throws PermissionDeniedException if requester lacks permissions
+     * @throws MemberNotFoundException if the member does not exist for the given orgId/userId pair
+     */
     @Transactional
     public void removeMember(UUID orgId, UUID userId, UUID requesterId) {
         logger.info(MEMBER_REMOVE, "Remove member requested (orgId={}, userId={}, requesterId={})",

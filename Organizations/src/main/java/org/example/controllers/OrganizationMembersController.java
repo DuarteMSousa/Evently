@@ -43,13 +43,13 @@ public class OrganizationMembersController {
         return dto;
     }
 
-    /*
-     * 200 OK - Membros da organização encontrados
-     * 404 NOT_FOUND - Organização não encontrada
-     * 400 BAD_REQUEST - Erro genérico
-     */
     @GetMapping("/get-members/{orgId}")
     public ResponseEntity<?> getMembers(@PathVariable("orgId") UUID orgId) {
+        /* HttpStatus(produces)
+         * 200 OK - Members of the organization retrieved successfully.
+         * 404 NOT_FOUND - Organization does not exist.
+         * 400 BAD_REQUEST - Generic error.
+         */
         logger.info(ORG_MEMBERS_GET, "GET /organizations/get-members/{} requested", orgId);
 
         try {
@@ -72,17 +72,17 @@ public class OrganizationMembersController {
         }
     }
 
-    /*
-     * 201 CREATED - Membro adicionado
-     * 403 FORBIDDEN - Falta de permissões (Utilizador não é o criador da organização)
-     * 404 NOT_FOUND - Organização não encontrada
-     * 405 METHOD_NOT_ALLOWED - Utilizador não encontrado
-     * 400 BAD_REQUEST - Erro genérico
-     */
     @PostMapping("/add-member/{orgId}/{userId}")
     public ResponseEntity<?> addMember(@PathVariable("orgId") UUID orgId,
                                        @PathVariable("userId") UUID userId,
                                        @RequestParam("requesterId") UUID requesterId) {
+        /* HttpStatus(produces)
+         * 201 CREATED - Member added successfully.
+         * 403 FORBIDDEN - Permission denied (requester is not allowed to add members).
+         * 404 NOT_FOUND - Organization does not exist.
+         * 405 METHOD_NOT_ALLOWED - User does not exist.
+         * 400 BAD_REQUEST - Generic error.
+         */
 
         logger.info(ORG_MEMBER_ADD,
                 "POST /organizations/add-member/{}/{} requested (requesterId={})",
@@ -119,17 +119,17 @@ public class OrganizationMembersController {
         }
     }
 
-    /*
-     * 200 OK - Membro removido
-     * 403 FORBIDDEN - Falta de permissões (Utilizador não é o criador da organização)
-     * 404 NOT_FOUND - Organização não encontrada
-     * 405 METHOD_NOT_ALLOWED - Utilizador não encontrado (membro não existe)
-     * 400 BAD_REQUEST - Erro genérico
-     */
     @DeleteMapping("/remove-member/{orgId}/{userId}")
     public ResponseEntity<?> removeMember(@PathVariable("orgId") UUID orgId,
                                           @PathVariable("userId") UUID userId,
                                           @RequestParam("requesterId") UUID requesterId) {
+        /* HttpStatus(produces)
+         * 200 OK - Member removed successfully.
+         * 403 FORBIDDEN - Permission denied (requester is not allowed to remove members).
+         * 404 NOT_FOUND - Organization does not exist.
+         * 405 METHOD_NOT_ALLOWED - Member does not exist in the organization.
+         * 400 BAD_REQUEST - Generic error.
+         */
 
         logger.info(ORG_MEMBER_REMOVE,
                 "DELETE /organizations/remove-member/{}/{} requested (requesterId={})",

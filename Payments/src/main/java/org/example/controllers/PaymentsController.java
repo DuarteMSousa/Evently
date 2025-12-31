@@ -48,14 +48,15 @@ public class PaymentsController {
         return modelMapper.map(payment, PaymentDTO.class);
     }
 
-    /*
-     * 200 OK - Estado do pagamento encontrado
-     * 404 NOT_FOUND - Pagamento não encontrado
-     * 400 BAD_REQUEST - Erro genérico
-     */
     @GetMapping("/check-payment-status/{paymentId}")
     public ResponseEntity<?> checkPaymentStatus(@PathVariable("paymentId") UUID paymentId) {
-        logger.info(PAYMENT_STATUS, "GET /payments/check-payment-status/{} requested", paymentId);
+        /* HttpStatus(produces)
+         * 200 OK - Payment status retrieved successfully.
+         * 404 NOT_FOUND - Payment does not exist.
+         * 400 BAD_REQUEST - Generic error.
+         */
+
+        logger.info(PAYMENT_STATUS, "Method checkPaymentStatus entered for Payment ID: {}", paymentId);
 
         try {
             Payment payment = paymentsService.getPayment(paymentId);
@@ -64,30 +65,30 @@ public class PaymentsController {
             dto.setPaymentId(payment.getId());
             dto.setStatus(payment.getStatus());
 
-            logger.info(PAYMENT_STATUS, "Check payment status succeeded (paymentId={}, status={})",
+            logger.info(PAYMENT_STATUS, "200 OK returned, payment status retrieved (paymentId={}, status={})",
                     payment.getId(), payment.getStatus());
 
-            return ResponseEntity.status(HttpStatus.OK).body(dto);
+            return ResponseEntity.ok(dto);
 
         } catch (PaymentNotFoundException e) {
-            logger.warn(PAYMENT_STATUS, "Check payment status failed - not found (paymentId={})", paymentId);
+            logger.warn(PAYMENT_STATUS, "404 NOT_FOUND: Payment {} not found", paymentId);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
 
         } catch (Exception e) {
-            logger.error(PAYMENT_STATUS, "Check payment status failed - unexpected error (paymentId={})",
-                    paymentId, e);
+            logger.error(PAYMENT_STATUS, "400 BAD_REQUEST: Exception caught while checking payment status: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
-    /*
-     * 200 OK - Lista de pagamentos do utilizador encontrada
-     * 404 NOT_FOUND - Utilizador não encontrado
-     * 400 BAD_REQUEST - Erro genérico
-     */
     @GetMapping("/user-payments/{userId}")
     public ResponseEntity<?> getUserPayments(@PathVariable("userId") UUID userId) {
-        logger.info(PAYMENT_USER_LIST, "GET /payments/user-payments/{} requested", userId);
+        /* HttpStatus(produces)
+         * 200 OK - List of payments for the specified user retrieved successfully.
+         * 404 NOT_FOUND - User does not exist.
+         * 400 BAD_REQUEST - Generic error.
+         */
+
+        logger.info(PAYMENT_USER_LIST, "Method getUserPayments entered for User ID: {}", userId);
 
         try {
             List<PaymentDTO> list = paymentsService.getPaymentsByUser(userId)
@@ -95,41 +96,41 @@ public class PaymentsController {
                     .map(this::toPaymentDTO)
                     .collect(Collectors.toList());
 
-            logger.info(PAYMENT_USER_LIST, "Get user payments succeeded (userId={}, results={})",
+            logger.info(PAYMENT_USER_LIST, "200 OK returned, user payments retrieved (userId={}, results={})",
                     userId, list.size());
 
-            return ResponseEntity.status(HttpStatus.OK).body(list);
+            return ResponseEntity.ok(list);
 
         } catch (UserNotFoundException e) {
-            logger.warn(PAYMENT_USER_LIST, "Get user payments failed - user not found (userId={})", userId);
+            logger.warn(PAYMENT_USER_LIST, "404 NOT_FOUND: User {} not found", userId);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
 
         } catch (Exception e) {
-            logger.error(PAYMENT_USER_LIST, "Get user payments failed - unexpected error (userId={})",
-                    userId, e);
+            logger.error(PAYMENT_USER_LIST, "400 BAD_REQUEST: Exception caught while getting user payments: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
-    /*
-     * 201 CREATED - Pagamento criado e iniciado
-     * 400 BAD_REQUEST - Campos inválidos / Erro genérico
-     * 402 PAYMENT_REQUIRED - Pagamento recusado pelo provedor
-     */
     @PostMapping("/process-payment")
     public ResponseEntity<?> processPayment(@RequestBody PaymentCreateDTO dto) {
+        /* HttpStatus(produces)
+         * 201 CREATED - Payment created and initiated successfully.
+         * 402 PAYMENT_REQUIRED - Payment refused by provider.
+         * 400 BAD_REQUEST - Invalid data provided / generic error.
+         */
+
         logger.info(PAYMENT_PROCESS,
-                "POST /payments/process-payment requested (orderId={}, userId={}, amount={}, provider={})",
+                "Method processPayment entered (orderId={}, userId={}, amount={}, provider={})",
                 dto.getOrderId(), dto.getUserId(), dto.getAmount(), dto.getProvider());
 
         try {
-            Payment payment = new Payment();
-            payment.setOrderId(dto.getOrderId());
-            payment.setUserId(dto.getUserId());
-            payment.setAmount(dto.getAmount());
-            payment.setProvider(dto.getProvider());
+            Payment paymentRequest = new Payment();
+            paymentRequest.setOrderId(dto.getOrderId());
+            paymentRequest.setUserId(dto.getUserId());
+            paymentRequest.setAmount(dto.getAmount());
+            paymentRequest.setProvider(dto.getProvider());
 
-            Payment created = paymentsService.processPayment(payment);
+            Payment created = paymentsService.processPayment(paymentRequest);
 
             String approvalUrl = "https://www.sandbox.paypal.com/checkoutnow?token=" + created.getProviderRef();
 
@@ -141,139 +142,141 @@ public class PaymentsController {
             response.setApprovalUrl(approvalUrl);
 
             logger.info(PAYMENT_PROCESS,
-                    "Process payment succeeded (paymentId={}, status={}, provider={}, providerRef={})",
+                    "201 CREATED returned, payment processed (paymentId={}, status={}, provider={}, providerRef={})",
                     created.getId(), created.getStatus(), created.getProvider(), created.getProviderRef());
 
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
         } catch (InvalidPaymentException e) {
             logger.warn(PAYMENT_PROCESS,
-                    "Process payment failed - invalid payload (orderId={}, userId={}) reason={}",
+                    "400 BAD_REQUEST: Invalid payment payload (orderId={}, userId={}) reason={}",
                     dto.getOrderId(), dto.getUserId(), e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
 
         } catch (PaymentRefusedException e) {
             logger.warn(PAYMENT_PROCESS,
-                    "Process payment failed - refused by provider (orderId={}, userId={}, provider={}) reason={}",
+                    "402 PAYMENT_REQUIRED: Payment refused by provider (orderId={}, userId={}, provider={}) reason={}",
                     dto.getOrderId(), dto.getUserId(), dto.getProvider(), e.getMessage());
-            // 402 Payment Required
             return ResponseEntity.status(402).body(e.getMessage());
 
         } catch (Exception e) {
             logger.error(PAYMENT_PROCESS,
-                    "Process payment failed - unexpected error (orderId={}, userId={}, provider={})",
-                    dto.getOrderId(), dto.getUserId(), dto.getProvider(), e);
+                    "400 BAD_REQUEST: Exception caught while processing payment: {}",
+                    e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
-    /*
-     * 200 OK - Pagamento atualizado após callback do PayPal
-     * 404 NOT_FOUND - Pagamento não encontrado
-     * 400 BAD_REQUEST - Erro genérico / Captura inválida
-     */
     @GetMapping("/paypal-callback")
     public ResponseEntity<?> paypalCallback(@RequestParam("token") String token) {
-        logger.info(PAYPAL_CALLBACK, "GET /payments/paypal-callback requested (token={})", token);
+        /* HttpStatus(produces)
+         * 200 OK - Payment updated successfully after PayPal callback/capture.
+         * 404 NOT_FOUND - Payment does not exist.
+         * 400 BAD_REQUEST - Invalid capture / generic error.
+         */
+
+        logger.info(PAYPAL_CALLBACK, "Method paypalCallback entered (token={})", token);
 
         try {
             Payment updated = paymentsService.capturePaypalPayment(token);
             PaymentDTO dto = toPaymentDTO(updated);
 
             logger.info(PAYPAL_CALLBACK,
-                    "PayPal callback capture succeeded (paymentId={}, status={}, providerRef={})",
+                    "200 OK returned, PayPal capture succeeded (paymentId={}, status={}, providerRef={})",
                     updated.getId(), updated.getStatus(), updated.getProviderRef());
 
-            return ResponseEntity.status(HttpStatus.OK).body(dto);
+            return ResponseEntity.ok(dto);
 
         } catch (PaymentNotFoundException e) {
-            logger.warn(PAYPAL_CALLBACK, "PayPal callback failed - payment not found (token={})", token);
+            logger.warn(PAYPAL_CALLBACK, "404 NOT_FOUND: Payment not found for token={}", token);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
 
         } catch (InvalidPaymentException | PaymentRefusedException e) {
-            logger.warn(PAYPAL_CALLBACK, "PayPal callback failed - invalid/refused capture (token={}) reason={}",
+            logger.warn(PAYPAL_CALLBACK, "400 BAD_REQUEST: Invalid/refused PayPal capture (token={}) reason={}",
                     token, e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
 
         } catch (Exception e) {
-            logger.error(PAYPAL_CALLBACK, "PayPal callback failed - unexpected error (token={})", token, e);
+            logger.error(PAYPAL_CALLBACK, "400 BAD_REQUEST: Exception caught while handling PayPal callback: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
-    /*
-     * 200 OK - Pagamento cancelado pelo utilizador
-     */
     @GetMapping("/paypal-cancel")
     public ResponseEntity<?> paypalCancel(@RequestParam(value = "token", required = false) String token) {
-        logger.info(PAYPAL_CANCEL, "GET /payments/paypal-cancel requested (token={})", token);
+        /* HttpStatus(produces)
+         * 200 OK - Payment cancelled by user on PayPal.
+         */
+
+        logger.info(PAYPAL_CANCEL, "Method paypalCancel entered (token={})", token);
 
         // Podes só devolver uma mensagem ou no futuro marcar como FAILED/CANCELED
-        return ResponseEntity.status(HttpStatus.OK).body("Pagamento cancelado pelo utilizador no PayPal.");
+        logger.info(PAYPAL_CANCEL, "200 OK returned, PayPal cancellation acknowledged (token={})", token);
+        return ResponseEntity.ok("Pagamento cancelado pelo utilizador no PayPal.");
     }
 
-    /*
-     * 200 OK - Pagamento cancelado
-     * 404 NOT_FOUND - Pagamento não encontrado
-     * 400 BAD_REQUEST - Erro genérico / Já cancelado / Estado inválido
-     */
     @PostMapping("/cancel-payment/{paymentId}")
     public ResponseEntity<?> cancelPayment(@PathVariable("paymentId") UUID paymentId) {
-        logger.info(PAYMENT_CANCEL, "POST /payments/cancel-payment/{} requested", paymentId);
+        /* HttpStatus(produces)
+         * 200 OK - Payment cancelled successfully.
+         * 404 NOT_FOUND - Payment does not exist.
+         * 400 BAD_REQUEST - Invalid state (already cancelled) / invalid request / generic error.
+         */
+
+        logger.info(PAYMENT_CANCEL, "Method cancelPayment entered for Payment ID: {}", paymentId);
 
         try {
             Payment updated = paymentsService.cancelPayment(paymentId);
 
-            logger.info(PAYMENT_CANCEL, "Cancel payment succeeded (paymentId={}, status={})",
+            logger.info(PAYMENT_CANCEL, "200 OK returned, payment cancelled (paymentId={}, status={})",
                     updated.getId(), updated.getStatus());
 
-            return ResponseEntity.status(HttpStatus.OK).body(toPaymentDTO(updated));
+            return ResponseEntity.ok(toPaymentDTO(updated));
 
         } catch (PaymentNotFoundException e) {
-            logger.warn(PAYMENT_CANCEL, "Cancel payment failed - not found (paymentId={})", paymentId);
+            logger.warn(PAYMENT_CANCEL, "404 NOT_FOUND: Payment {} not found for cancellation", paymentId);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
 
         } catch (PaymentAlreadyCanceledException | InvalidPaymentException e) {
-            logger.warn(PAYMENT_CANCEL, "Cancel payment failed - invalid state (paymentId={}) reason={}",
+            logger.warn(PAYMENT_CANCEL, "400 BAD_REQUEST: Invalid cancellation state (paymentId={}) reason={}",
                     paymentId, e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
 
         } catch (Exception e) {
-            logger.error(PAYMENT_CANCEL, "Cancel payment failed - unexpected error (paymentId={})",
-                    paymentId, e);
+            logger.error(PAYMENT_CANCEL, "400 BAD_REQUEST: Exception caught while cancelling payment: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
-    /*
-     * 201 CREATED - Reembolso processado
-     * 404 NOT_FOUND - Pagamento não encontrado
-     * 400 BAD_REQUEST - Erro genérico / Reembolso inválido
-     */
     @PostMapping("/process-refund/{paymentId}")
     public ResponseEntity<?> processRefund(@PathVariable("paymentId") UUID paymentId) {
-        logger.info(PAYMENT_REFUND, "POST /payments/process-refund/{} requested", paymentId);
+        /* HttpStatus(produces)
+         * 201 CREATED - Refund processed successfully.
+         * 404 NOT_FOUND - Payment does not exist.
+         * 400 BAD_REQUEST - Invalid refund / generic error.
+         */
+
+        logger.info(PAYMENT_REFUND, "Method processRefund entered for Payment ID: {}", paymentId);
 
         try {
             Payment refunded = paymentsService.processRefund(paymentId);
 
-            logger.info(PAYMENT_REFUND, "Process refund succeeded (paymentId={}, status={})",
+            logger.info(PAYMENT_REFUND, "201 CREATED returned, refund processed (paymentId={}, status={})",
                     refunded.getId(), refunded.getStatus());
 
             return ResponseEntity.status(HttpStatus.CREATED).body(toPaymentDTO(refunded));
 
         } catch (PaymentNotFoundException e) {
-            logger.warn(PAYMENT_REFUND, "Process refund failed - payment not found (paymentId={})", paymentId);
+            logger.warn(PAYMENT_REFUND, "404 NOT_FOUND: Payment {} not found for refund", paymentId);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
 
         } catch (InvalidRefundException e) {
-            logger.warn(PAYMENT_REFUND, "Process refund failed - invalid refund (paymentId={}) reason={}",
+            logger.warn(PAYMENT_REFUND, "400 BAD_REQUEST: Invalid refund (paymentId={}) reason={}",
                     paymentId, e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
 
         } catch (Exception e) {
-            logger.error(PAYMENT_REFUND, "Process refund failed - unexpected error (paymentId={})",
-                    paymentId, e);
+            logger.error(PAYMENT_REFUND, "400 BAD_REQUEST: Exception caught while processing refund: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }

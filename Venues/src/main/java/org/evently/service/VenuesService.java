@@ -33,6 +33,17 @@ public class VenuesService {
     @Autowired
     private VenuesRepository venuesRepository;
 
+    /**
+     * Validates all required fields of a venue before creation (and potentially before updates).
+     *
+     * Validation rules:
+     * - capacity must be greater than 0
+     * - name, address, city, country, postalCode are mandatory
+     * - createdBy is mandatory when creating a new venue (id == null)
+     *
+     * @param venue venue to validate
+     * @throws InvalidVenueException if any required field is missing or invalid
+     */
     private void validateVenue(Venue venue) {
         logger.debug(VENUE_VALIDATION, "Validating venue payload (id={})", venue.getId());
 
@@ -66,6 +77,17 @@ public class VenuesService {
         }
     }
 
+    /**
+     * Creates a new venue after validating its payload.
+     *
+     * Additional rules:
+     * - venue name must be unique (checked through repository)
+     * - created venue is marked as active by default
+     *
+     * @param venue venue to create
+     * @return persisted venue
+     * @throws InvalidVenueException if payload is invalid or the venue name already exists
+     */
     @Transactional
     public Venue createVenue(Venue venue) {
         logger.info(VENUE_CREATE, "Create venue requested (name={}, city={}, country={})",
@@ -87,6 +109,14 @@ public class VenuesService {
         return saved;
     }
 
+    /**
+     * Deactivates an existing venue (soft-deactivate).
+     *
+     * @param id venue identifier
+     * @return updated venue with active=false
+     * @throws VenueNotFoundException if the venue does not exist
+     * @throws VenueAlreadyDeactivatedException if the venue is already deactivated
+     */
     @Transactional
     public Venue deactivateVenue(UUID id) {
         logger.info(VENUE_DEACTIVATE, "Deactivate venue requested (id={})", id);
@@ -110,6 +140,13 @@ public class VenuesService {
         return saved;
     }
 
+    /**
+     * Retrieves a venue by its unique identifier.
+     *
+     * @param id venue identifier
+     * @return found venue
+     * @throws VenueNotFoundException if the venue does not exist
+     */
     public Venue getVenue(UUID id) {
         logger.debug(VENUE_GET, "Get venue requested (id={})", id);
 
@@ -120,6 +157,20 @@ public class VenuesService {
                 });
     }
 
+    /**
+     * Searches venues based on dynamic criteria using JPA Specifications.
+     *
+     * Supported criteria:
+     * - onlyActive: if true, returns only venues with active=true
+     * - name: case-insensitive partial match (LIKE %name%)
+     * - city: case-insensitive exact match
+     * - country: case-insensitive exact match
+     * - minCapacity: capacity >= minCapacity
+     *
+     * @param criteria search criteria
+     * @return list of venues matching the criteria
+     * @throws InvalidVenueException if criteria contains invalid fields (e.g., minCapacity < 0)
+     */
     public List<Venue> searchVenues(VenueSearchDTO criteria) {
         logger.debug(VENUE_SEARCH,
                 "Search venues requested (onlyActive={}, name={}, city={}, country={}, minCapacity={})",

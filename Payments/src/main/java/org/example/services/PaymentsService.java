@@ -45,7 +45,19 @@ public class PaymentsService {
     @Autowired
     private PaymentProviderClient paymentProviderClient;
 
-
+    /**
+     * Validates a payment payload before starting the payment process.
+     *
+     * Validation rules:
+     * - orderId is required
+     * - userId is required
+     * - amount must be > 0
+     * - provider is required
+     * - only PAYPAL provider is currently supported
+     *
+     * @param payment payment to validate
+     * @throws InvalidPaymentException if any required field is missing/invalid or provider is not supported
+     */
     private void validatePaymentForProcess(Payment payment) {
         logger.debug(PAY_VALIDATE,
                 "Validating payment for process (paymentId={}, orderId={}, userId={}, provider={}, amount={})",
@@ -80,6 +92,14 @@ public class PaymentsService {
         }
     }
 
+    /**
+     * Persists a payment event (audit/history) for a given payment.
+     *
+     * @param payment payment that originated the event
+     * @param type event type (e.g., PENDING, CAPTURE, CANCEL, REFUND, ERROR)
+     * @param statusCode optional status code associated with the event (e.g., 200, 402)
+     * @return persisted payment event
+     */
     private PaymentEvent createEvent(Payment payment, String type, Integer statusCode) {
         PaymentEvent event = new PaymentEvent();
         event.setPayment(payment);
@@ -94,6 +114,12 @@ public class PaymentsService {
         return saved;
     }
 
+    /**
+     * Publishes a payment lifecycle event to the messaging layer.
+     *
+     * @param type event type (e.g., PENDING, CAPTURE, CANCEL, REFUND, FAILED)
+     * @param payment payment associated with the event
+     */
     private void publishEvent(String type, Payment payment) {
         logger.info(PAY_EVENT, "Publishing payment event (type={}, paymentId={}, orderId={}, status={})",
                 type, payment.getId(), payment.getOrderId(), payment.getStatus());
@@ -103,6 +129,25 @@ public class PaymentsService {
         logger.debug(PAY_EVENT, "Payment event published (type={}, paymentId={})", type, payment.getId());
     }
 
+    /**
+     * Creates and initiates a payment through the configured payment provider.
+     *
+     * Flow:
+     * 1) Validate payload (orderId, userId, amount, provider)
+     * 2) Persist payment with status PENDING
+     * 3) Create provider order (currently PayPal) via {@link PaymentProviderClient}
+     * 4) Persist an event and publish it (PENDING)
+     *
+     * Error handling:
+     * - If the provider refuses the payment, the payment status is updated to FAILED, an ERROR event is stored,
+     *   and a FAILED event is published.
+     *
+     * @param payment payment request payload
+     * @return persisted payment with updated provider reference
+     * @throws InvalidPaymentException if payload is invalid or provider not supported
+     * @throws PaymentRefusedException if provider refuses the payment
+     * @throws RuntimeException for unexpected errors during persistence/provider communication
+     */
     @Transactional
     public Payment processPayment(Payment payment) {
         logger.info(PAY_PROCESS, "Process payment requested (orderId={}, userId={}, provider={}, amount={})",
@@ -158,6 +203,24 @@ public class PaymentsService {
         }
     }
 
+    /**
+     * Captures a PayPal payment after provider callback, using the provider reference (token).
+     *
+     * Validation rules:
+     * - payment must exist for providerRef
+     * - provider must be PAYPAL
+     * - current status must be PENDING
+     *
+     * On success:
+     * - payment status changes to CAPTURED
+     * - CAPTURE event is persisted and published
+     *
+     * @param providerRef provider reference (e.g. PayPal token)
+     * @return updated payment
+     * @throws PaymentNotFoundException if no payment exists for the providerRef
+     * @throws InvalidPaymentException if provider is not PAYPAL or status is not PENDING
+     * @throws RuntimeException if provider capture fails unexpectedly
+     */
     @Transactional
     public Payment capturePaypalPayment(String providerRef) {
         logger.info(PAY_CAPTURE, "Capture PayPal payment requested (providerRef={})", providerRef);
@@ -197,6 +260,13 @@ public class PaymentsService {
         return updated;
     }
 
+    /**
+     * Retrieves a payment by its unique identifier.
+     *
+     * @param paymentId payment identifier
+     * @return found payment
+     * @throws PaymentNotFoundException if the payment does not exist
+     */
     public Payment getPayment(UUID paymentId) {
         logger.debug(PAY_GET, "Get payment requested (paymentId={})", paymentId);
 
@@ -207,6 +277,16 @@ public class PaymentsService {
                 });
     }
 
+    /**
+     * Retrieves all payments associated with a given user.
+     *
+     * Note: current implementation throws {@link UserNotFoundException} when the list is empty,
+     * meaning "user not found OR user has no payments" (as per exception message).
+     *
+     * @param userId user identifier
+     * @return list of payments for the user
+     * @throws UserNotFoundException if no payments are found for the given userId
+     */
     public List<Payment> getPaymentsByUser(UUID userId) {
         logger.debug(PAY_LIST, "Get payments by user requested (userId={})", userId);
 
@@ -221,6 +301,24 @@ public class PaymentsService {
         return list;
     }
 
+    /**
+     * Cancels a payment.
+     *
+     * Business rules:
+     * - payment must exist
+     * - payment cannot be cancelled if already CANCELED
+     * - payment cannot be cancelled if already REFUNDED
+     *
+     * On success:
+     * - status becomes CANCELED
+     * - CANCEL event is persisted and published
+     *
+     * @param paymentId payment identifier
+     * @return updated payment
+     * @throws PaymentNotFoundException if the payment does not exist
+     * @throws PaymentAlreadyCanceledException if the payment is already canceled
+     * @throws InvalidPaymentException if the payment is refunded (invalid cancel state)
+     */
     @Transactional
     public Payment cancelPayment(UUID paymentId) {
         logger.info(PAY_CANCEL, "Cancel payment requested (paymentId={})", paymentId);
@@ -251,6 +349,22 @@ public class PaymentsService {
         return updated;
     }
 
+    /**
+     * Processes a refund for a payment.
+     *
+     * Business rules:
+     * - payment must exist
+     * - only CAPTURED payments can be refunded
+     *
+     * On success:
+     * - status becomes REFUNDED
+     * - REFUND event is persisted and published
+     *
+     * @param paymentId payment identifier
+     * @return updated payment
+     * @throws PaymentNotFoundException if the payment does not exist
+     * @throws InvalidRefundException if the payment status is not CAPTURED
+     */
     @Transactional
     public Payment processRefund(UUID paymentId) {
         logger.info(PAY_REFUND, "Refund payment requested (paymentId={})", paymentId);

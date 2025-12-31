@@ -36,10 +36,10 @@ public class NotificationsController {
 
     @PostMapping("/send-notification")
     public ResponseEntity<?> sendNotification(@RequestBody NotificationCreateDTO dto) {
-        /*
-         * 201 – Notificação criada + email enfileirado/enviado
-         * 400 – Campos inválidos
-         * 404 – Utilizador não encontrado
+        /* HttpStatus(produces)
+         * 201 CREATED - Notification created successfully and message/email queued/sent.
+         * 404 NOT_FOUND - Target user does not exist.
+         * 400 BAD_REQUEST - Invalid data provided / generic error.
          */
         logger.info(NOTIFICATION_SEND,
                 "POST /notifications/send-notification requested (userId={}, type={}, channel={}, emailTo={})",

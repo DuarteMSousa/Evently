@@ -20,6 +20,17 @@ public class EmailService {
     @Autowired
     private JavaMailSender mailSender;
 
+    /**
+     * Sends a notification email using Spring's {@link JavaMailSender}.
+     *
+     * This method builds a {@link SimpleMailMessage} with the given recipient, subject and body,
+     * and delegates sending to the configured mail sender.
+     *
+     * @param to recipient email address
+     * @param subject email subject
+     * @param body email body content (plain text)
+     * @throws RuntimeException if the underlying mail sender throws an exception while sending the message
+     */
     public void sendNotificationEmail(String to, String subject, String body) {
 
         logger.info(EMAIL_SEND, "Sending email (to={}, subject={})", to, subject);

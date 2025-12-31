@@ -35,6 +35,19 @@ public class VenueZonesService {
     @Autowired
     private VenuesRepository venuesRepository;
 
+    /**
+     * Validates all required fields of a venue zone, including business rules relative to the venue.
+     *
+     * Validation rules:
+     * - name is mandatory
+     * - capacity must be greater than 0
+     * - zone capacity must be <= venue capacity (when venue capacity is defined)
+     * - createdBy is mandatory when creating a new zone (zone.id == null)
+     *
+     * @param venue parent venue of the zone (may be null in some contexts)
+     * @param zone zone to validate
+     * @throws InvalidVenueZoneException if any required field is missing or invalid
+     */
     private void validateZone(Venue venue, VenueZone zone) {
         logger.debug(ZONE_VALIDATION,
                 "Validating venue zone (venueId={}, zoneId={}, name={}, capacity={})",
@@ -66,6 +79,15 @@ public class VenueZonesService {
         }
     }
 
+    /**
+     * Creates a new zone for a given venue.
+     *
+     * @param venueId parent venue identifier
+     * @param zone zone to be created
+     * @return persisted zone
+     * @throws VenueNotFoundException if the venue does not exist
+     * @throws InvalidVenueZoneException if the zone payload is invalid
+     */
     @Transactional
     public VenueZone createVenueZone(UUID venueId, VenueZone zone) {
         logger.info(ZONE_CREATE, "Create venue zone requested (venueId={}, name={}, capacity={})",
@@ -88,6 +110,13 @@ public class VenueZonesService {
         return saved;
     }
 
+    /**
+     * Retrieves a venue zone by its unique identifier.
+     *
+     * @param zoneId venue zone identifier
+     * @return found venue zone
+     * @throws VenueZoneNotFoundException if the zone does not exist
+     */
     public VenueZone getVenueZone(UUID zoneId) {
         logger.debug(ZONE_GET, "Get venue zone requested (zoneId={})", zoneId);
 
@@ -98,6 +127,13 @@ public class VenueZonesService {
                 });
     }
 
+    /**
+     * Retrieves all zones that belong to a given venue.
+     *
+     * @param venueId venue identifier
+     * @return list of venue zones for the given venue
+     * @throws VenueNotFoundException if the venue does not exist
+     */
     public List<VenueZone> getVenueZonesByVenue(UUID venueId) {
         logger.debug(ZONE_LIST, "List venue zones requested (venueId={})", venueId);
 
@@ -114,6 +150,22 @@ public class VenueZonesService {
         return zones;
     }
 
+    /**
+     * Updates an existing venue zone.
+     *
+     * Update rules:
+     * - if body id is provided, it must match path id
+     * - updatedBy is mandatory
+     * - capacity is re-validated against the parent venue capacity
+     *
+     * Note: this method updates fields conditionally (only non-null fields are applied).
+     *
+     * @param zoneId venue zone identifier (path)
+     * @param zone zone payload with updates
+     * @return updated venue zone
+     * @throws InvalidVenueZoneException if IDs mismatch, payload is invalid, or updatedBy is missing
+     * @throws VenueZoneNotFoundException if the zone does not exist
+     */
     @Transactional
     public VenueZone updateVenueZone(UUID zoneId, VenueZone zone) {
         logger.info(ZONE_UPDATE, "Update venue zone requested (zoneId={}, bodyId={}, name={}, capacity={}, updatedBy={})",

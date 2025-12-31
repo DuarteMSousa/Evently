@@ -41,6 +41,19 @@ public class OrganizationsService {
 
     private static final Pattern NIPC_PATTERN = Pattern.compile("\\d{9}");
 
+    /**
+     * Validates the organization payload depending on the operation type.
+     *
+     * Validation rules:
+     * - name is mandatory
+     * - nipc must have exactly 9 digits
+     * - on create: createdBy is mandatory
+     * - on update: updatedBy is mandatory
+     *
+     * @param org organization payload to validate
+     * @param isCreate true for create operations, false for update operations
+     * @throws InvalidOrganizationException if any required field is missing or invalid
+     */
     private void validateOrganization(Organization org, boolean isCreate) {
         logger.debug(ORG_VALIDATE,
                 "Validating organization (isCreate={}, orgId={}, name={}, nipcPresent={}, createdByPresent={}, updatedByPresent={})",
@@ -70,6 +83,16 @@ public class OrganizationsService {
         }
     }
 
+    /**
+     * Checks if the requester has permissions to manage the organization.
+     *
+     * Current rule:
+     * - requester must be the organization creator (org.createdBy == requesterId).
+     *
+     * @param org organization instance
+     * @param requesterId requester identifier
+     * @throws PermissionDeniedException if requester is not the organization creator or IDs are missing
+     */
     private void checkOwnerPermission(Organization org, UUID requesterId) {
         if (org.getCreatedBy() == null || requesterId == null) {
             logger.warn(ORG_PERMISSION, "Permission check failed due to missing ids (orgCreatedBy={}, requesterId={})",
@@ -86,6 +109,18 @@ public class OrganizationsService {
         logger.debug(ORG_PERMISSION, "Permission granted (orgId={}, requesterId={})", org.getId(), requesterId);
     }
 
+    /**
+     * Creates a new organization after validating its payload.
+     *
+     * Additional behavior:
+     * - nipc must be unique
+     * - organization is created as active
+     * - creator is automatically added as a member of the organization (idempotent if already member)
+     *
+     * @param org organization to create
+     * @return persisted organization
+     * @throws InvalidOrganizationException if payload is invalid, nipc already exists, or createdBy is missing
+     */
     @Transactional
     public Organization createOrganization(Organization org) {
         logger.info(ORG_CREATE, "Create organization requested (name={}, nipc={}, createdBy={})",
@@ -133,6 +168,23 @@ public class OrganizationsService {
         return saved;
     }
 
+    /**
+     * Updates an existing organization.
+     *
+     * Update rules:
+     * - organization must exist
+     * - updatedBy is mandatory (validated in validateOrganization)
+     * - requester must be the organization creator (permission check uses updatedBy as requesterId)
+     * - nipc change is allowed only if it is valid (9 digits) and unique
+     * - fields are updated conditionally (only non-null fields are applied)
+     *
+     * @param orgId organization identifier
+     * @param orgWithUpdates organization payload with updates (must include updatedBy)
+     * @return updated organization
+     * @throws OrganizationNotFoundException if the organization does not exist
+     * @throws InvalidOrganizationException if update payload is invalid or nipc change is invalid/duplicate
+     * @throws PermissionDeniedException if requester is not the creator of the organization
+     */
     @Transactional
     public Organization updateOrganization(UUID orgId, Organization orgWithUpdates) {
         logger.info(ORG_UPDATE, "Update organization requested (orgId={}, updatedBy={})",
@@ -187,6 +239,11 @@ public class OrganizationsService {
         return saved;
     }
 
+    /**
+     * Retrieves all organizations.
+     *
+     * @return list of organizations
+     */
     public List<Organization> getOrganizations() {
         logger.debug(ORG_LIST, "Get organizations requested");
         List<Organization> orgs = organizationsRepository.findAll();
@@ -194,6 +251,13 @@ public class OrganizationsService {
         return orgs;
     }
 
+    /**
+     * Retrieves an organization by its unique identifier.
+     *
+     * @param orgId organization identifier
+     * @return found organization
+     * @throws OrganizationNotFoundException if the organization does not exist
+     */
     public Organization getOrganization(UUID orgId) {
         logger.debug(ORG_GET, "Get organization requested (orgId={})", orgId);
 

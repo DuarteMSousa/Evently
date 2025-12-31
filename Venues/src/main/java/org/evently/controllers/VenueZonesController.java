@@ -53,10 +53,10 @@ public class VenueZonesController {
 
     @PostMapping("/create-zone")
     public ResponseEntity<?> createZone(@RequestBody VenueZoneCreateDTO dto) {
-        /*
-         * 201 CREATED – Zona criada
-         * 400 BAD_REQUEST – Campos inválidos
-         * 404 NOT_FOUND – Venue não encontrado
+        /* HttpStatus(produces)
+         * 201 CREATED - Zone created successfully.
+         * 404 NOT_FOUND - Venue does not exist.
+         * 400 BAD_REQUEST - Invalid data provided.
          */
         logger.info(ZONE_CREATE,
                 "POST /venues/zones/create-zone requested (venueId={}, name={}, capacity={})",
@@ -89,6 +89,11 @@ public class VenueZonesController {
 
     @GetMapping("/get-zone/{id}")
     public ResponseEntity<?> getZone(@PathVariable("id") UUID id) {
+        /* HttpStatus(produces)
+         * 200 OK - Zone found.
+         * 404 NOT_FOUND - Zone does not exist.
+         * 400 BAD_REQUEST - Generic error.
+         */
         logger.info(ZONE_GET, "GET /venues/zones/get-zone/{} requested", id);
 
         try {
@@ -110,6 +115,11 @@ public class VenueZonesController {
 
     @GetMapping("/by-venue/{venueId}")
     public ResponseEntity<?> getZonesByVenue(@PathVariable("venueId") UUID venueId) {
+        /* HttpStatus(produces)
+         * 200 OK - List of zones for the specified venue retrieved successfully.
+         * 404 NOT_FOUND - Venue does not exist.
+         * 400 BAD_REQUEST - Generic error.
+         */
         logger.info(ZONE_LIST, "GET /venues/zones/by-venue/{} requested", venueId);
 
         try {
@@ -135,6 +145,11 @@ public class VenueZonesController {
     @PutMapping("/update-zone/{id}")
     public ResponseEntity<?> updateZone(@PathVariable("id") UUID id,
                                         @RequestBody VenueZoneUpdateDTO dto) {
+        /* HttpStatus(produces)
+         * 200 OK - Zone updated successfully.
+         * 404 NOT_FOUND - Zone does not exist OR venue does not exist (depending on service validation).
+         * 400 BAD_REQUEST - Invalid data provided.
+         */
         logger.info(ZONE_UPDATE,
                 "PUT /venues/zones/update-zone/{} requested (bodyId={}, name={}, capacity={}, updatedBy={})",
                 id, dto.getId(), dto.getName(), dto.getCapacity(), dto.getUpdatedBy());

@@ -44,10 +44,10 @@ public class VenuesController {
 
     @GetMapping("/get-venue/{id}")
     public ResponseEntity<?> getVenue(@PathVariable("id") UUID id) {
-        /*
-         * 200 OK - Local encontrado
-         * 404 NOT_FOUND - Local não encontrado
-         * 400 BAD_REQUEST - Erro genérico
+        /* HttpStatus(produces)
+         * 200 OK - Venue found.
+         * 404 NOT_FOUND - Venue does not exist.
+         * 400 BAD_REQUEST - Generic error.
          */
         logger.info(VENUE_GET, "GET /venues/get-venue/{} requested", id);
 
@@ -71,9 +71,9 @@ public class VenuesController {
 
     @PostMapping("/create-venue")
     public ResponseEntity<?> createVenue(@RequestBody VenueCreateDTO dto) {
-        /*
-         * 201 CREATED - Local registado
-         * 400 BAD_REQUEST - Campos inválidos
+        /* HttpStatus(produces)
+         * 201 CREATED - Venue created successfully.
+         * 400 BAD_REQUEST - Invalid data provided.
          */
         logger.info(VENUE_CREATE,
                 "POST /venues/create-venue requested (name={}, city={}, country={})",
@@ -103,9 +103,9 @@ public class VenuesController {
 
     @PostMapping("/search-venues")
     public ResponseEntity<?> searchVenues(@RequestBody VenueSearchDTO criteria) {
-        /*
-         * 200 OK - Locais encontrados
-         * 400 BAD_REQUEST - Campos inválidos
+        /* HttpStatus(produces)
+         * 200 OK - Venues found (list returned).
+         * 400 BAD_REQUEST - Invalid search criteria.
          */
         logger.info(VENUE_SEARCH,
                 "POST /venues/search-venues requested (onlyActive={}, name={}, city={}, country={}, minCapacity={})",
@@ -138,11 +138,11 @@ public class VenuesController {
 
     @PutMapping("/deactivate-venue/{id}")
     public ResponseEntity<?> deactivateVenue(@PathVariable("id") UUID id) {
-        /*
-         * 200 OK - Local desativado
-         * 404 NOT_FOUND - Local não encontrado
-         * 409 CONFLICT - Local já desativado
-         * 400 BAD_REQUEST - Erro genérico
+        /* HttpStatus(produces)
+         * 200 OK - Venue deactivated successfully.
+         * 404 NOT_FOUND - Venue does not exist.
+         * 409 CONFLICT - Venue is already deactivated.
+         * 400 BAD_REQUEST - Generic error.
          */
         logger.info(VENUE_DEACTIVATE, "PUT /venues/deactivate-venue/{} requested", id);
 

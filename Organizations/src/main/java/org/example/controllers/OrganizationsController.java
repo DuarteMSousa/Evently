@@ -42,12 +42,12 @@ public class OrganizationsController {
         return modelMapper.map(org, OrganizationDTO.class);
     }
 
-    /*
-     * 200 OK - Organizações encontradas
-     * 400 BAD_REQUEST - Erro genérico
-     */
     @GetMapping("/get-organizations")
     public ResponseEntity<?> getOrganizations() {
+        /* HttpStatus(produces)
+         * 200 OK - Organizations retrieved successfully.
+         * 400 BAD_REQUEST - Generic error.
+         */
         logger.info(ORGS_LIST, "GET /organizations/get-organizations requested");
 
         try {
@@ -66,13 +66,13 @@ public class OrganizationsController {
         }
     }
 
-    /*
-     * 200 OK - Organização encontrada
-     * 404 NOT_FOUND - Organização não encontrada
-     * 400 BAD_REQUEST - Erro genérico
-     */
     @GetMapping("/get-organization/{orgId}")
     public ResponseEntity<?> getOrganization(@PathVariable("orgId") UUID orgId) {
+        /* HttpStatus(produces)
+         * 200 OK - Organization found.
+         * 404 NOT_FOUND - Organization does not exist.
+         * 400 BAD_REQUEST - Generic error.
+         */
         logger.info(ORG_GET, "GET /organizations/get-organization/{} requested", orgId);
 
         try {
@@ -92,12 +92,12 @@ public class OrganizationsController {
         }
     }
 
-    /*
-     * 201 CREATED - Organização registada
-     * 400 BAD_REQUEST - Campos inválidos / Erro genérico
-     */
     @PostMapping("/create-organization")
     public ResponseEntity<?> createOrganization(@RequestBody OrganizationCreateDTO dto) {
+        /* HttpStatus(produces)
+         * 201 CREATED - Organization created successfully.
+         * 400 BAD_REQUEST - Invalid data provided / generic error.
+         */
         logger.info(ORG_CREATE, "POST /organizations/create-organization requested (name={})", dto.getName());
 
         try {
@@ -119,15 +119,15 @@ public class OrganizationsController {
         }
     }
 
-    /*
-     * 200 OK - Organização atualizada
-     * 400 BAD_REQUEST - Campos inválidos / Erro genérico
-     * 403 FORBIDDEN - Falta de permissões (Utilizador não é o criador da organização)
-     * 404 NOT_FOUND - Organização não encontrada
-     */
     @PutMapping("/update-organization/{orgId}")
     public ResponseEntity<?> updateOrganization(@PathVariable("orgId") UUID orgId,
                                                 @RequestBody OrganizationUpdateDTO dto) {
+        /* HttpStatus(produces)
+         * 200 OK - Organization updated successfully.
+         * 403 FORBIDDEN - Permission denied (requester is not allowed to update organization).
+         * 404 NOT_FOUND - Organization does not exist.
+         * 400 BAD_REQUEST - Invalid data provided / generic error.
+         */
 
         logger.info(ORG_UPDATE, "PUT /organizations/update-organization/{} requested", orgId);
 

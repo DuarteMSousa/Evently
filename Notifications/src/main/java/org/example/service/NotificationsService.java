@@ -37,6 +37,26 @@ public class NotificationsService {
     @Autowired
     private EmailService emailService;
 
+    /**
+     * Validates a notification payload and delivery parameters before sending/queuing.
+     *
+     * Validation rules:
+     * - notification.userId is required
+     * - notification.type is required
+     * - notification.title is required
+     * - notification.body is required
+     * - channel is required
+     * - if channel is EMAIL, emailTo is required
+     *
+     * Additional rule currently implemented:
+     * - if userId equals UUID(0,0), user is treated as not found (throws {@link UserNotFoundException})
+     *
+     * @param notification notification payload to validate
+     * @param channel delivery channel (e.g. "EMAIL")
+     * @param emailTo destination email (required when channel == EMAIL)
+     * @throws InvalidNotificationException if any required field is missing or invalid
+     * @throws UserNotFoundException if the user is considered not found by the current validation rule
+     */
     private void validateNotification(Notification notification,
                                       String channel,
                                       String emailTo) {
@@ -81,6 +101,30 @@ public class NotificationsService {
         }
     }
 
+    /**
+     * Sends a notification through a given channel.
+     *
+     * Current flow:
+     * 1) Validate payload and channel parameters
+     * 2) Persist the notification with status UNREAD
+     * 3) Create an OutboxMessage with status PENDING
+     * 4) If channel is EMAIL, attempts immediate sending:
+     *    - on success: OutboxMessage becomes SENT, attempts incremented, sentAt filled
+     *    - on failure: OutboxMessage becomes FAILED, attempts incremented
+     *
+     * Notes:
+     * - For non-EMAIL channels, the method currently only persists Notification + OutboxMessage
+     *   and does not perform immediate sending.
+     * - Email sending failures are captured and reflected in the OutboxMessage status; the method
+     *   still returns the persisted Notification.
+     *
+     * @param notification notification payload
+     * @param channel delivery channel (e.g. "EMAIL")
+     * @param emailTo destination email (required when channel == EMAIL)
+     * @return persisted notification
+     * @throws InvalidNotificationException if payload is invalid
+     * @throws UserNotFoundException if user is considered not found by the current validation rule
+     */
     @Transactional
     public Notification sendNotification(Notification notification,
                                          String channel,
