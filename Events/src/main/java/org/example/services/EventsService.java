@@ -21,7 +21,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-
 import java.util.List;
 import java.util.UUID;
 
@@ -51,6 +50,17 @@ public class EventsService {
     private static final Marker EVENT_CANCEL = MarkerFactory.getMarker("EVENT_CANCEL");
     private static final Marker EVENT_PUBLISH = MarkerFactory.getMarker("EVENT_PUBLISH");
 
+    /**
+     * Creates a new event.
+     *
+     *
+     * @param event event payload
+     * @return persisted event
+     *
+     * @throws EventAlreadyExistsException if an event with the same name already exists
+     * @throws InvalidEventException       if payload is invalid (name/description/org validation)
+     * @throws ExternalServiceException    if OrganizationsService fails (FeignException)
+     */
     @Transactional
     public Event createEvent(Event event) {
         logger.info(EVENT_CREATE, "createEvent method entered");
@@ -67,6 +77,19 @@ public class EventsService {
         return eventsRepository.save(event);
     }
 
+    /**
+     * Updates an existing event while preserving its current status.
+     *
+     *
+     * @param id    event identifier from the request path
+     * @param event updated event payload (must include id)
+     * @return updated persisted event
+     *
+     * @throws InvalidEventUpdateException if path id and body id do not match
+     * @throws EventNotFoundException      if the event does not exist
+     * @throws InvalidEventException       if payload is invalid (name/description/org validation)
+     * @throws ExternalServiceException    if OrganizationsService fails (FeignException)
+     */
     @Transactional
     public Event updateEvent(UUID id, Event event) {
         logger.info(EVENT_UPDATE, "updateEvent method entered");
@@ -95,6 +118,14 @@ public class EventsService {
         return eventsRepository.save(existingEvent);
     }
 
+    /**
+     * Retrieves an event by its identifier.
+     *
+     * @param eventId event identifier
+     * @return found event
+     *
+     * @throws EventNotFoundException if the event does not exist
+     */
     public Event getEvent(UUID eventId) {
         logger.info(EVENT_GET, "getEvent method entered");
 
@@ -110,10 +141,22 @@ public class EventsService {
         return event;
     }
 
-
+    /**
+     * Cancels an event.
+     *
+     *
+     * @param eventId event identifier
+     * @return canceled event (persisted)
+     *
+     * @throws EventNotFoundException         if the event does not exist
+     * @throws EventAlreadyCanceledException  if the event is already canceled
+     * @throws InvalidEventUpdateException    if the event has reservations and cannot be canceled
+     * @throws ExternalServiceException       if Ticket Management service fails (FeignException)
+     */
     @Transactional
     public Event cancelEvent(UUID eventId) {
         logger.info(EVENT_CANCEL, "cancelEvent method entered");
+
         Event eventToCancel = eventsRepository.findByIdWithSessionsAndTiers(eventId)
                 .orElse(null);
 
@@ -141,7 +184,6 @@ public class EventsService {
             throw new EventAlreadyCanceledException("Event already cancelled");
         }
 
-        //enviar mensagem
         eventToCancel.setStatus(EventStatus.CANCELED);
 
         EventUpdatedMessage eventUpdatedEvent = new EventUpdatedMessage();
@@ -152,9 +194,20 @@ public class EventsService {
         return eventsRepository.save(eventToCancel);
     }
 
+    /**
+     * Publishes an event by transitioning it to a "pending stock generation" state and emitting a message.
+     *
+     *
+     * @param eventId event identifier
+     * @return updated event (persisted)
+     *
+     * @throws EventNotFoundException        if the event does not exist
+     * @throws EventAlreadyPublishedException if event is already published or pending stock generation
+     */
     @Transactional
     public Event publishEvent(UUID eventId) {
         logger.info(EVENT_PUBLISH, "publishEvent method entered");
+
         Event event = eventsRepository.findByIdWithSessionsAndTiers(eventId)
                 .orElse(null);
 
@@ -163,7 +216,8 @@ public class EventsService {
             throw new EventNotFoundException("Event not found");
         }
 
-        if (event.getStatus().equals(EventStatus.PUBLISHED) || event.getStatus().equals(EventStatus.PENDING_STOCK_GENERATION)) {
+        if (event.getStatus().equals(EventStatus.PUBLISHED)
+                || event.getStatus().equals(EventStatus.PENDING_STOCK_GENERATION)) {
             logger.error(EVENT_PUBLISH, "Event already Published");
             throw new EventAlreadyPublishedException("Event already Published");
         }
@@ -171,7 +225,6 @@ public class EventsService {
         event.setStatus(EventStatus.PENDING_STOCK_GENERATION);
 
         EventUpdatedMessage eventUpdatedEvent = new EventUpdatedMessage();
-
         modelMapper.map(event, eventUpdatedEvent);
 
         logger.info(EVENT_PUBLISH, "Sending event published message");
@@ -180,8 +233,16 @@ public class EventsService {
         return eventsRepository.save(event);
     }
 
+    /**
+     * Retrieves a paginated list of published events.
+     *
+     * @param pageNumber page index (as provided by the caller)
+     * @param pageSize   number of results per page (clamped to 50)
+     * @return a {@link Page} of events with status {@link EventStatus#PUBLISHED}
+     */
     public Page<Event> getEventPage(Integer pageNumber, Integer pageSize) {
         logger.info(EVENTS_PAGE_GET, "getEventPage method entered");
+
         if (pageSize > 50 || pageSize < 1) {
             pageSize = 50;
         }
@@ -194,7 +255,16 @@ public class EventsService {
         return eventsRepository.findAllByStatus(EventStatus.PUBLISHED, pageable);
     }
 
-
+    /**
+     * Validates an event payload.
+     *
+     *
+     * @param event   event to validate
+     * @param marker  log marker to use for consistent logging per operation (create/update)
+     *
+     * @throws InvalidEventException     if event data is invalid or user not in organization
+     * @throws ExternalServiceException  if OrganizationsService fails (FeignException)
+     */
     private void validateEvent(Event event, Marker marker) {
         if (event.getName() == null || event.getName().isEmpty()) {
             logger.error(marker, "Empty category name");
@@ -215,7 +285,6 @@ public class EventsService {
             logger.error(marker, "FeignException while getting organizations by user from OrganizationsService: {}", errorBody);
             throw new ExternalServiceException("Error while getting organizations by user from OrganizationsService");
         }
-
 
         if (!userOrganizations.stream().anyMatch(org -> org.getId().equals(event.getOrganizationId()))) {
             logger.error(marker, "Organization not found or the user does not belong to this organization");

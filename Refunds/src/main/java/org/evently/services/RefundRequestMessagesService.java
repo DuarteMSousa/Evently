@@ -3,8 +3,10 @@ package org.evently.services;
 import feign.FeignException;
 import jakarta.transaction.Transactional;
 import org.evently.clients.UsersClient;
+import org.evently.config.MQConfig;
 import org.evently.exceptions.*;
 import org.evently.exceptions.externalServices.UserNotFoundException;
+import org.evently.messages.RefundRequestMessageSent;
 import org.evently.models.RefundRequestMessage;
 import org.evently.repositories.RefundRequestMessagesRepository;
 import org.evently.repositories.RefundRequestsRepository;
@@ -12,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -36,6 +39,9 @@ public class RefundRequestMessagesService {
 
     @Autowired
     private UsersClient usersClient;
+
+    @Autowired
+    private RabbitTemplate template;
 
     /**
      * Retrieves a refund request message by its unique identifier.
@@ -90,6 +96,15 @@ public class RefundRequestMessagesService {
 
         RefundRequestMessage saved = refundRequestMessagesRepository.save(message);
         logger.info(MESSAGE_SEND, "Message sent successfully (id={})", saved.getId());
+
+        RefundRequestMessageSent refundRequestMessageSent = new RefundRequestMessageSent();
+        refundRequestMessageSent.setId(saved.getId());
+        refundRequestMessageSent.setUserId(saved.getUserId());
+        refundRequestMessageSent.setContent(saved.getContent());
+        refundRequestMessageSent.setRefundRequestId(saved.getId());
+
+        template.convertAndSend(MQConfig.EXCHANGE, MQConfig.ROUTING_KEY, refundRequestMessageSent);
+
         return saved;
     }
 

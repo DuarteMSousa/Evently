@@ -30,6 +30,18 @@ public class TicketFileGenerationService {
     private static final Marker TICKET_FILE_SAVE = MarkerFactory.getMarker("TICKET_FILE_SAVE");
     private static final Marker TICKET_FILE_GET = MarkerFactory.getMarker("TICKET_FILE_GET");
 
+    /**
+     * Generates a ticket PDF file in memory.
+     *
+     *
+     * @param ticket ticket generation message (must include id)
+     * @return generated PDF bytes
+     *
+     * @throws QrCodeGenerationException if QR code generation fails
+     * @throws LogoNotFoundException     if the logo cannot be loaded from classpath
+     * @throws TemplateNotFoundException if the HTML template cannot be loaded from classpath
+     * @throws FileGenerationException   if PDF generation fails
+     */
     private byte[] generateTicketFile(TicketGeneratedMessage ticket) {
         logger.info(TICKET_FILE_GENERATION, "generateTicketFile method entered");
 
@@ -48,8 +60,7 @@ public class TicketFileGenerationService {
         information.setEventDate("15/12/2004");
 
         BufferedImage logo;
-        try (InputStream logoStream = getClass().getResourceAsStream("/" +
-                IMAGES_PATH + "/evently.jpg")) {
+        try (InputStream logoStream = getClass().getResourceAsStream("/" + IMAGES_PATH + "/evently.jpg")) {
             if (logoStream == null) {
                 logger.error(TICKET_FILE_GENERATION, "LOGO not found");
                 throw new LogoNotFoundException("Logo not found");
@@ -83,9 +94,23 @@ public class TicketFileGenerationService {
         return file;
     }
 
+    /**
+     * Generates a ticket PDF and saves it on disk under {@link #TICKET_FILE_PATH}.
+     *
+     *
+     * @param ticket message containing the ticket id and metadata needed for generation
+     *
+     * @throws FileSaveException         if writing the file fails
+     * @throws QrCodeGenerationException if QR code generation fails (propagated)
+     * @throws LogoNotFoundException     if logo/template resources are missing (propagated)
+     * @throws TemplateNotFoundException if template is missing (propagated)
+     * @throws FileGenerationException   if PDF generation fails (propagated)
+     */
     public void saveTicketFile(TicketGeneratedMessage ticket) {
         logger.info(TICKET_FILE_SAVE, "saveTicketFile method entered");
+
         byte[] pdfBytes = generateTicketFile(ticket);
+
         File pdfDir = new File(TICKET_FILE_PATH);
         if (!pdfDir.exists()) {
             pdfDir.mkdirs();
@@ -102,13 +127,25 @@ public class TicketFileGenerationService {
         }
     }
 
+    /**
+     * Loads a ticket PDF from disk.
+     *
+     *
+     * @param ticketId ticket identifier
+     * @return PDF bytes
+     *
+     * @throws TicketFileNotFoundException if the file does not exist or cannot be read
+     */
     public byte[] getTicketPdf(UUID ticketId) {
         logger.info(TICKET_FILE_GET, "getTicketPdf method entered");
+
         File pdfFile = new File(TICKET_FILE_PATH + "/" + ticketId + ".pdf");
+
         if (!pdfFile.exists()) {
             logger.error(TICKET_FILE_GET, "Ticket file not found: {}", ticketId.toString());
             throw new TicketFileNotFoundException("Ticket file not found");
         }
+
         try (FileInputStream fis = new FileInputStream(pdfFile)) {
             return fis.readAllBytes();
         } catch (IOException e) {

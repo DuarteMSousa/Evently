@@ -40,6 +40,17 @@ public class SessionTiersService {
     private static final Marker TIER_UPDATE = MarkerFactory.getMarker("TIER_UPDATE");
     private static final Marker TIER_CREATE = MarkerFactory.getMarker("TIER_CREATE");
 
+    /**
+     * Creates a new session tier.
+     *
+     *
+     * @param sessionTier tier payload
+     * @return persisted tier
+     *
+     * @throws SessionTierAlreadyExistsException if a tier already exists for (eventSession, zoneId)
+     * @throws InvalidSessionTierException       if payload is invalid (price/session/zone mismatch)
+     * @throws ExternalServiceException          if VenuesService fails unexpectedly (FeignException)
+     */
     @Transactional
     public SessionTier createSessionTier(SessionTier sessionTier) {
         logger.info(TIER_CREATE, "createSessionTier method entered");
@@ -54,9 +65,23 @@ public class SessionTiersService {
         return sessionTiersRepository.save(sessionTier);
     }
 
+    /**
+     * Updates an existing session tier.
+     *
+     *
+     * @param id          session tier identifier from the request path
+     * @param sessionTier updated tier payload (must include id)
+     * @return updated persisted tier
+     *
+     * @throws InvalidSessionTierUpdateException if path id and body id do not match
+     * @throws SessionTierNotFoundException      if the tier does not exist
+     * @throws InvalidSessionTierException       if payload is invalid
+     * @throws ExternalServiceException          if VenuesService fails unexpectedly (FeignException)
+     */
     @Transactional
     public SessionTier updateSessionTier(UUID id, SessionTier sessionTier) {
         logger.info(TIER_UPDATE, "updateSessionTier method entered");
+
         if (!id.equals(sessionTier.getId())) {
             logger.error(TIER_UPDATE, "Parameter id and body id do not correspond");
             throw new InvalidSessionTierUpdateException("Parameter id and body id do not correspond");
@@ -75,6 +100,14 @@ public class SessionTiersService {
         return sessionTiersRepository.save(existingSessionTier);
     }
 
+    /**
+     * Retrieves a session tier by its identifier.
+     *
+     * @param sessionTierId tier identifier
+     * @return found tier
+     *
+     * @throws SessionTierNotFoundException if the tier does not exist
+     */
     public SessionTier getSessionTier(UUID sessionTierId) {
         logger.info(TIER_GET, "getSessionTier method entered");
 
@@ -90,6 +123,16 @@ public class SessionTiersService {
         return sessionTier;
     }
 
+    /**
+     * Deletes a session tier.
+     *
+     *
+     * @param id tier identifier
+     *
+     * @throws SessionTierNotFoundException      if the tier does not exist
+     * @throws ExternalServiceException          if Ticket Management service fails (FeignException)
+     * @throws InvalidEventSessionUpdateException if the tier has reservations and cannot be deleted
+     */
     public void deleteSessionTier(UUID id) {
         logger.info(TIER_DELETE, "deleteSessionTier method entered");
 
@@ -118,12 +161,22 @@ public class SessionTiersService {
         sessionTiersRepository.delete(sessionTierToDelete);
     }
 
-
+    /**
+     * Validates a session tier payload.
+     *
+     *
+     * @param sessionTier tier to validate
+     * @param marker      log marker to use for consistent logging per operation (create/update)
+     *
+     * @throws InvalidSessionTierException if tier is invalid (price/session/zone mismatch or missing references)
+     * @throws ExternalServiceException    if VenuesService fails unexpectedly (FeignException)
+     */
     public void validateSessionTier(SessionTier sessionTier, Marker marker) {
         if (sessionTier.getPrice() <= 0) {
             logger.error(marker, "Session tier price must be greater than 0");
             throw new InvalidSessionTierException("Session tier price must be greater than 0");
         }
+
         EventSession eventSession;
         try {
             eventSession = eventSessionsService.getEventSession(sessionTier.getEventSession().getId());

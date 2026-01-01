@@ -40,16 +40,6 @@ public class NotificationsService {
     /**
      * Validates a notification payload and delivery parameters before sending/queuing.
      *
-     * Validation rules:
-     * - notification.userId is required
-     * - notification.type is required
-     * - notification.title is required
-     * - notification.body is required
-     * - channel is required
-     * - if channel is EMAIL, emailTo is required
-     *
-     * Additional rule currently implemented:
-     * - if userId equals UUID(0,0), user is treated as not found (throws {@link UserNotFoundException})
      *
      * @param notification notification payload to validate
      * @param channel delivery channel (e.g. "EMAIL")
@@ -104,19 +94,6 @@ public class NotificationsService {
     /**
      * Sends a notification through a given channel.
      *
-     * Current flow:
-     * 1) Validate payload and channel parameters
-     * 2) Persist the notification with status UNREAD
-     * 3) Create an OutboxMessage with status PENDING
-     * 4) If channel is EMAIL, attempts immediate sending:
-     *    - on success: OutboxMessage becomes SENT, attempts incremented, sentAt filled
-     *    - on failure: OutboxMessage becomes FAILED, attempts incremented
-     *
-     * Notes:
-     * - For non-EMAIL channels, the method currently only persists Notification + OutboxMessage
-     *   and does not perform immediate sending.
-     * - Email sending failures are captured and reflected in the OutboxMessage status; the method
-     *   still returns the persisted Notification.
      *
      * @param notification notification payload
      * @param channel delivery channel (e.g. "EMAIL")
@@ -139,7 +116,6 @@ public class NotificationsService {
 
         validateNotification(notification, channel, emailTo);
 
-        // 1) Guardar notificação
         notification.setStatus("UNREAD");
         Notification saved = notificationsRepository.save(notification);
 
@@ -148,7 +124,6 @@ public class NotificationsService {
                 saved.getId(), saved.getUserId(), saved.getStatus()
         );
 
-        // 2) Criar outbox
         OutBoxMessage message = new OutBoxMessage();
         message.setNotificationId(saved.getId());
         message.setChannel(channel);
@@ -163,7 +138,6 @@ public class NotificationsService {
                 savedMsg.getId(), saved.getId(), channel, savedMsg.getStatus()
         );
 
-        // 3) Enviar (apenas EMAIL aqui)
         if ("EMAIL".equalsIgnoreCase(channel)) {
             logger.info(EMAIL_FLOW,
                     "Attempting EMAIL send (notificationId={}, outboxId={}, to={}, subject={})",

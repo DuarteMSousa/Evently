@@ -1,15 +1,19 @@
 package org.evently.tickets.services;
 
 import jakarta.transaction.Transactional;
+import org.evently.tickets.config.MQConfig;
 import org.evently.tickets.enums.TicketStatus;
 import org.evently.tickets.exceptions.InvalidTicketUpdateException;
 import org.evently.tickets.exceptions.TicketNotFoundException;
+import org.evently.tickets.messages.TicketIssuedMessage;
 import org.evently.tickets.models.Ticket;
 import org.evently.tickets.repositories.TicketsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
+import org.springframework.amqp.core.AmqpTemplate;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,6 +35,9 @@ public class TicketsService {
 
     @Autowired
     private TicketsRepository ticketsRepository;
+
+    @Autowired
+    private RabbitTemplate template;
 
     /**
      * Retrieves a ticket by its unique identifier.
@@ -67,6 +74,17 @@ public class TicketsService {
 
         logger.info(TICKET_CREATE, "Ticket registered successfully (id={}, status={})",
                 savedTicket.getId(), savedTicket.getStatus());
+
+        TicketIssuedMessage ticketIssuedMessage = new TicketIssuedMessage();
+        ticketIssuedMessage.setId(savedTicket.getId());
+        ticketIssuedMessage.setReservationId(savedTicket.getReservationId());
+        ticketIssuedMessage.setOrderId(savedTicket.getOrderId());
+        ticketIssuedMessage.setUserId(savedTicket.getUserId());
+        ticketIssuedMessage.setEventId(savedTicket.getEventId());
+        ticketIssuedMessage.setSessionId(savedTicket.getSessionId());
+        ticketIssuedMessage.setTierId(savedTicket.getTierId());
+
+        template.convertAndSend(MQConfig.EXCHANGE, MQConfig.ROUTING_KEY, ticketIssuedMessage);
 
         return savedTicket;
     }

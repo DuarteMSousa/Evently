@@ -9,8 +9,14 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class RefundToProcessMessage {
+public class RefundRequestMessageSent {
 
-    private UUID paymentId;
+    private UUID id;
+
+    private UUID userId;
+
+    private String content;
+
+    private UUID refundRequestId;
 
 }

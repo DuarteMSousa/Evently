@@ -33,19 +33,25 @@ public class EventSessionsService {
     private Logger logger = LoggerFactory.getLogger(CategoriesService.class);
 
     private static final Marker SESSION_GET = MarkerFactory.getMarker("SESSION_GET");
-
     private static final Marker SESSION_DELETE = MarkerFactory.getMarker("SESSION_DELETE");
-
     private static final Marker SESSION_UPDATE = MarkerFactory.getMarker("SESSION_UPDATE");
-
     private static final Marker SESSION_CREATE = MarkerFactory.getMarker("SESSION_CREATE");
 
     @Autowired
     private VenuesClient venuesClient;
 
+    /**
+     * Creates a new event session.
+     *
+     *
+     * @param eventSession session payload (must include event, venueId, startsAt, endsAt)
+     * @return persisted session
+     *
+     * @throws InvalidEventSessionException if session payload is invalid (dates/event/venue)
+     * @throws ExternalServiceException     if VenuesService fails unexpectedly (FeignException)
+     */
     @Transactional
     public EventSession createEventSession(EventSession eventSession) {
-
         logger.info(SESSION_CREATE, "createEventSession method entered");
 
         validateEventSession(eventSession, SESSION_CREATE);
@@ -53,9 +59,23 @@ public class EventSessionsService {
         return eventSessionsRepository.save(eventSession);
     }
 
+    /**
+     * Updates an existing event session.
+     *
+     *
+     * @param id           event session identifier from the request path
+     * @param eventSession updated session payload (must include id)
+     * @return updated persisted session
+     *
+     * @throws InvalidEventSessionUpdateException if path id and body id do not match
+     * @throws EventSessionNotFoundException      if the session does not exist
+     * @throws InvalidEventSessionException       if session payload is invalid (dates/event/venue)
+     * @throws ExternalServiceException           if VenuesService fails unexpectedly (FeignException)
+     */
     @Transactional
     public EventSession updateEventSession(UUID id, EventSession eventSession) {
         logger.info(SESSION_UPDATE, "updateEventSession method entered");
+
         if (!id.equals(eventSession.getId())) {
             logger.error(SESSION_UPDATE, "Parameter id and body id do not correspond");
             throw new InvalidEventSessionUpdateException("Parameter id and body id do not correspond");
@@ -79,6 +99,14 @@ public class EventSessionsService {
         return eventSessionsRepository.save(existingEventSession);
     }
 
+    /**
+     * Retrieves an event session by its identifier.
+     *
+     * @param sessionId session identifier
+     * @return found event session
+     *
+     * @throws EventSessionNotFoundException if the session does not exist
+     */
     public EventSession getEventSession(UUID sessionId) {
         logger.info(SESSION_GET, "getEventSession method entered");
 
@@ -94,14 +122,26 @@ public class EventSessionsService {
         return eventSession;
     }
 
+    /**
+     * Deletes an event session.
+     *
+     *
+     * @param id session identifier
+     *
+     * @throws EventSessionNotFoundException      if the session does not exist
+     * @throws ExternalServiceException           if Ticket Management service fails (FeignException)
+     * @throws InvalidEventSessionUpdateException if the session already has reservations
+     */
     public void deleteEventSession(UUID id) {
         logger.info(SESSION_DELETE, "deleteEventSession method entered");
+
         EventSession eventSessionToDelete = eventSessionsRepository.findById(id).orElse(null);
 
         if (eventSessionToDelete == null) {
             logger.error(SESSION_DELETE, "Event Session not found");
             throw new EventSessionNotFoundException("Event Session not found");
         }
+
         Boolean hasReservations;
 
         try {
@@ -117,11 +157,19 @@ public class EventSessionsService {
             throw new InvalidEventSessionUpdateException("Session already has reservations");
         }
 
-
         eventSessionsRepository.delete(eventSessionToDelete);
     }
 
-
+    /**
+     * Validates an event session payload.
+     *
+     *
+     * @param eventSession event session to validate
+     * @param marker       log marker to use for consistent logging per operation (create/update)
+     *
+     * @throws InvalidEventSessionException if session is invalid or references non-existing event/venue
+     * @throws ExternalServiceException     if VenuesService fails unexpectedly (FeignException)
+     */
     private void validateEventSession(EventSession eventSession, Marker marker) {
         if (eventSession.getStartsAt() == null || eventSession.getEndsAt() == null) {
             logger.error(marker, "Invalid start or end time");

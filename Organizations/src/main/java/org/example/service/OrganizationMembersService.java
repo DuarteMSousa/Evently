@@ -41,9 +41,6 @@ public class OrganizationMembersService {
     /**
      * Verifies if the requester has permission to manage members of the organization.
      *
-     * Current rule:
-     * - requester must be the creator of the organization (org.createdBy == requesterId).
-     *
      * @param org organization to validate ownership against
      * @param requesterId requester identifier (typically the user performing the action)
      * @throws PermissionDeniedException if requester is null, org createdBy is null, or requester is not the creator
@@ -88,12 +85,6 @@ public class OrganizationMembersService {
     /**
      * Adds a user as a member of an organization.
      *
-     * Business rules:
-     * - organization must exist
-     * - requester must be the organization creator
-     * - organization must be active
-     * - user must exist in Users service
-     * - if user is already a member, returns the existing member instead of creating a duplicate
      *
      * @param orgId organization identifier
      * @param userId user identifier to be added as a member
@@ -160,10 +151,6 @@ public class OrganizationMembersService {
     /**
      * Removes a member from an organization.
      *
-     * Business rules:
-     * - organization must exist
-     * - requester must be the organization creator
-     * - member must exist
      *
      * @param orgId organization identifier
      * @param userId user identifier to be removed

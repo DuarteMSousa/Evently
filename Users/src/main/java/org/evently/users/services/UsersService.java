@@ -39,9 +39,19 @@ public class UsersService {
     private static final Marker USER_UPDATE = MarkerFactory.getMarker("USER_UPDATE");
     private static final Marker USER_CREATE = MarkerFactory.getMarker("USER_CREATE");
 
+    /**
+     * Creates a new user after validating uniqueness constraints and hashing the password.
+     *
+     *
+     * @param user user payload to create (must include username, email, nif, phoneNumber, password, etc.)
+     * @return persisted user
+     *
+     * @throws UserAlreadyExistsException if any uniqueness constraint is violated (username/email/nif/phoneNumber)
+     */
     @Transactional
     public User createUser(User user) {
         logger.info(USER_CREATE, "Create user method entered");
+
         if (usersRepository.existsByUsername(user.getUsername())) {
             logger.error(USER_CREATE, "Username {} already exists", user.getUsername());
             throw new UserAlreadyExistsException("User with username " + user.getUsername() + " already exists");
@@ -63,13 +73,25 @@ public class UsersService {
         }
 
         user.setPassword(PasswordUtils.hashPassword(user.getPassword()));
-
         return usersRepository.save(user);
     }
 
+    /**
+     * Updates an existing user.
+     *
+     *
+     * @param id   user identifier from the request path
+     * @param user user payload containing updated fields (must include id)
+     * @return updated persisted user
+     *
+     * @throws InvalidUserUpdateException  if path id and body id do not match
+     * @throws UserNotFoundException       if the user does not exist
+     * @throws UserAlreadyExistsException  if any uniqueness constraint is violated after changes
+     */
     @Transactional
     public User updateUser(UUID id, User user) {
         logger.info(USER_UPDATE, "Update user method entered");
+
         if (!id.equals(user.getId())) {
             logger.error(USER_UPDATE, "Parameter id and body id do not correspond, user update failed");
             throw new InvalidUserUpdateException("Parameter id and body id do not correspond");
@@ -78,22 +100,26 @@ public class UsersService {
         User existingUser = usersRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        if (!user.getUsername().equals(existingUser.getUsername()) && usersRepository.existsByUsername(user.getUsername())) {
+        if (!user.getUsername().equals(existingUser.getUsername())
+                && usersRepository.existsByUsername(user.getUsername())) {
             logger.error(USER_UPDATE, "Updated Username {} already exists", user.getUsername());
             throw new UserAlreadyExistsException("User with username " + user.getUsername() + " already exists");
         }
 
-        if (!user.getEmail().equals(existingUser.getEmail()) && usersRepository.existsByEmail(user.getEmail())) {
+        if (!user.getEmail().equals(existingUser.getEmail())
+                && usersRepository.existsByEmail(user.getEmail())) {
             logger.error(USER_UPDATE, "Updated Email {} already exists", user.getEmail());
             throw new UserAlreadyExistsException("User with email " + user.getEmail() + " already exists");
         }
 
-        if (!user.getNif().equals(existingUser.getNif()) && usersRepository.existsByNif(user.getNif())) {
+        if (!user.getNif().equals(existingUser.getNif())
+                && usersRepository.existsByNif(user.getNif())) {
             logger.error(USER_UPDATE, "Updated Nif {} already exists", user.getNif());
             throw new UserAlreadyExistsException("User with nif " + user.getNif() + " already exists");
         }
 
-        if (!user.getPhoneNumber().equals(existingUser.getPhoneNumber()) && usersRepository.existsByPhoneNumber(user.getPhoneNumber())) {
+        if (!user.getPhoneNumber().equals(existingUser.getPhoneNumber())
+                && usersRepository.existsByPhoneNumber(user.getPhoneNumber())) {
             logger.error(USER_UPDATE, "Updated Phone number {} already exists", user.getPhoneNumber());
             throw new UserAlreadyExistsException("User with phone number " + user.getNif() + " already exists");
         }
@@ -108,16 +134,36 @@ public class UsersService {
         return usersRepository.save(existingUser);
     }
 
+    /**
+     * Retrieves a user by its identifier.
+     *
+     * @param userId user identifier
+     * @return found user
+     *
+     * @throws UserNotFoundException if no user exists with the given id
+     */
     public User getUser(UUID userId) {
         logger.info(USER_GET, "Get user method entered");
+
         return usersRepository
                 .findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(""));
     }
 
+    /**
+     * Deactivates (soft-deletes) a user by setting active=false.
+     *
+     *
+     * @param userId user identifier
+     * @return updated user with active=false
+     *
+     * @throws UserNotFoundException             if the user does not exist
+     * @throws UserAlreadyDeactivatedException   if the user is already deactivated
+     */
     @Transactional
     public User deactivateUser(UUID userId) {
         logger.info(USER_DEACTIVATE, "Deactivate user method entered");
+
         User userToDeactivate = usersRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(""));
 
@@ -130,8 +176,19 @@ public class UsersService {
         return usersRepository.save(userToDeactivate);
     }
 
+    /**
+     * Authenticates a user using username/password and returns a JWT token if valid.
+     *
+     *
+     * @param username username to authenticate
+     * @param password raw password provided by the user
+     * @return JWT token as a String
+     *
+     * @throws LoginFailedException if the user does not exist or the password is invalid
+     */
     public String loginUser(String username, String password) {
         logger.info(USER_LOGIN, "Login user method entered");
+
         User user = usersRepository.findByUsername(username)
                 .orElseThrow(() -> new LoginFailedException("User not found"));
 
@@ -143,11 +200,21 @@ public class UsersService {
         return jwtUtils.generateToken(user.getId(), user.getUsername());
     }
 
+    /**
+     * Retrieves a paginated list of users.
+     *
+     *
+     * @param pageNumber page index (0-based)
+     * @param pageSize   number of elements per page (clamped to max 50)
+     * @return a {@link Page} of users
+     */
     public Page<User> getUsersPage(Integer pageNumber, Integer pageSize) {
         logger.info(USERS_GET, "Get users page method entered");
+
         if (pageSize > 50 || pageSize <= 0) {
             pageSize = 50;
         }
+
         PageRequest pageable = PageRequest.of(pageNumber, pageSize);
         return usersRepository.findAll(pageable);
     }
