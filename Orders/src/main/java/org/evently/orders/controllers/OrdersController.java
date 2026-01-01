@@ -4,8 +4,10 @@ import org.evently.orders.dtos.orderLines.OrderLineDTO;
 import org.evently.orders.dtos.orders.OrderCreateDTO;
 import org.evently.orders.dtos.orders.OrderDTO;
 import org.evently.orders.enums.OrderStatus;
+import org.evently.orders.exceptions.ExternalServiceException;
 import org.evently.orders.exceptions.InvalidOrderUpdateException;
 import org.evently.orders.exceptions.OrderNotFoundException;
+import org.evently.orders.exceptions.externalServices.ProductNotFoundException;
 import org.evently.orders.models.Order;
 import org.evently.orders.models.OrderLine;
 import org.evently.orders.models.OrderLineId;
@@ -82,6 +84,7 @@ public class OrdersController {
         /* HttpStatus(produces)
          * 201 CREATED - Order created.
          * 400 BAD_REQUEST - Validation error.
+         * 500 INTERNAL_SERVER_ERROR - Internal server error.
          */
 
         logger.info(ORDER_CREATE, "Method registerOrder entered for userId={}", orderDTO.getUserId());
@@ -89,14 +92,14 @@ public class OrdersController {
             Order orderRequest = new Order();
             orderRequest.setUserId(orderDTO.getUserId());
             orderRequest.setStatus(OrderStatus.CREATED);
-            orderRequest.setTotal(orderDTO.getTotal());
+            orderRequest.setTotal(0);
 
             if (orderDTO.getLines() != null) {
                 List<OrderLine> lines = orderDTO.getLines().stream().map(lineDTO -> {
                     OrderLine line = new OrderLine();
                     line.setId(new OrderLineId(null, lineDTO.getProductId()));
                     line.setQuantity(lineDTO.getQuantity());
-                    line.setUnitPrice(lineDTO.getUnitPrice());
+                    line.setUnitPrice(0);
                     return line;
                 }).collect(Collectors.toList());
                 orderRequest.setLines(lines);
@@ -105,9 +108,12 @@ public class OrdersController {
             Order savedOrder = ordersService.createOrder(orderRequest);
             logger.info(ORDER_CREATE, "201 CREATED returned, order registered (id={})", savedOrder.getId());
             return ResponseEntity.status(HttpStatus.CREATED).body(convertToDTO(savedOrder));
+        } catch (InvalidOrderUpdateException e) {
+            logger.warn(ORDER_CREATE, "Invalid order: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
             logger.error(ORDER_CREATE, "Exception caught while registering order: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 

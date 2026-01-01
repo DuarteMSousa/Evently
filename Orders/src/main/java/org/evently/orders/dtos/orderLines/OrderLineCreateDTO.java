@@ -13,6 +13,4 @@ public class OrderLineCreateDTO {
 
     private Integer quantity;
 
-    private float unitPrice;
-
 }

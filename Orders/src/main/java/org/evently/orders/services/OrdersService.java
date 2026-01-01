@@ -1,10 +1,16 @@
 package org.evently.orders.services;
 
+import feign.FeignException;
 import jakarta.transaction.Transactional;
+import org.evently.orders.clients.EventsClient;
+import org.evently.orders.dtos.externalServices.SessionTierDTO;
 import org.evently.orders.enums.OrderStatus;
+import org.evently.orders.exceptions.ExternalServiceException;
 import org.evently.orders.exceptions.InvalidOrderUpdateException;
 import org.evently.orders.exceptions.OrderNotFoundException;
+import org.evently.orders.exceptions.externalServices.ProductNotFoundException;
 import org.evently.orders.models.Order;
+import org.evently.orders.models.OrderLine;
 import org.evently.orders.repositories.OrdersRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +38,9 @@ public class OrdersService {
     @Autowired
     private OrdersRepository ordersRepository;
 
+    @Autowired
+    private EventsClient  eventsClient;
+
     /**
      * Retrieves an order by its unique identifier.
      *
@@ -52,20 +61,50 @@ public class OrdersService {
     /**
      * Creates a new order after validating all required fields and associations.
      *
-     * @param order order to be created
-     * @return persisted order
-     * @throws InvalidOrderUpdateException if the order data is invalid
+     * @param order order to be created (must contain userId and order lines)
+     * @return persisted order with calculated total and prices
+     *
+     * @throws ProductNotFoundException if a referenced product/session tier does not exist
+     * @throws ExternalServiceException if an error occurs while communicating with EventsService
+     * @throws InvalidOrderUpdateException if order validation fails
      */
     @Transactional
     public Order createOrder(Order order) {
         logger.info(ORDER_CREATE, "Creating order for user (userId={}) with total ({})",
                 order.getUserId(), order.getTotal());
 
-        validateOrder(order);
+        float orderTotal = 0;
 
-        if (order.getLines() != null) {
-            order.getLines().forEach(line -> line.setOrder(order));
+        /// Recreating order lines based in actual products prices
+        for (OrderLine line : order.getLines()) {
+
+            SessionTierDTO tier;
+
+            try {
+                tier = eventsClient.getSessionTier(line.getId().getProductId()).getBody();
+            } catch (FeignException.NotFound e) {
+                String errorBody = e.contentUTF8();
+                logger.error(ORDER_CREATE, "Not found response while getting session tier from EventsService: {}", errorBody);
+                throw new ProductNotFoundException("Session tier not found");
+            } catch (FeignException e) {
+                String errorBody = e.contentUTF8();
+                logger.error(ORDER_CREATE, "FeignException while getting session tier from EventsService: {}", errorBody);
+                throw new ExternalServiceException("Error while getting session tier from EventsService");
+            }
+
+            if (tier == null) {
+                logger.error(ORDER_CREATE, "Product not found");
+                throw new ProductNotFoundException("Product not found");
+            }
+
+            line.setUnitPrice(tier.getPrice());
+            orderTotal += line.getQuantity() * line.getUnitPrice();
         }
+
+        order.setStatus(OrderStatus.CREATED);
+        order.setTotal(orderTotal);
+
+        validateOrder(order);
 
         Order savedOrder = ordersRepository.save(order);
 

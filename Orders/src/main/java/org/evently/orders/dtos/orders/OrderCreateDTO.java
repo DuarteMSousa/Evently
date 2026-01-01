@@ -13,8 +13,6 @@ public class OrderCreateDTO {
 
     private UUID userId;
 
-    private float total;
-
     private List<OrderLineCreateDTO> lines;
 
 }
