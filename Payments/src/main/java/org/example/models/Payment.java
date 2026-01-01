@@ -30,7 +30,7 @@ public class Payment {
     @Column(nullable = false)
     private UUID userId;
 
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(nullable = false, scale = 2)
     private float amount;
 
     @Column(nullable = false, length = 20)

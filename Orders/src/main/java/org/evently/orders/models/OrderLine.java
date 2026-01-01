@@ -22,7 +22,7 @@ public class OrderLine {
     @Column(nullable = false)
     private Integer quantity;
 
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(nullable = false, scale = 2)
     private float unitPrice;
 
     @ManyToOne(fetch = FetchType.LAZY)

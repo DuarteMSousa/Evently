@@ -30,7 +30,7 @@ public class SessionTier {
 
     private UUID zoneId;
 
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(nullable = false, scale = 2)
     private float price;
 
     private UUID createdBy;

@@ -33,7 +33,7 @@ public class CartItem {
     @Column(nullable = false)
     private int quantity;
 
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(nullable = false, scale = 2)
     private float unitPrice;
 
     @CreatedDate
