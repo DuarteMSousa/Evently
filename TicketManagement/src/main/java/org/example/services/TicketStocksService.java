@@ -1,5 +1,6 @@
 package org.example.services;
 
+import feign.FeignException;
 import jakarta.transaction.Transactional;
 import org.example.clients.VenuesClient;
 import org.example.dtos.externalServices.eventSessions.EventSessionDTO;
@@ -7,11 +8,9 @@ import org.example.dtos.externalServices.sessionTiers.SessionTierDTO;
 import org.example.dtos.externalServices.venueszone.VenueZoneDTO;
 import org.example.enums.StockMovementType;
 import org.example.enums.externalServices.EventStatus;
+import org.example.exceptions.*;
 import org.example.messages.TicketStockGeneratedMessage;
 import org.example.messages.received.EventUpdatedMessage;
-import org.example.exceptions.InvalidStockMovementException;
-import org.example.exceptions.TicketStockAlreadyExistsException;
-import org.example.exceptions.TicketStockNotFoundException;
 import org.example.models.StockMovement;
 import org.example.models.TicketStock;
 import org.example.models.TicketStockId;
@@ -115,19 +114,25 @@ public class TicketStocksService {
 
                 if (stock == null && event.getStatus() == EventStatus.PENDING_STOCK_GENERATION) {
                     stock = new TicketStock();
+                    VenueZoneDTO zone;
 
-                    VenueZoneDTO zone = venuesClient.getZone(tier.getZoneId()).getBody();
-
-                    if(zone ==null){
-                        //throw new VenueZoneNotFoundException("Zone not found");
+                    //ver markers
+                    try {
+                        zone = venuesClient.getZone(tier.getZoneId()).getBody();
+                    } catch (FeignException.NotFound e) {
+                        String errorBody = e.contentUTF8();
+                        logger.error( "Not found response while getting venue zone from VenuesService: {}", errorBody);
+                        throw new VenueZoneNotFoundException("Venue zone not found");
+                    } catch (FeignException e) {
+                        String errorBody = e.contentUTF8();
+                        logger.error( "FeignException while getting venue zone from VenuesService: {}", errorBody);
+                        throw new ExternalServiceException("Error while getting venue zone from VenuesService");
                     }
 
                     stock.setAvailableQuantity(zone.getCapacity());
                     stock.setId(stockId);
 
-                    //try catch
                     this.createTicketStock(stock);
-
                 } else if (stock != null && event.getStatus() == EventStatus.CANCELED) {
 
                     //ticketStocksService.deleteStock(stock);
