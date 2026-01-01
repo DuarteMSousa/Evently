@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 import org.springframework.amqp.core.AmqpTemplate;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -36,7 +37,7 @@ public class TicketsService {
     private TicketsRepository ticketsRepository;
 
     @Autowired
-    private AmqpTemplate template;
+    private RabbitTemplate template;
 
     /**
      * Retrieves a ticket by its unique identifier.
