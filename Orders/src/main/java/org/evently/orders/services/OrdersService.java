@@ -3,25 +3,33 @@ package org.evently.orders.services;
 import feign.FeignException;
 import jakarta.transaction.Transactional;
 import org.evently.orders.clients.EventsClient;
+import org.evently.orders.config.MQConfig;
 import org.evently.orders.dtos.externalServices.SessionTierDTO;
+import org.evently.orders.dtos.orderLines.OrderLineDTO;
 import org.evently.orders.enums.OrderStatus;
 import org.evently.orders.exceptions.ExternalServiceException;
-import org.evently.orders.exceptions.InvalidOrderUpdateException;
+import org.evently.orders.exceptions.InvalidOrderException;
 import org.evently.orders.exceptions.OrderNotFoundException;
 import org.evently.orders.exceptions.externalServices.ProductNotFoundException;
+import org.evently.orders.messages.OrderCreatedMessage;
+import org.evently.orders.messages.OrderPayedMessage;
 import org.evently.orders.models.Order;
 import org.evently.orders.models.OrderLine;
 import org.evently.orders.repositories.OrdersRepository;
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
+import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -40,6 +48,11 @@ public class OrdersService {
 
     @Autowired
     private EventsClient  eventsClient;
+
+    @Autowired
+    private AmqpTemplate template;
+
+    private ModelMapper modelMapper = new ModelMapper();
 
     /**
      * Retrieves an order by its unique identifier.
@@ -66,7 +79,7 @@ public class OrdersService {
      *
      * @throws ProductNotFoundException if a referenced product/session tier does not exist
      * @throws ExternalServiceException if an error occurs while communicating with EventsService
-     * @throws InvalidOrderUpdateException if order validation fails
+     * @throws InvalidOrderException if order validation fails
      */
     @Transactional
     public Order createOrder(Order order) {
@@ -84,12 +97,12 @@ public class OrdersService {
                 tier = eventsClient.getSessionTier(line.getId().getProductId()).getBody();
             } catch (FeignException.NotFound e) {
                 String errorBody = e.contentUTF8();
-                logger.error(ORDER_CREATE, "Not found response while getting session tier from EventsService: {}", errorBody);
-                throw new ProductNotFoundException("Session tier not found");
+                logger.error(ORDER_CREATE, "(OrdersService): Tier not found in Events service: {}", errorBody);
+                throw new ProductNotFoundException("(OrdersService): Tier not found in Events service");
             } catch (FeignException e) {
                 String errorBody = e.contentUTF8();
-                logger.error(ORDER_CREATE, "FeignException while getting session tier from EventsService: {}", errorBody);
-                throw new ExternalServiceException("Error while getting session tier from EventsService");
+                logger.error(ORDER_CREATE, "(OrdersService): Events service error: {}", errorBody);
+                throw new ExternalServiceException("(OrdersService): Events service error");
             }
 
             if (tier == null) {
@@ -103,6 +116,7 @@ public class OrdersService {
 
         order.setStatus(OrderStatus.CREATED);
         order.setTotal(orderTotal);
+        order.setCreatedAt(new Date());
 
         validateOrder(order);
 
@@ -110,6 +124,13 @@ public class OrdersService {
 
         logger.info(ORDER_CREATE, "Order created successfully (id={}, status={})",
                 savedOrder.getId(), savedOrder.getStatus());
+
+        OrderCreatedMessage message = new OrderCreatedMessage();
+        message.setId(order.getId());
+        message.setUserId(order.getUserId());
+        message.setTotal(orderTotal);
+
+        template.convertAndSend(MQConfig.EXCHANGE, MQConfig.ROUTING_KEY, message);
 
         return savedOrder;
     }
@@ -120,7 +141,7 @@ public class OrdersService {
      * @param id order identifier
      * @return updated order marked as paid
      * @throws OrderNotFoundException      if the order does not exist
-     * @throws InvalidOrderUpdateException if the order is not in a payable state
+     * @throws InvalidOrderException if the order is not in a payable state
      */
     @Transactional
     public Order markAsPaid(UUID id) {
@@ -129,7 +150,7 @@ public class OrdersService {
         Order order = getOrder(id);
 
         if (order.getStatus() != OrderStatus.CREATED) {
-            throw new InvalidOrderUpdateException("Cannot pay order in status: " + order.getStatus());
+            throw new InvalidOrderException("Cannot pay order in status: " + order.getStatus());
         }
 
         order.setStatus(OrderStatus.PAYMENT_SUCCESS);
@@ -137,6 +158,19 @@ public class OrdersService {
 
         Order updatedOrder = ordersRepository.save(order);
         logger.info(ORDER_PAYMENT, "Order marked as paid successfully (id={})", id);
+
+        OrderPayedMessage message = new OrderPayedMessage();
+        message.setId(updatedOrder.getId());
+        message.setUserId(updatedOrder.getUserId());
+        message.setTotal(updatedOrder.getTotal());
+
+        List<OrderLineDTO> orderLines = new ArrayList<>();
+        modelMapper.map(updatedOrder.getLines(), orderLines);
+
+        message.setLines(orderLines);
+
+        template.convertAndSend(MQConfig.EXCHANGE, MQConfig.ROUTING_KEY, message);
+
         return updatedOrder;
     }
 
@@ -146,7 +180,7 @@ public class OrdersService {
      * @param id order identifier
      * @return updated order marked as payment failed
      * @throws OrderNotFoundException      if the order does not exist
-     * @throws InvalidOrderUpdateException if the order is not in a payable state
+     * @throws InvalidOrderException if the order is not in a payable state
      */
     @Transactional
     public Order markAsPaymentFailed(UUID id) {
@@ -155,7 +189,7 @@ public class OrdersService {
         Order order = getOrder(id);
 
         if (order.getStatus() != OrderStatus.CREATED) {
-            throw new InvalidOrderUpdateException("Cannot fail payment for order in status: " + order.getStatus());
+            throw new InvalidOrderException("Cannot fail payment for order in status: " + order.getStatus());
         }
 
         order.setStatus(OrderStatus.PAYMENT_FAILED);
@@ -171,7 +205,7 @@ public class OrdersService {
      * @param id order identifier
      * @return cancelled order
      * @throws OrderNotFoundException      if the order does not exist
-     * @throws InvalidOrderUpdateException if the order is already paid or cancelled
+     * @throws InvalidOrderException if the order is already paid or cancelled
      */
     @Transactional
     public Order cancelOrder(UUID id) {
@@ -180,14 +214,15 @@ public class OrdersService {
         Order order = getOrder(id);
 
         if (order.getStatus() == OrderStatus.PAYMENT_SUCCESS) {
-            throw new InvalidOrderUpdateException("Order is already payed successfully");
+            throw new InvalidOrderException("Order is already payed successfully");
         }
 
         if (order.getStatus() == OrderStatus.CANCELLED) {
-            throw new InvalidOrderUpdateException("Order is already cancelled");
+            throw new InvalidOrderException("Order is already cancelled");
         }
 
         order.setStatus(OrderStatus.CANCELLED);
+        order.setPaidAt(new Date());
 
         Order cancelledOrder = ordersRepository.save(order);
 
@@ -218,35 +253,35 @@ public class OrdersService {
      * Validates all required order fields before persisting the order.
      *
      * @param order order to validate
-     * @throws InvalidOrderUpdateException if any required field or constraint is invalid
+     * @throws InvalidOrderException if any required field or constraint is invalid
      */
     private void validateOrder(Order order) {
         logger.debug(ORDER_VALIDATION, "Validating order payload for user (userId={})", order.getUserId());
 
         if (order.getUserId() == null) {
             logger.warn(ORDER_VALIDATION, "Missing userId");
-            throw new InvalidOrderUpdateException("User ID is required");
+            throw new InvalidOrderException("User ID is required");
         }
 
         if (order.getTotal() <= 0) {
             logger.warn(ORDER_VALIDATION, "Invalid total amount ({})", order.getTotal());
-            throw new InvalidOrderUpdateException("Total amount must be greater than or equal to 0");
+            throw new InvalidOrderException("Total amount must be greater than or equal to 0");
         }
 
         if (order.getStatus() == null) {
             logger.warn(ORDER_VALIDATION, "Missing order status");
-            throw new InvalidOrderUpdateException("Order status is required");
+            throw new InvalidOrderException("Order status is required");
         }
 
         if (order.getLines() == null || order.getLines().isEmpty()) {
             logger.warn(ORDER_VALIDATION, "Order has no lines");
-            throw new InvalidOrderUpdateException("An order must have at least one line item");
+            throw new InvalidOrderException("An order must have at least one line item");
         }
 
         order.getLines().forEach(line -> {
             if (line.getQuantity() == null || line.getQuantity() <= 0) {
                 logger.warn(ORDER_VALIDATION, "Invalid quantity in order line");
-                throw new InvalidOrderUpdateException("Line quantity must be greater than 0");
+                throw new InvalidOrderException("Line quantity must be greater than 0");
             }
         });
     }

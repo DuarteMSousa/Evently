@@ -22,6 +22,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,7 +32,7 @@ public class RefundRequestsService {
     private static final Logger logger = LoggerFactory.getLogger(RefundRequestsService.class);
 
     private static final Marker REFUND_CREATE = MarkerFactory.getMarker("REFUND_CREATE");
-    private static final Marker REFUND_UPDATE = MarkerFactory.getMarker("REFUND_UPDATE");
+    private static final Marker REFUND_PROCESS = MarkerFactory.getMarker("REFUND_PROCESS");
     private static final Marker REFUND_GET = MarkerFactory.getMarker("REFUND_GET");
     private static final Marker REFUND_VALIDATION = MarkerFactory.getMarker("REFUND_VALIDATION");
 
@@ -112,35 +113,29 @@ public class RefundRequestsService {
     }
 
     /**
-     * Updates an existing refund request identified by its unique identifier.
+     * Marks an existing refund as processed.
      *
-     * @param id refund request identifier
-     * @param request refund request data to update
-     * @return updated refund request
-     * @throws InvalidRefundRequestException if the request data is invalid or IDs do not match
-     * @throws RefundRequestNotFoundException if the refund request does not exist
+     * @param id refund identifier
+     * @return updated refund marked as processed
+     * @throws RefundRequestNotFoundException if the refund does not exist
+     * @throws InvalidRefundRequestException if the refund is not in a processable state
      */
     @Transactional
-    public RefundRequest updateRefundRequest(UUID id, RefundRequest request) {
-        logger.info(REFUND_UPDATE, "Update refund request requested (id={})", id);
+    public RefundRequest markAsProcessed(UUID id) {
+        logger.info(REFUND_PROCESS, "Marking refund as processed (id={})", id);
 
-        if (request.getId() != null && !id.equals(request.getId())) {
-            logger.error(REFUND_UPDATE, "ID mismatch: path={}, body={}", id, request.getId());
-            throw new InvalidRefundRequestException("Parameter id and body id do not correspond");
+        RefundRequest refundRequest = getRefundRequest(id);
+
+        if (refundRequest.getStatus() != RefundRequestStatus.APPROVED) {
+            throw new InvalidRefundRequestException("Cannot process refund in status: " + refundRequest.getStatus());
         }
 
-        RefundRequest existing = refundRequestsRepository.findById(id)
-                .orElseThrow(() -> {
-                    logger.warn(REFUND_UPDATE, "Refund request not found for update (id={})", id);
-                    return new RefundRequestNotFoundException("Refund Request not found");
-                });
+        refundRequest.setStatus(RefundRequestStatus.PROCESSED);
+        refundRequest.setProcessedAt(new Date());
 
-        validateRefundRequest(request);
-        modelMapper.map(request, existing);
-
-        RefundRequest updated = refundRequestsRepository.save(existing);
-        logger.info(REFUND_UPDATE, "Refund request updated successfully (id={})", updated.getId());
-        return updated;
+        RefundRequest updatedRefund = refundRequestsRepository.save(refundRequest);
+        logger.info(REFUND_PROCESS, "Refund marked as processed successfully (id={})", id);
+        return updatedRefund;
     }
 
     /**

@@ -4,10 +4,8 @@ import org.evently.orders.dtos.orderLines.OrderLineDTO;
 import org.evently.orders.dtos.orders.OrderCreateDTO;
 import org.evently.orders.dtos.orders.OrderDTO;
 import org.evently.orders.enums.OrderStatus;
-import org.evently.orders.exceptions.ExternalServiceException;
-import org.evently.orders.exceptions.InvalidOrderUpdateException;
+import org.evently.orders.exceptions.InvalidOrderException;
 import org.evently.orders.exceptions.OrderNotFoundException;
-import org.evently.orders.exceptions.externalServices.ProductNotFoundException;
 import org.evently.orders.models.Order;
 import org.evently.orders.models.OrderLine;
 import org.evently.orders.models.OrderLineId;
@@ -108,7 +106,7 @@ public class OrdersController {
             Order savedOrder = ordersService.createOrder(orderRequest);
             logger.info(ORDER_CREATE, "201 CREATED returned, order registered (id={})", savedOrder.getId());
             return ResponseEntity.status(HttpStatus.CREATED).body(convertToDTO(savedOrder));
-        } catch (InvalidOrderUpdateException e) {
+        } catch (InvalidOrderException e) {
             logger.warn(ORDER_CREATE, "Invalid order: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
@@ -133,8 +131,8 @@ public class OrdersController {
         } catch (OrderNotFoundException e) {
             logger.error(ORDER_PAYMENT, "OrderNotFoundException caught: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (InvalidOrderUpdateException e) {
-            logger.error(ORDER_PAYMENT, "InvalidOrderUpdateException caught: {}", e.getMessage());
+        } catch (InvalidOrderException e) {
+            logger.error(ORDER_PAYMENT, "InvalidOrderException caught: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
             logger.error(ORDER_PAYMENT, "Unexpected exception caught in markAsPaid: {}", e.getMessage());
@@ -158,8 +156,8 @@ public class OrdersController {
         } catch (OrderNotFoundException e) {
             logger.error(ORDER_PAYMENT, "OrderNotFoundException caught: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (InvalidOrderUpdateException e) {
-            logger.error(ORDER_PAYMENT, "InvalidOrderUpdateException caught: {}", e.getMessage());
+        } catch (InvalidOrderException e) {
+            logger.error(ORDER_PAYMENT, "InvalidOrderException caught: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
             logger.error(ORDER_PAYMENT, "Unexpected exception caught in markAsFailed: {}", e.getMessage());
@@ -183,8 +181,8 @@ public class OrdersController {
         } catch (OrderNotFoundException e) {
             logger.error(ORDER_CANCEL, "OrderNotFoundException caught: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (InvalidOrderUpdateException e) {
-            logger.error(ORDER_CANCEL, "InvalidOrderUpdateException caught: {}", e.getMessage());
+        } catch (InvalidOrderException e) {
+            logger.error(ORDER_CANCEL, "InvalidOrderException caught: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
