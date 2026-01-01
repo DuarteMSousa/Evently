@@ -38,6 +38,13 @@ public class CartsService {
     @Autowired
     private OrdersClient ordersClient;
 
+    /**
+     * Retrieves the user's cart.
+     *
+     *
+     * @param userId identifier of the user who owns the cart
+     * @return existing cart or a newly created cart
+     */
     @Transactional
     public Cart getCart(UUID userId) {
         logger.info(CART_GET, "Method getCart entered");
@@ -50,6 +57,15 @@ public class CartsService {
         return cart;
     }
 
+    /**
+     * Creates a new cart for a user.
+     *
+     *
+     * @param userId identifier of the user that will own the cart
+     * @return persisted cart
+     *
+     * @throws CartAlreadyExistsException if a cart already exists for the given userId
+     */
     @Transactional
     public Cart createCart(UUID userId) {
         logger.info(CART_CREATE, "CreateCart Method entered");
@@ -60,7 +76,6 @@ public class CartsService {
         }
 
         Cart newCart = new Cart();
-
         newCart.setUserId(userId);
 
         newCart = cartsRepository.save(newCart);
@@ -68,7 +83,15 @@ public class CartsService {
         return newCart;
     }
 
-
+    /**
+     * Clears all items from the user's cart.
+     *
+     *
+     * @param userId identifier of the user who owns the cart
+     * @return updated cart with an empty items list
+     *
+     * @throws CartNotFoundException if the cart does not exist
+     */
     @Transactional
     public Cart clearCart(UUID userId) {
         logger.info(CART_CLEAR, "clearCart method entered");
@@ -82,6 +105,17 @@ public class CartsService {
         return cartsRepository.save(cartToClear);
     }
 
+    /**
+     * Performs checkout of the user's cart by creating an order in OrdersService.
+     *
+     *
+     * @param userId identifier of the user who owns the cart
+     * @return updated cart with items cleared
+     *
+     * @throws CartNotFoundException     if the cart does not exist
+     * @throws EmptyCartException        if the cart exists but has no items
+     * @throws ExternalServiceException  if OrdersService returns an error (FeignException)
+     */
     @Transactional
     public Cart checkoutCart(UUID userId) {
         logger.info(CART_CHECKOUT, "checkoutCart method entered");
@@ -123,5 +157,4 @@ public class CartsService {
 
         return cartsRepository.save(cartToCheckout);
     }
-
 }

@@ -158,7 +158,6 @@ public class VenueZonesService {
      * - updatedBy is mandatory
      * - capacity is re-validated against the parent venue capacity
      *
-     * Note: this method updates fields conditionally (only non-null fields are applied).
      *
      * @param zoneId venue zone identifier (path)
      * @param zone zone payload with updates

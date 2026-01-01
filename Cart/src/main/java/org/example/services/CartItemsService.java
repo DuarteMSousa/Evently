@@ -36,6 +36,20 @@ public class CartItemsService {
     @Autowired
     private EventsClient eventsClient;
 
+    /**
+     * Adds a new item to the user's cart.
+     *
+     *
+     * @param userId    identifier of the user who owns the cart
+     * @param productId identifier of the product/session tier to add
+     * @param quantity  number of units to add (must be > 0)
+     * @return the persisted CartItem
+     *
+     * @throws InvalidCartItemException       if quantity is invalid (<= 0)
+     * @throws ProductNotFoundException       if the product/session tier does not exist in EventsService
+     * @throws ExternalServiceException       if EventsService fails with an unexpected error (FeignException)
+     * @throws CartItemAlreadyExistsException if the cart already contains this productId
+     */
     @Transactional
     public CartItem addItemToCart(UUID userId, UUID productId, Integer quantity) {
         logger.info(ITEM_ADD, "Method addItemToCart entered");
@@ -50,7 +64,7 @@ public class CartItemsService {
 
         try {
             tier = eventsClient.getSessionTier(productId).getBody();
-        }catch (FeignException.NotFound e) {
+        } catch (FeignException.NotFound e) {
             String errorBody = e.contentUTF8();
             logger.error(ITEM_ADD, "Not found response while getting session tier from EventsService: {}", errorBody);
             throw new ProductNotFoundException("Session tier not found");
@@ -83,6 +97,18 @@ public class CartItemsService {
         return cartItemsRepository.save(itemToAdd);
     }
 
+    /**
+     * Updates the quantity of an existing cart item.
+     *
+     *
+     * @param userId    identifier of the user who owns the cart
+     * @param productId identifier of the product/session tier to update
+     * @param quantity  new quantity (must be > 0)
+     * @return the updated persisted CartItem
+     *
+     * @throws InvalidCartItemException   if quantity is invalid (<= 0)
+     * @throws CartItemNotFoundException  if the item does not exist in the cart
+     */
     @Transactional
     public CartItem updateCartItem(UUID userId, UUID productId, Integer quantity) {
         logger.info(ITEM_UPDATE, "Method updateCartItem entered");
@@ -110,7 +136,15 @@ public class CartItemsService {
         return cartItemsRepository.save(i);
     }
 
-
+    /**
+     * Removes an existing item from the user's cart.
+     *
+     *
+     * @param userId    identifier of the user who owns the cart
+     * @param productId identifier of the product/session tier to remove
+     *
+     * @throws CartItemNotFoundException if the item is not present in the cart
+     */
     @Transactional
     public void removeItemFromCart(UUID userId, UUID productId) {
         logger.info(ITEM_REMOVE, "Method removeItemFromCart entered");
@@ -121,7 +155,6 @@ public class CartItemsService {
                 .findFirst()
                 .orElse(null);
 
-
         if (itemToRemove == null) {
             logger.error(ITEM_REMOVE, "Item not found in cart");
             throw new CartItemNotFoundException("Item not found in cart");
@@ -129,6 +162,4 @@ public class CartItemsService {
 
         cartItemsRepository.delete(itemToRemove);
     }
-
-
 }

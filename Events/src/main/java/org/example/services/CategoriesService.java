@@ -31,10 +31,20 @@ public class CategoriesService {
     private static final Marker CATEGORY_UPDATE = MarkerFactory.getMarker("CATEGORY_UPDATE");
     private static final Marker CATEGORY_CREATE = MarkerFactory.getMarker("CATEGORY_CREATE");
 
-
+    /**
+     * Creates a new category.
+     *
+     *
+     * @param category category payload (must include name)
+     * @return persisted category
+     *
+     * @throws InvalidCategoryException        if name is null or empty
+     * @throws CategoryAlreadyExistsException  if a category with the same name already exists
+     */
     @Transactional
     public Category createCategory(Category category) {
         logger.info(CATEGORY_CREATE, "Method create category entered");
+
         if (categoriesRepository.existsByName(category.getName())) {
             logger.error(CATEGORY_CREATE, "Category with the name {} already exists", category.getName());
             throw new CategoryAlreadyExistsException("Category with name " + category.getName() + " already exists");
@@ -48,9 +58,22 @@ public class CategoriesService {
         return categoriesRepository.save(category);
     }
 
+    /**
+     * Updates an existing category.
+     *
+     *
+     * @param id       category identifier from the request path
+     * @param category category payload with updated data (must include id)
+     * @return updated persisted category
+     *
+     * @throws InvalidCategoryUpdateException if path id and body id do not match
+     * @throws CategoryNotFoundException      if the category does not exist
+     * @throws InvalidCategoryException       if name is null or empty
+     */
     @Transactional
     public Category updateCategory(UUID id, Category category) {
         logger.info(CATEGORY_UPDATE, "Method updateCategory entered");
+
         if (!id.equals(category.getId())) {
             logger.error(CATEGORY_UPDATE, "Parameter id and body id do not correspond");
             throw new InvalidCategoryUpdateException("Parameter id and body id do not correspond");
@@ -74,9 +97,18 @@ public class CategoriesService {
         return categoriesRepository.save(existingCategory);
     }
 
+    /**
+     * Deletes an existing category.
+     *
+     *
+     * @param id category identifier
+     *
+     * @throws CategoryNotFoundException if the category does not exist
+     */
     @Transactional
     public void deleteCategory(UUID id) {
         logger.info(CATEGORY_DELETE, "Method deleteCategory entered");
+
         Category existingCategory = categoriesRepository.findById(id)
                 .orElse(null);
 
@@ -88,8 +120,17 @@ public class CategoriesService {
         categoriesRepository.delete(existingCategory);
     }
 
+    /**
+     * Retrieves a category by id.
+     *
+     * @param categoryId category identifier
+     * @return found category
+     *
+     * @throws CategoryNotFoundException if the category does not exist
+     */
     public Category getCategory(UUID categoryId) {
         logger.info(CATEGORY_GET, "Method getCategory entered");
+
         Category category = categoriesRepository
                 .findById(categoryId)
                 .orElse(null);
@@ -102,6 +143,11 @@ public class CategoriesService {
         return category;
     }
 
+    /**
+     * Retrieves all categories.
+     *
+     * @return list of categories
+     */
     public List<Category> getCategories() {
         logger.info(CATEGORIES_GET, "Method getCategories entered");
         return categoriesRepository.findAll();

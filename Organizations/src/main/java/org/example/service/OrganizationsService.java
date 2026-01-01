@@ -46,11 +46,6 @@ public class OrganizationsService {
     /**
      * Validates the organization payload depending on the operation type.
      *
-     * Validation rules:
-     * - name is mandatory
-     * - nipc must have exactly 9 digits
-     * - on create: createdBy is mandatory
-     * - on update: updatedBy is mandatory
      *
      * @param org organization payload to validate
      * @param isCreate true for create operations, false for update operations
@@ -88,8 +83,6 @@ public class OrganizationsService {
     /**
      * Checks if the requester has permissions to manage the organization.
      *
-     * Current rule:
-     * - requester must be the organization creator (org.createdBy == requesterId).
      *
      * @param org organization instance
      * @param requesterId requester identifier
@@ -114,10 +107,6 @@ public class OrganizationsService {
     /**
      * Creates a new organization after validating its payload.
      *
-     * Additional behavior:
-     * - nipc must be unique
-     * - organization is created as active
-     * - creator is automatically added as a member of the organization (idempotent if already member)
      *
      * @param org organization to create
      * @return persisted organization
@@ -173,12 +162,6 @@ public class OrganizationsService {
     /**
      * Updates an existing organization.
      *
-     * Update rules:
-     * - organization must exist
-     * - updatedBy is mandatory (validated in validateOrganization)
-     * - requester must be the organization creator (permission check uses updatedBy as requesterId)
-     * - nipc change is allowed only if it is valid (9 digits) and unique
-     * - fields are updated conditionally (only non-null fields are applied)
      *
      * @param orgId organization identifier
      * @param orgWithUpdates organization payload with updates (must include updatedBy)
@@ -273,7 +256,6 @@ public class OrganizationsService {
     /**
      * Retrieves all organizations associated with a given user (member of organization).
      *
-     * Note: if the user does not belong to any organization, an empty list is returned.
      *
      * @param userId user identifier
      * @return list of organizations for the user (empty if none found)

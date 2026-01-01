@@ -36,10 +36,6 @@ public class VenuesService {
     /**
      * Validates all required fields of a venue before creation (and potentially before updates).
      *
-     * Validation rules:
-     * - capacity must be greater than 0
-     * - name, address, city, country, postalCode are mandatory
-     * - createdBy is mandatory when creating a new venue (id == null)
      *
      * @param venue venue to validate
      * @throws InvalidVenueException if any required field is missing or invalid
@@ -80,9 +76,6 @@ public class VenuesService {
     /**
      * Creates a new venue after validating its payload.
      *
-     * Additional rules:
-     * - venue name must be unique (checked through repository)
-     * - created venue is marked as active by default
      *
      * @param venue venue to create
      * @return persisted venue
@@ -160,12 +153,6 @@ public class VenuesService {
     /**
      * Searches venues based on dynamic criteria using JPA Specifications.
      *
-     * Supported criteria:
-     * - onlyActive: if true, returns only venues with active=true
-     * - name: case-insensitive partial match (LIKE %name%)
-     * - city: case-insensitive exact match
-     * - country: case-insensitive exact match
-     * - minCapacity: capacity >= minCapacity
      *
      * @param criteria search criteria
      * @return list of venues matching the criteria
