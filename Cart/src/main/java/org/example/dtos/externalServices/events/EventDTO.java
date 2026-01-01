@@ -1,6 +1,7 @@
 package org.example.dtos.externalServices.events;
 
 
+import org.example.dtos.externalServices.categories.CategoryDTO;
 import org.example.dtos.externalServices.eventSessions.EventSessionDTO;
 import org.example.enums.externalServices.EventStatus;
 
