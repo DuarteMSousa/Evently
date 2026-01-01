@@ -23,8 +23,6 @@ public class EmailService {
     /**
      * Sends a notification email using Spring's {@link JavaMailSender}.
      *
-     * This method builds a {@link SimpleMailMessage} with the given recipient, subject and body,
-     * and delegates sending to the configured mail sender.
      *
      * @param to recipient email address
      * @param subject email subject

@@ -48,13 +48,6 @@ public class PaymentsService {
     /**
      * Validates a payment payload before starting the payment process.
      *
-     * Validation rules:
-     * - orderId is required
-     * - userId is required
-     * - amount must be > 0
-     * - provider is required
-     * - only PAYPAL provider is currently supported
-     *
      * @param payment payment to validate
      * @throws InvalidPaymentException if any required field is missing/invalid or provider is not supported
      */
@@ -132,15 +125,6 @@ public class PaymentsService {
     /**
      * Creates and initiates a payment through the configured payment provider.
      *
-     * Flow:
-     * 1) Validate payload (orderId, userId, amount, provider)
-     * 2) Persist payment with status PENDING
-     * 3) Create provider order (currently PayPal) via {@link PaymentProviderClient}
-     * 4) Persist an event and publish it (PENDING)
-     *
-     * Error handling:
-     * - If the provider refuses the payment, the payment status is updated to FAILED, an ERROR event is stored,
-     *   and a FAILED event is published.
      *
      * @param payment payment request payload
      * @return persisted payment with updated provider reference
@@ -206,14 +190,6 @@ public class PaymentsService {
     /**
      * Captures a PayPal payment after provider callback, using the provider reference (token).
      *
-     * Validation rules:
-     * - payment must exist for providerRef
-     * - provider must be PAYPAL
-     * - current status must be PENDING
-     *
-     * On success:
-     * - payment status changes to CAPTURED
-     * - CAPTURE event is persisted and published
      *
      * @param providerRef provider reference (e.g. PayPal token)
      * @return updated payment
@@ -280,8 +256,6 @@ public class PaymentsService {
     /**
      * Retrieves all payments associated with a given user.
      *
-     * Note: current implementation throws {@link UserNotFoundException} when the list is empty,
-     * meaning "user not found OR user has no payments" (as per exception message).
      *
      * @param userId user identifier
      * @return list of payments for the user
@@ -304,14 +278,6 @@ public class PaymentsService {
     /**
      * Cancels a payment.
      *
-     * Business rules:
-     * - payment must exist
-     * - payment cannot be cancelled if already CANCELED
-     * - payment cannot be cancelled if already REFUNDED
-     *
-     * On success:
-     * - status becomes CANCELED
-     * - CANCEL event is persisted and published
      *
      * @param paymentId payment identifier
      * @return updated payment
@@ -352,13 +318,6 @@ public class PaymentsService {
     /**
      * Processes a refund for a payment.
      *
-     * Business rules:
-     * - payment must exist
-     * - only CAPTURED payments can be refunded
-     *
-     * On success:
-     * - status becomes REFUNDED
-     * - REFUND event is persisted and published
      *
      * @param paymentId payment identifier
      * @return updated payment
@@ -398,9 +357,7 @@ public class PaymentsService {
         Payment payment = paymentsRepository.findById(paymentId)
                 .orElseThrow(() -> new PaymentNotFoundException("Payment not found"));
 
-        // regra: só CAPTURED pode virar REFUNDED (ajusta ao teu caso)
         if (!"CAPTURED".equalsIgnoreCase(payment.getStatus())) {
-            // podes ignorar, logar, ou lançar erro
             return;
         }
 
@@ -416,9 +373,6 @@ public class PaymentsService {
         Payment payment = paymentsRepository.findById(paymentId)
                 .orElseThrow(() -> new PaymentNotFoundException("Payment not found"));
 
-        // aqui decides o que faz sentido:
-        // - manter CAPTURED
-        // - marcar REFUND_FAILED
         payment.setStatus("REFUND_FAILED");
         Payment updated = paymentsRepository.save(payment);
 
