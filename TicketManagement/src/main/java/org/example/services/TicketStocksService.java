@@ -7,8 +7,8 @@ import org.example.dtos.externalServices.sessionTiers.SessionTierDTO;
 import org.example.dtos.externalServices.venueszone.VenueZoneDTO;
 import org.example.enums.StockMovementType;
 import org.example.enums.externalServices.EventStatus;
-import org.example.events.TicketStockGeneratedEvent;
-import org.example.events.received.EventUpdatedEvent;
+import org.example.messages.TicketStockGeneratedMessage;
+import org.example.messages.received.EventUpdatedMessage;
 import org.example.exceptions.InvalidStockMovementException;
 import org.example.exceptions.TicketStockAlreadyExistsException;
 import org.example.exceptions.TicketStockNotFoundException;
@@ -104,7 +104,7 @@ public class TicketStocksService {
 
 
     @Transactional
-    public void handleEventUpdatedEvent(EventUpdatedEvent event) {
+    public void handleEventUpdatedEvent(EventUpdatedMessage event) {
         for (EventSessionDTO session : event.getSessions()) {
             for (SessionTierDTO tier : session.getTiers()) {
 
@@ -137,7 +137,7 @@ public class TicketStocksService {
             }
         }
 
-        TicketStockGeneratedEvent stockGeneratedEvent = new TicketStockGeneratedEvent();
+        TicketStockGeneratedMessage stockGeneratedEvent = new TicketStockGeneratedMessage();
         stockGeneratedEvent.setEventId(event.getId());
 
         template.convertAndSend(stockGeneratedEvent);

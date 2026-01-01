@@ -1,7 +1,7 @@
 package org.example.listeners;
 
 import org.example.config.MQConfig;
-import org.example.events.TicketGeneratedEvent;
+import org.example.messages.TicketGeneratedMessage;
 import org.example.services.TicketFileGenerationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +22,7 @@ public class EventsListener {
     private static final Marker TICKET_GENERATED_HANDLE = MarkerFactory.getMarker("TICKET_GENERATED_HANDLE");
 
     @RabbitListener(queues = MQConfig.TICKETS_QUEUE)
-    public void listener(TicketGeneratedEvent event) {
+    public void listener(TicketGeneratedMessage event) {
         logger.info(TICKET_GENERATED_HANDLE, "TicketGeneratedEvent received");
         try {
             ticketFileGenerationService.saveTicketFile(event);

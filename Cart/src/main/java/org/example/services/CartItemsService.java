@@ -1,5 +1,6 @@
 package org.example.services;
 
+import feign.FeignException;
 import jakarta.transaction.Transactional;
 import org.example.clients.EventsClient;
 import org.example.dtos.externalServices.sessionTiers.SessionTierDTO;
@@ -45,7 +46,19 @@ public class CartItemsService {
             throw new InvalidCartItemException("Invalid cart item quantity");
         }
 
-        SessionTierDTO tier = eventsClient.getSessionTier(productId).getBody();
+        SessionTierDTO tier;
+
+        try {
+            tier = eventsClient.getSessionTier(productId).getBody();
+        }catch (FeignException.NotFound e) {
+            String errorBody = e.contentUTF8();
+            logger.error(ITEM_ADD, "Not found response while getting session tier from EventsService: {}", errorBody);
+            throw new ProductNotFoundException("Session tier not found");
+        } catch (FeignException e) {
+            String errorBody = e.contentUTF8();
+            logger.error(ITEM_ADD, "FeignException while getting session tier from EventsService: {}", errorBody);
+            throw new ExternalServiceException("Error while getting session tier from EventsService");
+        }
 
         if (tier == null) {
             logger.error(ITEM_ADD, "Product not found");

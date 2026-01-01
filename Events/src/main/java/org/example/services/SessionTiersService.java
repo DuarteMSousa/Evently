@@ -1,5 +1,6 @@
 package org.example.services;
 
+import feign.FeignException;
 import jakarta.transaction.Transactional;
 import org.example.clients.TicketReservationsClient;
 import org.example.clients.VenuesClient;
@@ -48,7 +49,7 @@ public class SessionTiersService {
             throw new SessionTierAlreadyExistsException("Session tier already exists");
         }
 
-        validateSessionTier(sessionTier,TIER_CREATE);
+        validateSessionTier(sessionTier, TIER_CREATE);
 
         return sessionTiersRepository.save(sessionTier);
     }
@@ -69,7 +70,7 @@ public class SessionTiersService {
             throw new SessionTierNotFoundException("Session tier not found");
         }
 
-        validateSessionTier(sessionTier,TIER_UPDATE);
+        validateSessionTier(sessionTier, TIER_UPDATE);
 
         return sessionTiersRepository.save(existingSessionTier);
     }
@@ -99,9 +100,17 @@ public class SessionTiersService {
             throw new SessionTierNotFoundException("Session tier not found");
         }
 
-        Boolean hasReservations = ticketReservationsClient.checkTierReservations(id).getBody();
+        Boolean hasReservations;
 
-        if(hasReservations.booleanValue()){
+        try {
+            hasReservations = ticketReservationsClient.checkTierReservations(id).getBody();
+        } catch (FeignException e) {
+            String errorBody = e.contentUTF8();
+            logger.error(TIER_DELETE, "FeignException while checking tier reservations through ticket management service: {}", errorBody);
+            throw new ExternalServiceException("Error while checking tier reservations through ticket management service");
+        }
+
+        if (hasReservations.booleanValue()) {
             logger.error(TIER_DELETE, "Tier already has reservations");
             throw new InvalidEventSessionUpdateException("Tier already has reservations");
         }
@@ -123,7 +132,19 @@ public class SessionTiersService {
             throw new InvalidSessionTierException("Event session not found");
         }
 
-        VenueZoneDTO zone = venuesClient.getZone(sessionTier.getZoneId()).getBody();
+        VenueZoneDTO zone;
+
+        try {
+            zone = venuesClient.getZone(sessionTier.getZoneId()).getBody();
+        } catch (FeignException.NotFound e) {
+            String errorBody = e.contentUTF8();
+            logger.error(marker, "Not found response while getting venue zone from VenuesService: {}", errorBody);
+            throw new InvalidSessionTierException("Venue zone not found");
+        } catch (FeignException e) {
+            String errorBody = e.contentUTF8();
+            logger.error(marker, "FeignException while getting venue zone from VenuesService: {}", errorBody);
+            throw new ExternalServiceException("Error while getting venue zone from VenuesService");
+        }
 
         if (zone == null) {
             logger.error(marker, "Zone not found");

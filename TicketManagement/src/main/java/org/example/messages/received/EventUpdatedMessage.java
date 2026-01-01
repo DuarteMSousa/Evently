@@ -1,4 +1,4 @@
-package org.example.events.received;
+package org.example.messages.received;
 
 
 
@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Getter
-public class EventUpdatedEvent {
+public class EventUpdatedMessage {
 
     private UUID id;
 

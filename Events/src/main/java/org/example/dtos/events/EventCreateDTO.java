@@ -16,7 +16,9 @@ public class EventCreateDTO {
 
     private String description;
 
-    private EventStatus status;
+    private UUID organizationId;
+
+    private UUID createdBy;
 
     private List<CategoryDTO> categories;
 }

@@ -1,10 +1,8 @@
-package org.example.events;
-
-import jakarta.persistence.Column;
+package org.example.messages;
 
 import java.util.UUID;
 
-public class TicketReservationConfirmedEvent {
+public class TicketReservationConfirmedMessage {
 
     private UUID id;
 

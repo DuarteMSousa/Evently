@@ -1,11 +1,12 @@
 package org.example.services;
 
+import feign.FeignException;
 import jakarta.transaction.Transactional;
 import org.example.clients.OrganizationsClient;
 import org.example.clients.TicketReservationsClient;
 import org.example.dtos.externalServices.organizations.OrganizationDTO;
 import org.example.enums.EventStatus;
-import org.example.events.EventUpdatedEvent;
+import org.example.messages.EventUpdatedMessage;
 import org.example.exceptions.*;
 import org.example.models.Event;
 import org.example.repositories.EventsRepository;
@@ -21,6 +22,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -115,9 +117,17 @@ public class EventsService {
         Event eventToCancel = eventsRepository.findByIdWithSessionsAndTiers(eventId)
                 .orElse(null);
 
-        Boolean hasReservations = ticketReservationsClient.checkEventReservations(eventId).getBody();
+        Boolean hasReservations;
 
-        if(hasReservations.booleanValue()){
+        try {
+            hasReservations = ticketReservationsClient.checkEventReservations(eventId).getBody();
+        } catch (FeignException e) {
+            String errorBody = e.contentUTF8();
+            logger.error(EVENT_CANCEL, "FeignException while checking event reservations through ticket management service: {}", errorBody);
+            throw new ExternalServiceException("Error while checking event reservations through ticket management service");
+        }
+
+        if (hasReservations.booleanValue()) {
             logger.error(EVENT_CANCEL, "Event already has reservations");
             throw new InvalidEventUpdateException("Event already has reservations");
         }
@@ -134,7 +144,7 @@ public class EventsService {
         //enviar mensagem
         eventToCancel.setStatus(EventStatus.CANCELED);
 
-        EventUpdatedEvent eventUpdatedEvent = new EventUpdatedEvent();
+        EventUpdatedMessage eventUpdatedEvent = new EventUpdatedMessage();
         modelMapper.map(eventToCancel, eventUpdatedEvent);
 
         template.convertAndSend(eventUpdatedEvent);
@@ -148,7 +158,7 @@ public class EventsService {
         Event event = eventsRepository.findByIdWithSessionsAndTiers(eventId)
                 .orElse(null);
 
-        if(event==null) {
+        if (event == null) {
             logger.error(EVENT_PUBLISH, "Event not found");
             throw new EventNotFoundException("Event not found");
         }
@@ -160,7 +170,7 @@ public class EventsService {
 
         event.setStatus(EventStatus.PENDING_STOCK_GENERATION);
 
-        EventUpdatedEvent eventUpdatedEvent = new EventUpdatedEvent();
+        EventUpdatedMessage eventUpdatedEvent = new EventUpdatedMessage();
 
         modelMapper.map(event, eventUpdatedEvent);
 
@@ -196,11 +206,20 @@ public class EventsService {
             throw new InvalidEventException("Empty description");
         }
 
-        OrganizationDTO organization = organizationsClient.getOrganization(event.getOrganizationId()).getBody();
+        List<OrganizationDTO> userOrganizations;
 
-        if (organization == null) {
-            logger.error(marker, "Organization not found");
-            throw new InvalidEventException("Organization with not found");
+        try {
+            userOrganizations = organizationsClient.getOrganizationsByUser(event.getCreatedBy()).getBody();
+        } catch (FeignException e) {
+            String errorBody = e.contentUTF8();
+            logger.error(marker, "FeignException while getting organizations by user from OrganizationsService: {}", errorBody);
+            throw new ExternalServiceException("Error while getting organizations by user from OrganizationsService");
+        }
+
+
+        if (!userOrganizations.stream().anyMatch(org -> org.getId().equals(event.getOrganizationId()))) {
+            logger.error(marker, "Organization not found or the user does not belong to this organization");
+            throw new InvalidEventException("Organization not found or the user does not belong to this organization");
         }
     }
 }

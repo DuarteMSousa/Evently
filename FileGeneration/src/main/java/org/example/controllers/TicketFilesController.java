@@ -1,6 +1,6 @@
 package org.example.controllers;
 
-import org.example.events.TicketGeneratedEvent;
+import org.example.messages.TicketGeneratedMessage;
 import org.example.services.TicketFileGenerationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -19,7 +19,7 @@ public class TicketFilesController {
     private TicketFileGenerationService ticketFileGenerationService;
 
     @PostMapping("/generate-ticket-file")
-    public ResponseEntity<?> saveTicketPdf(@RequestBody TicketGeneratedEvent ticketMessage){
+    public ResponseEntity<?> saveTicketPdf(@RequestBody TicketGeneratedMessage ticketMessage){
         ticketFileGenerationService.saveTicketFile(ticketMessage);
         return ResponseEntity.status(HttpStatus.OK).build();
     }

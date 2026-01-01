@@ -1,4 +1,4 @@
-package org.example.events;
+package org.example.messages;
 
 import org.example.dtos.categories.CategoryDTO;
 import org.example.dtos.eventSessions.EventSessionDTO;
@@ -7,7 +7,7 @@ import org.example.enums.EventStatus;
 import java.util.List;
 import java.util.UUID;
 
-public class EventUpdatedEvent {
+public class EventUpdatedMessage {
 
     private UUID id;
 

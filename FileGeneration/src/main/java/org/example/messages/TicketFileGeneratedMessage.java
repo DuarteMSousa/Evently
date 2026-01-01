@@ -1,8 +1,8 @@
-package org.example.events;
+package org.example.messages;
 
 import java.util.UUID;
 
-public class TicketFileGeneratedEvent {
+public class TicketFileGeneratedMessage {
 
     private UUID id;
 

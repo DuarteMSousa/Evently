@@ -2,6 +2,7 @@ package org.example.dtos.externalServices.events;
 
 
 import org.example.dtos.externalServices.eventSessions.EventSessionDTO;
+import org.example.enums.externalServices.EventStatus;
 
 import java.util.Date;
 import java.util.List;

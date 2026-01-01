@@ -1,5 +1,6 @@
 package org.example.services;
 
+import feign.FeignException;
 import jakarta.transaction.Transactional;
 import org.example.clients.TicketReservationsClient;
 import org.example.clients.VenuesClient;
@@ -47,7 +48,7 @@ public class EventSessionsService {
 
         logger.info(SESSION_CREATE, "createEventSession method entered");
 
-        validateEventSession(eventSession,SESSION_CREATE);
+        validateEventSession(eventSession, SESSION_CREATE);
 
         return eventSessionsRepository.save(eventSession);
     }
@@ -68,7 +69,7 @@ public class EventSessionsService {
             throw new EventSessionNotFoundException("Event Session not found");
         }
 
-        validateEventSession(eventSession,SESSION_UPDATE);
+        validateEventSession(eventSession, SESSION_UPDATE);
 
         existingEventSession.setEvent(eventSession.getEvent());
         existingEventSession.setVenueId(eventSession.getVenueId());
@@ -101,10 +102,17 @@ public class EventSessionsService {
             logger.error(SESSION_DELETE, "Event Session not found");
             throw new EventSessionNotFoundException("Event Session not found");
         }
+        Boolean hasReservations;
 
-        Boolean hasReservations = ticketReservationsClient.checkSessionReservations(id).getBody();
+        try {
+            hasReservations = ticketReservationsClient.checkSessionReservations(id).getBody();
+        } catch (FeignException e) {
+            String errorBody = e.contentUTF8();
+            logger.error(SESSION_DELETE, "FeignException while checking session reservations through ticket management service: {}", errorBody);
+            throw new ExternalServiceException("Error while checking session reservations through ticket management service");
+        }
 
-        if(hasReservations.booleanValue()){
+        if (hasReservations.booleanValue()) {
             logger.error(SESSION_DELETE, "Session already has reservations");
             throw new InvalidEventSessionUpdateException("Session already has reservations");
         }
@@ -114,7 +122,7 @@ public class EventSessionsService {
     }
 
 
-    private void validateEventSession(EventSession eventSession,Marker marker){
+    private void validateEventSession(EventSession eventSession, Marker marker) {
         if (eventSession.getStartsAt() == null || eventSession.getEndsAt() == null) {
             logger.error(marker, "Invalid start or end time");
             throw new InvalidEventSessionException("Invalid start or end time");
@@ -134,7 +142,19 @@ public class EventSessionsService {
             throw new InvalidEventSessionException("Event not found");
         }
 
-        VenueDTO venue = venuesClient.getVenue(eventSession.getVenueId()).getBody();
+        VenueDTO venue;
+
+        try {
+            venue = venuesClient.getVenue(eventSession.getVenueId()).getBody();
+        } catch (FeignException.NotFound e) {
+            String errorBody = e.contentUTF8();
+            logger.error(marker, "Not found response while getting venue from VenuesService: {}", errorBody);
+            throw new InvalidEventSessionException("Venue not found");
+        } catch (FeignException e) {
+            String errorBody = e.contentUTF8();
+            logger.error(marker, "FeignException while getting venue from VenuesService: {}", errorBody);
+            throw new ExternalServiceException("Error while getting venue from VenuesService");
+        }
 
         if (venue == null) {
             logger.error(marker, "Venue not found");

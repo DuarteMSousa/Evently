@@ -1,5 +1,6 @@
 package org.example.services;
 
+import feign.FeignException;
 import jakarta.transaction.Transactional;
 import org.example.clients.OrdersClient;
 import org.example.dtos.externalServices.orderLines.OrderLineCreateDTO;
@@ -7,6 +8,7 @@ import org.example.dtos.externalServices.orders.OrderCreateDTO;
 import org.example.exceptions.CartAlreadyExistsException;
 import org.example.exceptions.CartNotFoundException;
 import org.example.exceptions.EmptyCartException;
+import org.example.exceptions.ExternalServiceException;
 import org.example.models.Cart;
 import org.example.models.CartItem;
 import org.example.repositories.CartsRepository;
@@ -109,7 +111,13 @@ public class CartsService {
             newOrder.getLines().add(line);
         }
 
-        ordersClient.registerOrder(newOrder);
+        try {
+            ordersClient.registerOrder(newOrder);
+        } catch (FeignException e) {
+            String errorBody = e.contentUTF8();
+            logger.error(CART_CHECKOUT, "FeignException while registering order in OrdersService: {}", errorBody);
+            throw new ExternalServiceException("Error while registering order in OrdersService");
+        }
 
         cartToCheckout.setItems(new ArrayList<CartItem>());
 
