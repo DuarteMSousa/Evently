@@ -1,5 +1,7 @@
 package org.example.dtos.eventSessions;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.example.dtos.sessionTiers.SessionTierDTO;
 
 import java.time.Instant;
@@ -7,6 +9,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+@Getter
+@Setter
 public class EventSessionDTO {
 
     private UUID id;

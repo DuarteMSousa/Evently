@@ -4,6 +4,7 @@ import org.example.models.EventSession;
 import org.example.services.EventSessionsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -16,6 +17,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(EventSessionsController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class EventSessionsControllerTest {
 
     @Autowired private MockMvc mockMvc;
@@ -34,9 +36,10 @@ class EventSessionsControllerTest {
     // create/update -> assumem @RequestBody
     @Test
     void createEventSession_success_returns200() throws Exception {
-        String body = "{}"; // mete campos reais do teu DTO se quiseres validar mais
+        String body = "{\"eventId\":null,\"venueId\":null}";
 
-        when(eventSessionsService.createEventSession(any(EventSession.class))).thenReturn(new EventSession());
+        when(eventSessionsService.createEventSession(any(EventSession.class)))
+                .thenReturn(new EventSession());
 
         mockMvc.perform(post("/events/sessions/create-event-session/")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -44,6 +47,7 @@ class EventSessionsControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
+
 
     @Test
     void updateEventSession_success_returns200() throws Exception {

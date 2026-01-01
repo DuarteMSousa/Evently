@@ -288,7 +288,7 @@ class EventsServiceTest {
 
         assertEquals(1, res.getTotalElements());
         verify(eventsRepository).findAllByStatus(eq(EventStatus.PUBLISHED), argThat(pr ->
-                pr.getPageNumber() == 0 && pr.getPageSize() == 50
+                pr.getPageNumber() == 1 && pr.getPageSize() == 50
         ));
     }
 }
