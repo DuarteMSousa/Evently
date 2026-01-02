@@ -18,7 +18,7 @@ public class MQConfig {
 
     public static final String FILES_EXCHANGE = "files_exchange";
 
-    public static final String FILES_ROUTING_KEY = "files_routing_key";
+    public static final String FILES_ROUTING_KEY = "files";
 
     @Bean
     public TopicExchange ticketsExchange() {

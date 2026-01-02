@@ -12,12 +12,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class EventsListener {
+public class TicketsMessagesListener {
 
     @Autowired
     private TicketFileGenerationService ticketFileGenerationService;
 
-    private Logger logger = LoggerFactory.getLogger(EventsListener.class);
+    private Logger logger = LoggerFactory.getLogger(TicketsMessagesListener.class);
 
     private static final Marker TICKET_GENERATED_HANDLE = MarkerFactory.getMarker("TICKET_GENERATED_HANDLE");
 

@@ -1,14 +1,19 @@
 package org.example.services;
 
 import com.google.zxing.WriterException;
+import org.example.config.MQConfig;
+import org.example.messages.TicketFileGeneratedMessage;
 import org.example.messages.TicketGeneratedMessage;
 import org.example.exceptions.*;
 import org.example.models.TicketInformation;
 import org.example.utils.FileGenerationUtils;
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.imageio.ImageIO;
@@ -26,9 +31,14 @@ public class TicketFileGenerationService {
 
     private Logger logger = LoggerFactory.getLogger(TicketFileGenerationService.class);
 
+    private ModelMapper modelMapper = new ModelMapper();
+
     private static final Marker TICKET_FILE_GENERATION = MarkerFactory.getMarker("TICKET_FILE_GENERATION");
     private static final Marker TICKET_FILE_SAVE = MarkerFactory.getMarker("TICKET_FILE_SAVE");
     private static final Marker TICKET_FILE_GET = MarkerFactory.getMarker("TICKET_FILE_GET");
+
+    @Autowired
+    RabbitTemplate template;
 
     /**
      * Generates a ticket PDF file in memory.
@@ -125,6 +135,10 @@ public class TicketFileGenerationService {
             logger.error(TICKET_FILE_SAVE, "Error saving file: {}", e.getMessage());
             throw new FileSaveException("Error saving file");
         }
+
+        TicketFileGeneratedMessage message = modelMapper.map(ticket, TicketFileGeneratedMessage.class);
+
+        template.convertAndSend(MQConfig.FILES_EXCHANGE,MQConfig.FILES_ROUTING_KEY+".generated",message);
     }
 
     /**

@@ -6,7 +6,8 @@ import org.example.clients.OrganizationsClient;
 import org.example.clients.TicketReservationsClient;
 import org.example.dtos.externalServices.organizations.OrganizationDTO;
 import org.example.enums.EventStatus;
-import org.example.messages.EventUpdatedMessage;
+import org.example.messages.EventCanceledMessage;
+import org.example.messages.EventPublishedMessage;
 import org.example.exceptions.*;
 import org.example.models.Event;
 import org.example.repositories.EventSessionsRepository;
@@ -194,10 +195,10 @@ public class EventsService {
 
         eventToCancel.setStatus(EventStatus.CANCELED);
 
-        EventUpdatedMessage eventUpdatedEvent = new EventUpdatedMessage();
-        modelMapper.map(eventToCancel, eventUpdatedEvent);
-
-        template.convertAndSend(eventUpdatedEvent);
+        EventCanceledMessage eventPublishedMessage = new EventCanceledMessage();
+        modelMapper.map(eventToCancel, eventPublishedMessage);
+        logger.info(EVENT_CANCEL, "Sending event canceled message");
+        template.convertAndSend(eventPublishedMessage);
 
         return eventsRepository.save(eventToCancel);
     }
@@ -232,11 +233,11 @@ public class EventsService {
 
         event.setStatus(EventStatus.PENDING_STOCK_GENERATION);
 
-        EventUpdatedMessage eventUpdatedEvent = new EventUpdatedMessage();
-        modelMapper.map(event, eventUpdatedEvent);
+        EventPublishedMessage eventPublishedMessage = new EventPublishedMessage();
+        modelMapper.map(event, eventPublishedMessage);
 
         logger.info(EVENT_PUBLISH, "Sending event published message");
-        template.convertAndSend(eventUpdatedEvent);
+        template.convertAndSend(eventPublishedMessage);
 
         return eventsRepository.save(event);
     }

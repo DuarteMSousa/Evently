@@ -16,11 +16,19 @@ public class MQConfig {
 
     public static final String EVENTS_EXCHANGE = "events_exchange";
 
+    public static final String ORDERS_QUEUE = "ticketManagement_orders_queue";
+
+    public static final String ORDERS_EXCHANGE = "orders_exchange";
+
+    public static final String REFUNDS_QUEUE = "ticketManagement_refunds_queue";
+
+    public static final String REFUNDS_EXCHANGE = "refunds_exchange";
+
     public static final String EXCHANGE = "ticketManagement_exchange";
 
     public static final String ROUTING_KEY = "ticketManagement";
 
-
+    //events
     @Bean
     public TopicExchange eventsExchange() {
         return new TopicExchange(EVENTS_EXCHANGE);
@@ -40,6 +48,50 @@ public class MQConfig {
                 .bind(queue)
                 .to(exchange)
                 .with("events");
+    }
+
+    //orders
+    @Bean
+    public TopicExchange ordersExchange() {
+        return new TopicExchange(ORDERS_EXCHANGE);
+    }
+
+    @Bean
+    public Queue ticketManagementOrdersQueue() {
+        return new Queue(ORDERS_QUEUE, true);
+    }
+
+    @Bean
+    public Binding ticketManagementOrdersBinding(
+            @Qualifier("ticketManagementOrdersQueue") Queue queue,
+            @Qualifier("ordersExchange") TopicExchange exchange) {
+
+        return BindingBuilder
+                .bind(queue)
+                .to(exchange)
+                .with("orders.*");
+    }
+
+    //refunds
+    @Bean
+    public TopicExchange refundsExchange() {
+        return new TopicExchange(REFUNDS_EXCHANGE);
+    }
+
+    @Bean
+    public Queue ticketManagementRefundsQueue() {
+        return new Queue(REFUNDS_QUEUE, true);
+    }
+
+    @Bean
+    public Binding ticketManagementRefundsBinding(
+            @Qualifier("ticketManagementRefundsQueue") Queue queue,
+            @Qualifier("refundsExchange") TopicExchange exchange) {
+
+        return BindingBuilder
+                .bind(queue)
+                .to(exchange)
+                .with("refunds.*");
     }
 
     @Bean
