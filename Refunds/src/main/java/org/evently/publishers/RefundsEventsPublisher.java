@@ -16,7 +16,8 @@ public class RefundsEventsPublisher {
 
     public void publishRefundRequestDecisionRegisteredEvent(RefundDecision decision) {
         RefundRequestDecisionRegisteredMessage refundRequestDecisionRegistered = new RefundRequestDecisionRegisteredMessage();
-        refundRequestDecisionRegistered.setRefundRequestId(decision.getRefundRequest().getId());
+        refundRequestDecisionRegistered.setUserToRefundId(decision.getRefundRequest().getUserId());
+        refundRequestDecisionRegistered.setPaymentId(decision.getRefundRequest().getPaymentId());
         refundRequestDecisionRegistered.setDecisionType(decision.getDecisionType());
         refundRequestDecisionRegistered.setDescription(decision.getDescription());
 
