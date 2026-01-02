@@ -44,9 +44,16 @@ public class TicketReservationsController {
          * 500 INTERNAL_SERVER_ERROR - Internal server error.
          */
         logger.info(TICKET_RESERVATION_CREATE, "reserveTicket method entered");
-        TicketReservation ticketReservation = modelMapper.map(reservationDto, TicketReservation.class);
+        TicketReservation ticketReservation = new TicketReservation();
         TicketReservation savedReservation;
         try {
+            ticketReservation.setUserId(reservationDto.getUserId());
+            ticketReservation.setOrderId(reservationDto.getOrderId());
+            ticketReservation.setTierId(reservationDto.getTierId());
+            ticketReservation.setSessionId(reservationDto.getSessionId());
+            ticketReservation.setEventId(reservationDto.getEventId());
+            ticketReservation.setQuantity(reservationDto.getQuantity());
+
             savedReservation = ticketReservationsService.createTicketReservation(ticketReservation);
 
         } catch (Exception e) {

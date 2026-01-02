@@ -132,6 +132,7 @@ public class SessionTiersController {
             sessionTier =modelMapper.map(sessionTiersService.getSessionTier(id),SessionTierDTO.class) ;
         } catch (SessionTierNotFoundException e) {
             logger.error(TIER_GET, "SessionTierNotFoundException caught while getting session tier: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
             logger.error(TIER_GET, "Exception caught while getting session tier: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());

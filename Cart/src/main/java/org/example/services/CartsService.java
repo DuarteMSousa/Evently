@@ -11,6 +11,7 @@ import org.example.exceptions.EmptyCartException;
 import org.example.exceptions.ExternalServiceException;
 import org.example.models.Cart;
 import org.example.models.CartItem;
+import org.example.repositories.CartItemsRepository;
 import org.example.repositories.CartsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +37,9 @@ public class CartsService {
     private CartsRepository cartsRepository;
 
     @Autowired
+    private CartItemsRepository cartItemsRepository;
+
+    @Autowired
     private OrdersClient ordersClient;
 
     /**
@@ -53,6 +57,8 @@ public class CartsService {
             logger.info(CART_GET, "Cart not found, creating a new one");
             cart = createCart(userId);
         }
+
+        cart.setItems(cartItemsRepository.getCartItemsByCart(cart));
 
         return cart;
     }

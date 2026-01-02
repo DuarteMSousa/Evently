@@ -13,6 +13,8 @@ public class CartItemDTO {
 
     private UUID productId;
 
+    private UUID cartId;
+
     private int quantity;
 
     private float unitPrice;

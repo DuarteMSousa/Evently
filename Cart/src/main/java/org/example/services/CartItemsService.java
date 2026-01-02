@@ -92,6 +92,7 @@ public class CartItemsService {
             itemToAdd.setProductId(productId);
             itemToAdd.setQuantity(quantity);
             itemToAdd.setUnitPrice(tier.getPrice());
+            itemToAdd.setCart(cart);
         }
 
         return cartItemsRepository.save(itemToAdd);

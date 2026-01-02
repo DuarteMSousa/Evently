@@ -188,7 +188,7 @@ public class TicketReservationsService {
         StockMovement stockMovement = new StockMovement();
         TicketStockId ticketStockId = new TicketStockId(ticketReservation.getEventId(), ticketReservation.getSessionId(), ticketReservation.getTierId());
         TicketStock stock = ticketStocksRepository.findById(ticketStockId)
-                .orElseThrow(() -> new TicketStockNotFoundException("Ticket Reservation not found"));
+                .orElseThrow(() -> new TicketStockNotFoundException("Ticket Stock not found"));
         stockMovement.setTicketStock(stock);
         stockMovement.setQuantity(ticketReservation.getQuantity());
         stockMovement.setType(stockMovementType);
