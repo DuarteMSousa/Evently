@@ -379,4 +379,40 @@ public class PaymentsService {
         createEvent(updated, "REFUND_FAILED", 409);
         publishEvent("REFUND_FAILED", updated);
     }
+
+    @Transactional
+    public void onOrderCreated(UUID orderId, UUID userId, float total) {
+        logger.info(PAY_EVENT, "OrderCreated event received (orderId={}, userId={}, total={})",
+                orderId, userId, total);
+
+        // 1) idempotência (muito importante em eventos):
+        // se já existe Payment para esta order, não cries outro.
+        // (assumindo que tens findByOrderId no repo; se não tiveres, já te digo como fazer)
+        paymentsRepository.findByOrderId(orderId).ifPresent(existing -> {
+            logger.info(PAY_EVENT, "Payment already exists for orderId={} (paymentId={}, status={})",
+                    orderId, existing.getId(), existing.getStatus());
+            return;
+        });
+
+        // 2) criar Payment inicial (sem providerRef ainda)
+        Payment payment = new Payment();
+        payment.setOrderId(orderId);
+        payment.setUserId(userId);
+        payment.setAmount(total);
+
+        // se o teu model exige provider, mete um default (ex: PAYPAL)
+        // (se não for obrigatório no teu model, podes remover)
+        payment.setProvider("PAYPAL");
+
+        payment.setStatus("PENDING");
+
+        Payment saved = paymentsRepository.save(payment);
+
+        logger.info(PAY_EVENT, "Payment created from OrderCreated (paymentId={}, orderId={}, status={})",
+                saved.getId(), saved.getOrderId(), saved.getStatus());
+
+        // 3) guardar evento e publicar
+        createEvent(saved, "PENDING", null);
+        publishEvent("PENDING", saved);
+    }
 }
