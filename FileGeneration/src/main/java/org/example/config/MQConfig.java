@@ -5,34 +5,45 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class MQConfig {
 
-    public static final String TICKETS_QUEUE = "tickets_queue";
+    public static final String TICKETS_QUEUE = "fileGeneration_tickets_queue";
 
-    public static final String FILES_QUEUE = "files_queue";
+    public static final String TICKETS_EXCHANGE = "tickets_exchange";
 
     public static final String FILES_EXCHANGE = "files_exchange";
 
     public static final String FILES_ROUTING_KEY = "files_routing_key";
 
+    @Bean
+    public TopicExchange ticketsExchange() {
+        return new TopicExchange(TICKETS_EXCHANGE);
+    }
 
     @Bean
-    public Queue queue() {
-        return new Queue(FILES_QUEUE, true);
+    public Queue fileGenerationTicketsQueue() {
+        return new Queue(TICKETS_QUEUE, true);
+    }
+
+    @Bean
+    public Binding fileGenerationTicketsBinding(
+            @Qualifier("fileGenerationTicketsQueue") Queue queue,
+            @Qualifier("ticketsExchange") TopicExchange exchange) {
+
+        return BindingBuilder
+                .bind(queue)
+                .to(exchange)
+                .with("tickets.created");
     }
 
     @Bean
     public TopicExchange exchange() {
         return new TopicExchange(FILES_EXCHANGE);
-    }
-
-    @Bean
-    public Binding binding(Queue queue, TopicExchange exchange) {
-        return BindingBuilder.bind(queue).to(exchange).with(FILES_ROUTING_KEY);
     }
 
     @Bean

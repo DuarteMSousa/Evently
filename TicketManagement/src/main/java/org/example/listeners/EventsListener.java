@@ -17,7 +17,7 @@ public class EventsListener {
     @Autowired
     private RabbitTemplate template;
 
-    @RabbitListener(queues = MQConfig.EVENT_QUEUE)
+    @RabbitListener(queues = MQConfig.EVENTS_QUEUE)
     public void listener(EventUpdatedMessage event) {
 
 
