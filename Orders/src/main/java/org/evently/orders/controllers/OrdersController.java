@@ -98,6 +98,9 @@ public class OrdersController {
                     line.setId(new OrderLineId(null, lineDTO.getProductId()));
                     line.setQuantity(lineDTO.getQuantity());
                     line.setUnitPrice(0);
+
+                    line.setOrder(orderRequest);
+
                     return line;
                 }).collect(Collectors.toList());
                 orderRequest.setLines(lines);
