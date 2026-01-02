@@ -8,6 +8,7 @@ import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFacto
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,8 +19,13 @@ public class RabbitMQConfig {
     @Value("${app.payments.exchange}")
     private String paymentsExchangeName;
 
-    @Value("${app.payments.queue}")
-    private String paymentsQueueName;
+    public static final String paymentsRefundsQueueName="payments_refunds";
+
+    public static final String refundsExchangeName="refunds_exchange";
+
+    public static final String paymentsOrdersQueueName="payments_orders";
+
+    public static final String ordersExchangeName="orders_exchange";
 
     @Value("${app.payments.routing-key}")
     private String paymentsRoutingKey;
@@ -30,19 +36,51 @@ public class RabbitMQConfig {
         return new TopicExchange(paymentsExchangeName);
     }
 
+    //REFUNDS
     @Bean
-    public Queue paymentsQueue() {
-        return new Queue(paymentsQueueName, true);
+    public TopicExchange refundsExchange() {
+        return new TopicExchange(refundsExchangeName);
     }
 
     @Bean
-    public Binding paymentsBinding(Queue paymentsQueue, TopicExchange paymentsExchange) {
+    public Queue paymentsRefundsQueue() {
+        return new Queue(paymentsRefundsQueueName, true);
+    }
+
+    @Bean
+    public Binding paymentsRefundsBinding(
+            @Qualifier("paymentsRefundsQueue") Queue queue,
+            @Qualifier("refundsExchange") TopicExchange exchange) {
+
         return BindingBuilder
-                .bind(paymentsQueue)
-                .to(paymentsExchange)
-                .with(paymentsRoutingKey);
+                .bind(queue)
+                .to(exchange)
+                .with("refunds.accepted");
     }
 
+    //ORDERS
+    @Bean
+    public TopicExchange ordersExchange() {
+        return new TopicExchange(ordersExchangeName);
+    }
+
+    @Bean
+    public Queue paymentsOrdersQueue() {
+        return new Queue(paymentsOrdersQueueName, true);
+    }
+
+    @Bean
+    public Binding paymentsOrdersBinding(
+            @Qualifier("paymentsOrdersQueue") Queue queue,
+            @Qualifier("ordersExchange") TopicExchange exchange) {
+
+        return BindingBuilder
+                .bind(queue)
+                .to(exchange)
+                .with("orders.created");
+    }
+
+    //CONFIGS
     @Bean
     public Jackson2JsonMessageConverter jackson2JsonMessageConverter() {
         return new Jackson2JsonMessageConverter();
@@ -67,25 +105,5 @@ public class RabbitMQConfig {
         return factory;
     }
 
-    @Bean
-    public TopicExchange refundsExchange(@Value("${app.refunds.exchange}") String name) {
-        return new TopicExchange(name);
-    }
 
-    @Bean
-    public Queue refundsQueue(@Value("${app.refunds.queue}") String name) {
-        return new Queue(name, true);
-    }
-
-    @Bean
-    public Binding refundsBinding(
-            Queue refundsQueue,
-            TopicExchange refundsExchange,
-            @Value("${app.refunds.routing-key}") String routingKey) {
-
-        return BindingBuilder
-                .bind(refundsQueue)
-                .to(refundsExchange)
-                .with(routingKey);
-    }
 }

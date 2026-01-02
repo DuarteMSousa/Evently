@@ -1,5 +1,6 @@
 package org.example.listeners;
 
+import org.example.config.RabbitMQConfig;
 import org.example.dtos.externalservice.RefundEventMessage;
 import org.example.services.PaymentsService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -15,7 +16,7 @@ public class RefundEventsListener {
     }
 
     @RabbitListener(
-            queues = "${app.refunds.queue}",
+            queues = RabbitMQConfig.paymentsRefundsQueueName,
             containerFactory = "rabbitListenerContainerFactory"
     )
     public void handleRefundEvent(RefundEventMessage message) {
