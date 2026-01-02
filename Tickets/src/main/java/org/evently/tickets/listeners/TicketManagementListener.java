@@ -2,7 +2,7 @@ package org.evently.tickets.listeners;
 
 import org.evently.tickets.config.MQConfig;
 import org.evently.tickets.enums.TicketStatus;
-import org.evently.tickets.messages.externalServices.TicketReservationConfirmedMessage;
+import org.evently.tickets.messages.received.TicketReservationConfirmedMessage;
 import org.evently.tickets.models.Ticket;
 import org.evently.tickets.services.TicketsService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;

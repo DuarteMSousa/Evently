@@ -1,4 +1,4 @@
-package org.evently.tickets.messages.externalServices;
+package org.evently.tickets.messages.received;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

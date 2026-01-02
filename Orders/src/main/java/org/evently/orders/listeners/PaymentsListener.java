@@ -3,7 +3,7 @@ package org.evently.orders.listeners;
 import org.evently.orders.config.MQConfig;
 import org.evently.orders.enums.externalServices.PaymentEventType;
 import org.evently.orders.enums.externalServices.PaymentStatus;
-import org.evently.orders.messages.externalServices.PaymentEventMessage;
+import org.evently.orders.messages.received.PaymentEventMessage;
 import org.evently.orders.models.Order;
 import org.evently.orders.services.OrdersService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
