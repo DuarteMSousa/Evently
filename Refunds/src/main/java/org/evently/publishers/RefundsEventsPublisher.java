@@ -1,8 +1,8 @@
 package org.evently.publishers;
 
 import org.evently.config.MQConfig;
-import org.evently.messages.RefundRequestDecisionRegistered;
-import org.evently.messages.RefundRequestMessageSent;
+import org.evently.messages.RefundRequestDecisionRegisteredMessage;
+import org.evently.messages.RefundRequestMessageSentMessage;
 import org.evently.models.RefundDecision;
 import org.evently.models.RefundRequestMessage;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -15,7 +15,7 @@ public class RefundsEventsPublisher {
     }
 
     public void publishRefundRequestDecisionRegisteredEvent(RefundDecision decision) {
-        RefundRequestDecisionRegistered refundRequestDecisionRegistered = new RefundRequestDecisionRegistered();
+        RefundRequestDecisionRegisteredMessage refundRequestDecisionRegistered = new RefundRequestDecisionRegisteredMessage();
         refundRequestDecisionRegistered.setRefundRequestId(decision.getRefundRequest().getId());
         refundRequestDecisionRegistered.setDecisionType(decision.getDecisionType());
         refundRequestDecisionRegistered.setDescription(decision.getDescription());
@@ -24,7 +24,7 @@ public class RefundsEventsPublisher {
     }
 
     public void publishRefundRequestMessageSentEvent(RefundRequestMessage message) {
-        RefundRequestMessageSent refundRequestMessageSent = new RefundRequestMessageSent();
+        RefundRequestMessageSentMessage refundRequestMessageSent = new RefundRequestMessageSentMessage();
         refundRequestMessageSent.setUserId(message.getUserId());
         refundRequestMessageSent.setContent(message.getContent());
         refundRequestMessageSent.setRefundRequestId(message.getRefundRequest().getId());

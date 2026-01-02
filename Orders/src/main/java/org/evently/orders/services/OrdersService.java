@@ -15,22 +15,19 @@ import org.evently.orders.messages.OrderCreatedMessage;
 import org.evently.orders.messages.OrderPayedMessage;
 import org.evently.orders.models.Order;
 import org.evently.orders.models.OrderLine;
+import org.evently.orders.publishers.OrdersEventsPublisher;
 import org.evently.orders.repositories.OrdersRepository;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
-import org.springframework.amqp.core.AmqpTemplate;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -50,8 +47,7 @@ public class OrdersService {
     @Autowired
     private EventsClient  eventsClient;
 
-    @Autowired
-    private RabbitTemplate template;
+    private OrdersEventsPublisher  ordersEventsPublisher;
 
     private ModelMapper modelMapper = new ModelMapper();
 
@@ -126,12 +122,7 @@ public class OrdersService {
         logger.info(ORDER_CREATE, "Order created successfully (id={}, status={})",
                 savedOrder.getId(), savedOrder.getStatus());
 
-        OrderCreatedMessage message = new OrderCreatedMessage();
-        message.setId(order.getId());
-        message.setUserId(order.getUserId());
-        message.setTotal(orderTotal);
-
-        template.convertAndSend(MQConfig.EXCHANGE, MQConfig.ROUTING_KEY, message);
+        ordersEventsPublisher.publishOrderCreatedEvent(savedOrder);
 
         return savedOrder;
     }
@@ -160,17 +151,7 @@ public class OrdersService {
         Order updatedOrder = ordersRepository.save(order);
         logger.info(ORDER_PAYMENT, "Order marked as paid successfully (id={})", id);
 
-        OrderPayedMessage message = new OrderPayedMessage();
-        message.setId(updatedOrder.getId());
-        message.setUserId(updatedOrder.getUserId());
-        message.setTotal(updatedOrder.getTotal());
-
-        List<OrderLineDTO> orderLines = new ArrayList<>();
-        modelMapper.map(updatedOrder.getLines(), orderLines);
-
-        message.setLines(orderLines);
-
-        template.convertAndSend(MQConfig.EXCHANGE, MQConfig.ROUTING_KEY, message);
+        ordersEventsPublisher.publishOrderPayedEvent(updatedOrder);
 
         return updatedOrder;
     }

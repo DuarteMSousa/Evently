@@ -23,12 +23,6 @@ public class OrderPayedMessage {
 
     private float total;
 
-    private Date createdAt;
-
-    private Date paidAt;
-
-    private Date canceledAt;
-
     private List<OrderLineDTO> lines;
 
 }
