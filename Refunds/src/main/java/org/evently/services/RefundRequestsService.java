@@ -189,6 +189,33 @@ public class RefundRequestsService {
     }
 
     /**
+     * Retrieves the active (PENDING) refund request for a given payment.
+     *
+     * @param paymentId payment identifier
+     * @return active refund request
+     * @throws RefundRequestNotFoundException if no active refund request exists
+     */
+    public RefundRequest getActiveRefundRequestByPayment(UUID paymentId) {
+        logger.debug(REFUND_GET, "Get active refund request requested (paymentId={})", paymentId);
+
+        RefundRequest activeRefundRequest =
+                refundRequestsRepository.findOneByPaymentIdAndStatus(
+                        paymentId,
+                        RefundRequestStatus.PENDING
+                );
+
+        if (activeRefundRequest == null) {
+            logger.warn(REFUND_GET,
+                    "Active refund request not found (paymentId={})", paymentId);
+            throw new RefundRequestNotFoundException(
+                    "No active refund request found for this payment"
+            );
+        }
+
+        return activeRefundRequest;
+    }
+
+    /**
      * Validates if there isn´t already an active or processed refund to the given payment.
      *
      * @param paymentId payment to validate

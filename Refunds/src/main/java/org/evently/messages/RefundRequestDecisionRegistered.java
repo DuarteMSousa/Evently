@@ -12,14 +12,10 @@ import java.util.UUID;
 @Data
 public class RefundRequestDecisionRegistered {
 
-    private UUID id;
-
-    private UUID decidedBy;
+    private UUID refundRequestId;
 
     private DecisionType decisionType;
 
     private String description;
-
-    private UUID refundRequestId;
 
 }

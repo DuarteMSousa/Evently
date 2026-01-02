@@ -8,9 +8,9 @@ import org.evently.enums.DecisionType;
 import org.evently.enums.RefundRequestStatus;
 import org.evently.exceptions.*;
 import org.evently.exceptions.externalServices.UserNotFoundException;
-import org.evently.messages.RefundRequestAcceptedMessage;
 import org.evently.messages.RefundRequestDecisionRegistered;
 import org.evently.models.RefundDecision;
+import org.evently.publishers.RefundsEventsPublisher;
 import org.evently.repositories.RefundDecisionsRepository;
 import org.evently.repositories.RefundRequestsRepository;
 import org.slf4j.Logger;
@@ -42,8 +42,7 @@ public class RefundDecisionsService {
     @Autowired
     private UsersClient usersClient;
 
-    @Autowired
-    private RabbitTemplate template;
+    private RefundsEventsPublisher refundsEventsPublisher;
 
     /**
      * Retrieves a refund decision by its unique identifier.
@@ -113,30 +112,7 @@ public class RefundDecisionsService {
         refundRequestsRepository.save(saved.getRefundRequest());
 
         /// Sending a message with the decision
-        RefundRequestDecisionRegistered refundRequestDecisionRegistered = new RefundRequestDecisionRegistered();
-        refundRequestDecisionRegistered.setId(saved.getId());
-        refundRequestDecisionRegistered.setDecisionType(decision.getDecisionType());
-        refundRequestDecisionRegistered.setDecisionType(saved.getDecisionType());
-        refundRequestDecisionRegistered.setDescription(saved.getDescription());
-        refundRequestDecisionRegistered.setRefundRequestId(saved.getRefundRequest().getId());
-
-        template.convertAndSend(
-                MQConfig.EXCHANGE,
-                MQConfig.ROUTING_KEY,
-                refundRequestDecisionRegistered
-        );
-
-        /// Sending a message with the payment to be refunded
-        if (saved.getDecisionType().equals(DecisionType.APPROVE)) {
-            RefundRequestAcceptedMessage refundRequestAcceptedMessage = new RefundRequestAcceptedMessage();
-            refundRequestAcceptedMessage.setPaymentId(saved.getRefundRequest().getPaymentId());
-
-            template.convertAndSend(
-                    MQConfig.EXCHANGE,
-                    MQConfig.ROUTING_KEY,
-                    refundRequestAcceptedMessage
-            );
-        }
+        refundsEventsPublisher.publishRefundRequestDecisionRegisteredEvent(saved);
 
         return saved;
     }

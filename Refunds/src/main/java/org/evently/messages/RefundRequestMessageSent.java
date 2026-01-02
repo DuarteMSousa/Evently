@@ -11,8 +11,6 @@ import java.util.UUID;
 @Data
 public class RefundRequestMessageSent {
 
-    private UUID id;
-
     private UUID userId;
 
     private String content;

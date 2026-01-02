@@ -8,6 +8,7 @@ import org.evently.exceptions.*;
 import org.evently.exceptions.externalServices.UserNotFoundException;
 import org.evently.messages.RefundRequestMessageSent;
 import org.evently.models.RefundRequestMessage;
+import org.evently.publishers.RefundsEventsPublisher;
 import org.evently.repositories.RefundRequestMessagesRepository;
 import org.evently.repositories.RefundRequestsRepository;
 import org.slf4j.Logger;
@@ -40,8 +41,7 @@ public class RefundRequestMessagesService {
     @Autowired
     private UsersClient usersClient;
 
-    @Autowired
-    private RabbitTemplate template;
+    private RefundsEventsPublisher refundsEventsPublisher;
 
     /**
      * Retrieves a refund request message by its unique identifier.
@@ -97,13 +97,7 @@ public class RefundRequestMessagesService {
         RefundRequestMessage saved = refundRequestMessagesRepository.save(message);
         logger.info(MESSAGE_SEND, "Message sent successfully (id={})", saved.getId());
 
-        RefundRequestMessageSent refundRequestMessageSent = new RefundRequestMessageSent();
-        refundRequestMessageSent.setId(saved.getId());
-        refundRequestMessageSent.setUserId(saved.getUserId());
-        refundRequestMessageSent.setContent(saved.getContent());
-        refundRequestMessageSent.setRefundRequestId(saved.getId());
-
-        template.convertAndSend(MQConfig.EXCHANGE, MQConfig.ROUTING_KEY, refundRequestMessageSent);
+        refundsEventsPublisher.publishRefundRequestMessageSentEvent(saved);
 
         return saved;
     }
