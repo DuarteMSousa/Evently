@@ -41,17 +41,23 @@ public class EventSessionsController {
     private static final Marker SESSION_CREATE = MarkerFactory.getMarker("SESSION_CREATE");
 
     @PostMapping("/create-event-session/")
-    public ResponseEntity<?> createEventSession(EventSessionCreateDTO createDTO) {
+    public ResponseEntity<?> createEventSession(@RequestBody EventSessionCreateDTO createDTO) {
         /* HttpStatus(produces)
          * 200 OK - Request processed as expected.
          * 400 BAD_REQUEST - Invalid event creation.
          * 500 INTERNAL_SERVER_ERROR - Internal server error.
          */
         logger.info(SESSION_CREATE, "Method createEventSession entered");
-        EventSession eventSessionToCreate = modelMapper.map(createDTO, EventSession.class);
+        EventSession eventSessionToCreate = new EventSession();
+        Event event = new Event();
+        event.setId(createDTO.getEventId());
         EventSessionDTO eventSession = null;
 
         try {
+            eventSessionToCreate.setEvent(event);
+            eventSessionToCreate.setVenueId(createDTO.getVenueId());
+            eventSessionToCreate.setStartsAt(createDTO.getStartsAt());
+            eventSessionToCreate.setEndsAt(createDTO.getEndsAt());
             eventSession = modelMapper.map(eventSessionsService.createEventSession(eventSessionToCreate), EventSessionDTO.class);
         } catch (EventSessionAlreadyExistsException e) {
             logger.error(SESSION_CREATE, "EventSessionAlreadyExistsException caught while creating Event session");
@@ -69,17 +75,23 @@ public class EventSessionsController {
     }
 
     @PutMapping("/update-event-session/{id}")
-    public ResponseEntity<?> updateEventSession(@PathVariable("id") UUID id, EventSessionUpdateDTO updateDTO) {
+    public ResponseEntity<?> updateEventSession(@PathVariable("id") UUID id, @RequestBody EventSessionUpdateDTO updateDTO) {
         /* HttpStatus(produces)
          * 200 OK - Request processed as expected.
          * 400 BAD_REQUEST - Invalid event update.
          * 500 INTERNAL_SERVER_ERROR - Internal server error.
          */
         logger.info(SESSION_UPDATE, "Method updateEventSession entered");
-        EventSession eventSessionToUpdate = modelMapper.map(updateDTO, EventSession.class);
+        EventSession eventSessionToUpdate = new EventSession();
+        Event event = new Event();
+        event.setId(updateDTO.getEventId());
         EventSessionDTO eventSession = null;
 
         try {
+            eventSessionToUpdate.setEvent(event);
+            eventSessionToUpdate.setVenueId(updateDTO.getVenueId());
+            eventSessionToUpdate.setStartsAt(updateDTO.getStartsAt());
+            eventSessionToUpdate.setEndsAt(updateDTO.getEndsAt());
             eventSession = modelMapper.map(eventSessionsService.updateEventSession(id, eventSessionToUpdate), EventSessionDTO.class);
         } catch (InvalidEventSessionUpdateException e) {
             logger.error(SESSION_UPDATE, "InvalidEventSessionUpdateException caught while updating Event");

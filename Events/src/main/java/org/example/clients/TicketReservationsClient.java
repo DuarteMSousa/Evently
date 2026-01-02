@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.UUID;
 
-@FeignClient(name = "ticketReservations", path = "/ticketReservations")
+@FeignClient(name = "ticketManagement", path = "/ticketReservations")
 public interface TicketReservationsClient {
 
     @GetMapping("/event-has-reservations/{eventId}")

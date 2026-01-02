@@ -9,6 +9,7 @@ import org.example.enums.EventStatus;
 import org.example.messages.EventUpdatedMessage;
 import org.example.exceptions.*;
 import org.example.models.Event;
+import org.example.repositories.EventSessionsRepository;
 import org.example.repositories.EventsRepository;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -29,6 +30,9 @@ public class EventsService {
 
     @Autowired
     private EventsRepository eventsRepository;
+
+    @Autowired
+    private EventSessionsRepository eventSessionsRepository;
 
     @Autowired
     private OrganizationsClient organizationsClient;
@@ -99,7 +103,7 @@ public class EventsService {
             throw new InvalidEventUpdateException("Parameter id and body id do not correspond");
         }
 
-        Event existingEvent = eventsRepository.findByIdWithSessionsAndTiers(id)
+        Event existingEvent = eventsRepository.findById(id)
                 .orElse(null);
 
         if (existingEvent == null) {
@@ -107,13 +111,17 @@ public class EventsService {
             throw new EventNotFoundException("Event not found");
         }
 
-        validateEvent(event, EVENT_UPDATE);
+        existingEvent.setSessions(eventSessionsRepository.findSessionsWithTiersByEventId(event.getId()));
 
         EventStatus status = existingEvent.getStatus();
 
-        modelMapper.map(event, existingEvent);
+        existingEvent.setName(event.getName());
+        existingEvent.setDescription(event.getDescription());
+        existingEvent.setCategories(event.getCategories());
 
         existingEvent.setStatus(status);
+
+        validateEvent(existingEvent, EVENT_UPDATE);
 
         return eventsRepository.save(existingEvent);
     }
@@ -157,7 +165,7 @@ public class EventsService {
     public Event cancelEvent(UUID eventId) {
         logger.info(EVENT_CANCEL, "cancelEvent method entered");
 
-        Event eventToCancel = eventsRepository.findByIdWithSessionsAndTiers(eventId)
+        Event eventToCancel = eventsRepository.findById(eventId)
                 .orElse(null);
 
         Boolean hasReservations;
@@ -208,7 +216,7 @@ public class EventsService {
     public Event publishEvent(UUID eventId) {
         logger.info(EVENT_PUBLISH, "publishEvent method entered");
 
-        Event event = eventsRepository.findByIdWithSessionsAndTiers(eventId)
+        Event event = eventsRepository.findById(eventId)
                 .orElse(null);
 
         if (event == null) {
@@ -247,8 +255,8 @@ public class EventsService {
             pageSize = 50;
         }
 
-        if (pageNumber < 1) {
-            pageNumber = 1;
+        if (pageNumber < 0) {
+            pageNumber = 0;
         }
 
         PageRequest pageable = PageRequest.of(pageNumber, pageSize);
@@ -267,8 +275,8 @@ public class EventsService {
      */
     private void validateEvent(Event event, Marker marker) {
         if (event.getName() == null || event.getName().isEmpty()) {
-            logger.error(marker, "Empty category name");
-            throw new InvalidEventException("Empty category name");
+            logger.error(marker, "Empty event name");
+            throw new InvalidEventException("Empty event name");
         }
 
         if (event.getDescription() == null || event.getDescription().isEmpty()) {

@@ -14,11 +14,11 @@ import java.util.UUID;
 @Setter
 public class EventUpdateDTO {
 
+    private UUID id;
+
     private String name;
 
     private String description;
-
-    private EventStatus status;
 
     private List<Category> categories;
 }

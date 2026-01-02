@@ -11,7 +11,7 @@ public class GatewayConfig {
     @Bean
     public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
         return builder.routes()
-                .route("cart-route", r -> r.path("/cart/**").uri("lb://cart"))
+                .route("cart-route", r -> r.path("/carts/**").uri("lb://cart"))
                 .route("events-route", r -> r.path("/events/**").uri("lb://events"))
                 .route("file-generation-route", r -> r.path("/file-generation/**").uri("lb://file-generation"))
                 .route("notifications-route", r -> r.path("/notifications/**").uri("lb://notifications"))

@@ -36,7 +36,7 @@ public class SessionTiersController {
     private static final Marker TIER_CREATE = MarkerFactory.getMarker("TIER_CREATE");
 
     @PostMapping("/create-session-tier/")
-    public ResponseEntity<?> createSessionTier(SessionTierCreateDTO createDTO) {
+    public ResponseEntity<?> createSessionTier(@RequestBody SessionTierCreateDTO createDTO) {
         /* HttpStatus(produces)
          * 200 OK - Request processed as expected.
          * 400 BAD_REQUEST - Invalid event creation.
@@ -64,7 +64,7 @@ public class SessionTiersController {
     }
 
     @PutMapping("/update-event-session/{id}")
-    public ResponseEntity<?> updateSessionTier(@PathVariable("id") UUID id, SessionTierUpdateDTO updateDTO) {
+    public ResponseEntity<?> updateSessionTier(@PathVariable("id") UUID id, @RequestBody SessionTierUpdateDTO updateDTO) {
         /* HttpStatus(produces)
          * 200 OK - Request processed as expected.
          * 400 BAD_REQUEST - Invalid event update.

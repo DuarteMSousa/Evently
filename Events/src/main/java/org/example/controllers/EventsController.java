@@ -82,7 +82,7 @@ public class EventsController {
     }
 
     @PostMapping("/create-event/")
-    public ResponseEntity<?> createEvent(EventCreateDTO createDTO) {
+    public ResponseEntity<?> createEvent(@RequestBody EventCreateDTO createDTO) {
         /* HttpStatus(produces)
          * 200 OK - Request processed as expected.
          * 400 BAD_REQUEST - Invalid event creation.
@@ -110,7 +110,7 @@ public class EventsController {
     }
 
     @PutMapping("/update-event/{id}")
-    public ResponseEntity<?> updateEvent(@PathVariable("id") UUID id, EventUpdateDTO updateDTO) {
+    public ResponseEntity<?> updateEvent(@PathVariable("id") UUID id, @RequestBody EventUpdateDTO updateDTO) {
         /* HttpStatus(produces)
          * 200 OK - Request processed as expected.
          * 400 BAD_REQUEST - Invalid event update.

@@ -92,7 +92,7 @@ public class CategoriesController {
     }
 
     @PostMapping("/create-category")
-    public ResponseEntity<?> createCategory(CategoryCreateDTO createDTO) {
+    public ResponseEntity<?> createCategory(@RequestBody CategoryCreateDTO createDTO) {
         /* HttpStatus(produces)
          * 200 OK - Request processed as expected.
          * 400 BAD_REQUEST - Invalid category creation
@@ -145,7 +145,7 @@ public class CategoriesController {
     }
 
     @PostMapping("/update-category/{id}")
-    public ResponseEntity<?> updateCategory(@PathVariable("id") UUID id, CategoryUpdateDTO updateDTO) {
+    public ResponseEntity<?> updateCategory(@PathVariable("id") UUID id, @RequestBody CategoryUpdateDTO updateDTO) {
         /* HttpStatus(produces)
          * 200 OK - Request processed as expected.
          * 400 BAD_REQUEST - Invalid category creation

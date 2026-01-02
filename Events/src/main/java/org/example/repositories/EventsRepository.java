@@ -17,14 +17,4 @@ public interface EventsRepository extends JpaRepository<Event, UUID> {
 
     Page<Event> findAllByStatus(EventStatus status, PageRequest pageable);
 
-    @Query(
-            "SELECT DISTINCT e " +
-                    "FROM Event e " +
-                    "LEFT JOIN FETCH e.sessions s " +
-                    "LEFT JOIN FETCH s.tiers " +
-                    "WHERE e.id = :id"
-    )
-    Optional<Event> findByIdWithSessionsAndTiers(@Param("id") UUID id);
-
-
 }

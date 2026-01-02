@@ -25,7 +25,7 @@ public class SessionTier {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sessionId")
+    @JoinColumn(name = "eventSessionId")
     private EventSession eventSession;
 
     private UUID zoneId;
