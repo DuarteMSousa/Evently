@@ -1,7 +1,7 @@
 package org.example.listeners;
 
 import org.example.config.RabbitMQConfig;
-import org.example.dtos.externalservice.RefundEventMessage;
+import org.example.messages.externalServices.RefundEventMessage;
 import org.example.services.PaymentsService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
