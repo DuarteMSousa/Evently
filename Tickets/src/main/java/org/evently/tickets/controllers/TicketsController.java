@@ -102,7 +102,7 @@ public class TicketsController {
         }
     }
 
-    @PatchMapping("/use-ticket/{id}")
+    @PutMapping("/use-ticket/{id}")
     public ResponseEntity<?> useTicket(@PathVariable UUID id) {
         /* HttpStatus(produces)
          * 200 OK - Ticket validated/used successfully.
@@ -124,7 +124,7 @@ public class TicketsController {
         }
     }
 
-    @PatchMapping("/cancel-ticket/{id}")
+    @PutMapping("/cancel-ticket/{id}")
     public ResponseEntity<?> cancelTicket(@PathVariable UUID id) {
         /* HttpStatus(produces)
          * 200 OK - Ticket cancelled successfully.

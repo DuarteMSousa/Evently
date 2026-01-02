@@ -115,7 +115,7 @@ public class OrdersController {
         }
     }
 
-    @PatchMapping("/mark-order-payment-success/{id}")
+    @PutMapping("/mark-order-payment-success/{id}")
     public ResponseEntity<?> markAsPaid(@PathVariable UUID id) {
         /* HttpStatus(produces)
          * 200 OK - Payment marked as successful.
@@ -140,7 +140,7 @@ public class OrdersController {
         }
     }
 
-    @PatchMapping("/mark-order-payment-failed/{id}")
+    @PutMapping("/mark-order-payment-failed/{id}")
     public ResponseEntity<?> markAsFailed(@PathVariable UUID id) {
         /* HttpStatus(produces)
          * 200 OK - Order marked as payment failed.
@@ -165,7 +165,7 @@ public class OrdersController {
         }
     }
 
-    @PatchMapping("/cancel-order/{id}")
+    @PutMapping("/cancel-order/{id}")
     public ResponseEntity<?> cancelOrder(@PathVariable UUID id) {
         /* HttpStatus(produces)
          * 200 OK - Order cancelled successfully.
