@@ -3,7 +3,7 @@ package org.example.services;
 import jakarta.transaction.Transactional;
 import org.example.exceptions.*;
 import org.example.integrations.PaymentProviderClient;
-import org.example.messaging.PaymentEventsPublisher;
+import org.example.publishers.PaymentEventsPublisher;
 import org.example.models.Payment;
 import org.example.models.PaymentEvent;
 import org.example.repositories.PaymentEventsRepository;

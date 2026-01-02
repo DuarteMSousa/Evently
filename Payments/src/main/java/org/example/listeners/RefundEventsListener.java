@@ -1,4 +1,4 @@
-package org.example.messaging;
+package org.example.listeners;
 
 import org.example.dtos.externalservice.RefundEventMessage;
 import org.example.services.PaymentsService;
