@@ -3,6 +3,8 @@ package org.example.messages;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import org.example.enums.PaymentEventType;
+import org.example.enums.PaymentStatus;
 
 import java.util.UUID;
 
@@ -21,7 +23,7 @@ public class PaymentEventMessage {
     private UUID orderId;
     private UUID userId;
     private float amount;
-    private String status;
-    private String eventType;
+    private PaymentStatus status;
+    private PaymentEventType eventType;
 
 }

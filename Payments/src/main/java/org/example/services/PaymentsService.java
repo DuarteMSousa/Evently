@@ -1,6 +1,9 @@
 package org.example.services;
 
 import jakarta.transaction.Transactional;
+import org.example.enums.PaymentEventType;
+import org.example.enums.PaymentProvider;
+import org.example.enums.PaymentStatus;
 import org.example.exceptions.*;
 import org.example.integrations.PaymentProviderClient;
 import org.example.publishers.PaymentEventsPublisher;
@@ -57,7 +60,7 @@ public class PaymentsService {
                 payment != null ? payment.getId() : null,
                 payment != null ? payment.getOrderId() : null,
                 payment != null ? payment.getUserId() : null,
-                payment != null ? payment.getProvider() : null,
+                payment != null ? payment.getPaymentProvider() : null,
                 payment != null ? payment.getAmount() : null
         );
 
@@ -74,13 +77,13 @@ public class PaymentsService {
                     payment.getAmount(), payment.getOrderId(), payment.getUserId());
             throw new InvalidPaymentException("Amount must be greater than 0");
         }
-        if (payment.getProvider() == null) {
+        if (payment.getPaymentProvider() == null) {
             logger.warn(PAY_VALIDATE, "Missing provider (orderId={}, userId={})",
                     payment.getOrderId(), payment.getUserId());
             throw new InvalidPaymentException("Provider is required");
         }
-        if (!"PAYPAL".equalsIgnoreCase(payment.getProvider())) {
-            logger.warn(PAY_VALIDATE, "Unsupported provider={} (orderId={})", payment.getProvider(), payment.getOrderId());
+        if (payment.getPaymentProvider() != PaymentProvider.PAYPAL) {
+            logger.warn(PAY_VALIDATE, "Unsupported provider={} (orderId={})", payment.getPaymentProvider(), payment.getOrderId());
             throw new InvalidPaymentException("Only PAYPAL provider is supported");
         }
     }
@@ -93,10 +96,10 @@ public class PaymentsService {
      * @param statusCode optional status code associated with the event (e.g., 200, 402)
      * @return persisted payment event
      */
-    private PaymentEvent createEvent(Payment payment, String type, Integer statusCode) {
+    private PaymentEvent createEvent(Payment payment, PaymentEventType type, Integer statusCode) {
         PaymentEvent event = new PaymentEvent();
         event.setPayment(payment);
-        event.setType(type);
+        event.setEventType(type);
         event.setStatusCode(statusCode);
 
         PaymentEvent saved = paymentEventsRepository.save(event);
@@ -113,7 +116,7 @@ public class PaymentsService {
      * @param type event type (e.g., PENDING, CAPTURE, CANCEL, REFUND, FAILED)
      * @param payment payment associated with the event
      */
-    private void publishEvent(String type, Payment payment) {
+    private void publishEvent(PaymentEventType type, Payment payment) {
         logger.info(PAY_EVENT, "Publishing payment event (type={}, paymentId={}, orderId={}, status={})",
                 type, payment.getId(), payment.getOrderId(), payment.getStatus());
 
@@ -137,13 +140,13 @@ public class PaymentsService {
         logger.info(PAY_PROCESS, "Process payment requested (orderId={}, userId={}, provider={}, amount={})",
                 payment != null ? payment.getOrderId() : null,
                 payment != null ? payment.getUserId() : null,
-                payment != null ? payment.getProvider() : null,
+                payment != null ? payment.getPaymentProvider() : null,
                 payment != null ? payment.getAmount() : null
         );
 
         validatePaymentForProcess(payment);
 
-        payment.setStatus("PENDING");
+        payment.setStatus(PaymentStatus.PENDING);
         Payment saved = paymentsRepository.save(payment);
 
         logger.info(PAY_PROCESS, "Payment saved as PENDING (paymentId={}, orderId={})",
@@ -160,8 +163,8 @@ public class PaymentsService {
 
             Payment updated = paymentsRepository.save(saved);
 
-            createEvent(updated, "PENDING", null);
-            publishEvent("PENDING", updated);
+            createEvent(updated, PaymentEventType.PENDING, null);
+            publishEvent(PaymentEventType.PENDING, updated);
 
             logger.info(PAY_PROCESS, "Process payment completed (paymentId={}, status={}, providerRef={})",
                     updated.getId(), updated.getStatus(), updated.getProviderRef());
@@ -169,11 +172,11 @@ public class PaymentsService {
             return updated;
 
         } catch (PaymentRefusedException e) {
-            saved.setStatus("FAILED");
+            saved.setStatus(PaymentStatus.FAILED);
             Payment failed = paymentsRepository.save(saved);
 
-            createEvent(failed, "ERROR", 402);
-            publishEvent("FAILED", failed);
+            createEvent(failed, PaymentEventType.FAILED, 402);
+            publishEvent(PaymentEventType.FAILED, failed);
 
             logger.warn(PAY_PROCESS, "Payment refused by provider (paymentId={}, orderId={}, providerRef={})",
                     failed.getId(), failed.getOrderId(), failed.getProviderRef(), e);
@@ -207,13 +210,13 @@ public class PaymentsService {
                     return new PaymentNotFoundException("Payment not found for providerRef");
                 });
 
-        if (!"PAYPAL".equalsIgnoreCase(payment.getProvider())) {
+        if (payment.getPaymentProvider() != PaymentProvider.PAYPAL) {
             logger.warn(PAY_CAPTURE, "Payment is not PAYPAL (paymentId={}, provider={})",
-                    payment.getId(), payment.getProvider());
+                    payment.getId(), payment.getPaymentProvider());
             throw new InvalidPaymentException("Payment is not PAYPAL");
         }
 
-        if (!"PENDING".equalsIgnoreCase(payment.getStatus())) {
+        if (payment.getStatus() != PaymentStatus.PENDING) {
             logger.warn(PAY_CAPTURE, "Only PENDING can be captured (paymentId={}, status={})",
                     payment.getId(), payment.getStatus());
             throw new InvalidPaymentException("Only PENDING PAYPAL payments can be captured");
@@ -224,11 +227,11 @@ public class PaymentsService {
 
         paymentProviderClient.capturePayment(providerRef);
 
-        payment.setStatus("CAPTURED");
+        payment.setStatus(PaymentStatus.CAPTURED);
         Payment updated = paymentsRepository.save(payment);
 
-        createEvent(updated, "CAPTURE", 200);
-        publishEvent("CAPTURE", updated);
+        createEvent(updated, PaymentEventType.CAPTURED, 200); // ou CAPTURED
+        publishEvent(PaymentEventType.CAPTURED, updated);
 
         logger.info(PAY_CAPTURE, "Capture completed (paymentId={}, status={})",
                 updated.getId(), updated.getStatus());
@@ -295,20 +298,20 @@ public class PaymentsService {
                     return new PaymentNotFoundException("Payment not found");
                 });
 
-        if ("CANCELED".equalsIgnoreCase(payment.getStatus())) {
+        if (payment.getStatus() == PaymentStatus.CANCELED) {
             logger.warn(PAY_CANCEL, "Payment already canceled (paymentId={})", paymentId);
             throw new PaymentAlreadyCanceledException("Payment already canceled");
         }
-        if ("REFUNDED".equalsIgnoreCase(payment.getStatus())) {
+        if (payment.getStatus() == PaymentStatus.REFUNDED) {
             logger.warn(PAY_CANCEL, "Cannot cancel refunded payment (paymentId={})", paymentId);
             throw new InvalidPaymentException("Cannot cancel a refunded payment");
         }
 
-        payment.setStatus("CANCELED");
+        payment.setStatus(PaymentStatus.CANCELED);
         Payment updated = paymentsRepository.save(payment);
 
-        createEvent(updated, "CANCEL", 200);
-        publishEvent("CANCEL", updated);
+        createEvent(updated, PaymentEventType.CANCEL, 200);
+        publishEvent(PaymentEventType.CANCEL, updated);
 
         logger.info(PAY_CANCEL, "Cancel completed (paymentId={}, status={})", updated.getId(), updated.getStatus());
 
@@ -334,17 +337,17 @@ public class PaymentsService {
                     return new PaymentNotFoundException("Payment not found");
                 });
 
-        if (!"CAPTURED".equalsIgnoreCase(payment.getStatus())) {
+        if (payment.getStatus() != PaymentStatus.CAPTURED) {
             logger.warn(PAY_REFUND, "Only CAPTURED payments can be refunded (paymentId={}, status={})",
                     payment.getId(), payment.getStatus());
             throw new InvalidRefundException("Only CAPTURED payments can be refunded");
         }
 
-        payment.setStatus("REFUNDED");
+        payment.setStatus(PaymentStatus.REFUNDED);
         Payment updated = paymentsRepository.save(payment);
 
-        createEvent(updated, "REFUND", 200);
-        publishEvent("REFUND", updated);
+        createEvent(updated, PaymentEventType.REFUND, 200);
+        publishEvent(PaymentEventType.REFUND, updated);
 
         logger.info(PAY_REFUND, "Refund completed (paymentId={}, status={})",
                 updated.getId(), updated.getStatus());
@@ -357,15 +360,16 @@ public class PaymentsService {
         Payment payment = paymentsRepository.findById(paymentId)
                 .orElseThrow(() -> new PaymentNotFoundException("Payment not found"));
 
-        if (!"CAPTURED".equalsIgnoreCase(payment.getStatus())) {
+        if (payment.getStatus() != PaymentStatus.CAPTURED) {
             return;
         }
 
-        payment.setStatus("REFUNDED");
+        payment.setStatus(PaymentStatus.REFUNDED);
         Payment updated = paymentsRepository.save(payment);
 
-        createEvent(updated, "REFUND", 200);
-        publishEvent("REFUND", updated);
+        createEvent(updated, PaymentEventType.REFUND, 200);
+        publishEvent(PaymentEventType.REFUND, updated);
+
     }
 
     @Transactional
@@ -373,11 +377,11 @@ public class PaymentsService {
         Payment payment = paymentsRepository.findById(paymentId)
                 .orElseThrow(() -> new PaymentNotFoundException("Payment not found"));
 
-        payment.setStatus("REFUND_FAILED");
+        payment.setStatus(PaymentStatus.REFUND_FAILED);
         Payment updated = paymentsRepository.save(payment);
 
-        createEvent(updated, "REFUND_FAILED", 409);
-        publishEvent("REFUND_FAILED", updated);
+        createEvent(updated, PaymentEventType.REFUND_FAILED, 409);
+        publishEvent(PaymentEventType.REFUND_FAILED, updated);
     }
 
     @Transactional
@@ -385,34 +389,28 @@ public class PaymentsService {
         logger.info(PAY_EVENT, "OrderCreated event received (orderId={}, userId={}, total={})",
                 orderId, userId, total);
 
-        // 1) idempotência (muito importante em eventos):
-        // se já existe Payment para esta order, não cries outro.
-        // (assumindo que tens findByOrderId no repo; se não tiveres, já te digo como fazer)
-        paymentsRepository.findByOrderId(orderId).ifPresent(existing -> {
-            logger.info(PAY_EVENT, "Payment already exists for orderId={} (paymentId={}, status={})",
-                    orderId, existing.getId(), existing.getStatus());
+        // ✅ idempotência (AGORA FUNCIONA MESMO)
+        if (paymentsRepository.findByOrderId(orderId).isPresent()) {
+            logger.info(PAY_EVENT, "Ignoring duplicated OrderCreated (orderId={}) - payment already exists", orderId);
             return;
-        });
+        }
 
-        // 2) criar Payment inicial (sem providerRef ainda)
         Payment payment = new Payment();
         payment.setOrderId(orderId);
         payment.setUserId(userId);
         payment.setAmount(total);
 
-        // se o teu model exige provider, mete um default (ex: PAYPAL)
-        // (se não for obrigatório no teu model, podes remover)
-        payment.setProvider("PAYPAL");
+        // se no teu model for obrigatório
+        payment.setPaymentProvider(PaymentProvider.PAYPAL);
 
-        payment.setStatus("PENDING");
+        payment.setStatus(PaymentStatus.PENDING);
 
         Payment saved = paymentsRepository.save(payment);
 
+        createEvent(saved, PaymentEventType.PENDING, null);
+        publishEvent(PaymentEventType.PENDING, saved);
+
         logger.info(PAY_EVENT, "Payment created from OrderCreated (paymentId={}, orderId={}, status={})",
                 saved.getId(), saved.getOrderId(), saved.getStatus());
-
-        // 3) guardar evento e publicar
-        createEvent(saved, "PENDING", null);
-        publishEvent("PENDING", saved);
     }
 }

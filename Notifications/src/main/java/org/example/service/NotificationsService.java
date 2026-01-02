@@ -179,4 +179,55 @@ public class NotificationsService {
 
         return saved;
     }
+
+    @Transactional
+    public Notification notifyPaymentCaptured(UUID userId, UUID orderId, float amount) {
+        Notification n = new Notification();
+        n.setUserId(userId);
+        n.setType("PAYMENT");
+        n.setTitle("Pagamento confirmado");
+        n.setBody("O pagamento da encomenda " + orderId + " foi confirmado. Total: " + amount);
+        return sendNotification(n, "IN_APP", null);
+    }
+
+    @Transactional
+    public Notification notifyPaymentFailed(UUID userId, UUID orderId, float amount) {
+        Notification n = new Notification();
+        n.setUserId(userId);
+        n.setType("PAYMENT");
+        n.setTitle("Pagamento falhou");
+        n.setBody("O pagamento da encomenda " + orderId + " falhou. Total: " + amount);
+        return sendNotification(n, "IN_APP", null);
+    }
+
+    @Transactional
+    public Notification notifyPaymentRefunded(UUID userId, UUID orderId, float amount) {
+        Notification n = new Notification();
+        n.setUserId(userId);
+        n.setType("REFUND");
+        n.setTitle("Reembolso realizado");
+        n.setBody("Foi feito reembolso da encomenda " + orderId + ". Valor: " + amount);
+        return sendNotification(n, "IN_APP", null);
+    }
+
+    @Transactional
+    public Notification notifyPdfGenerated(UUID userId, UUID orderId, String fileName, String url) {
+        Notification n = new Notification();
+        n.setUserId(userId);
+        n.setType("FILE");
+        n.setTitle("PDF gerado");
+        n.setBody("O PDF " + fileName + " da encomenda " + orderId + " está pronto. Link: " + url);
+        return sendNotification(n, "IN_APP", null);
+    }
+
+    @Transactional
+    public Notification notifyPdfFailed(UUID userId, UUID orderId, String fileName) {
+        Notification n = new Notification();
+        n.setUserId(userId);
+        n.setType("FILE");
+        n.setTitle("Falha ao gerar PDF");
+        n.setBody("Falhou a geração do PDF " + fileName + " da encomenda " + orderId + ".");
+        return sendNotification(n, "IN_APP", null);
+    }
+
 }

@@ -128,7 +128,7 @@ public class PaymentsController {
             paymentRequest.setOrderId(dto.getOrderId());
             paymentRequest.setUserId(dto.getUserId());
             paymentRequest.setAmount(dto.getAmount());
-            paymentRequest.setProvider(dto.getProvider());
+            paymentRequest.setPaymentProvider(dto.getProvider());
 
             Payment created = paymentsService.processPayment(paymentRequest);
 
@@ -137,13 +137,13 @@ public class PaymentsController {
             PaymentCreatedResponseDTO response = new PaymentCreatedResponseDTO();
             response.setPaymentId(created.getId());
             response.setStatus(created.getStatus());
-            response.setProvider(created.getProvider());
+            response.setProvider(created.getPaymentProvider());
             response.setProviderRef(created.getProviderRef());
             response.setApprovalUrl(approvalUrl);
 
             logger.info(PAYMENT_PROCESS,
                     "201 CREATED returned, payment processed (paymentId={}, status={}, provider={}, providerRef={})",
-                    created.getId(), created.getStatus(), created.getProvider(), created.getProviderRef());
+                    created.getId(), created.getStatus(), created.getPaymentProvider(), created.getProviderRef());
 
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 

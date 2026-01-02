@@ -1,5 +1,6 @@
 package org.example.publishers;
 
+import org.example.enums.PaymentEventType;
 import org.example.messages.PaymentEventMessage;
 import org.example.models.Payment;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -21,7 +22,7 @@ public class PaymentEventsPublisher {
         this.rabbitTemplate = rabbitTemplate;
     }
 
-    public void publishPaymentEvent(String eventType, Payment payment) {
+    public void publishPaymentEvent(PaymentEventType eventType, Payment payment) {
         PaymentEventMessage message = new PaymentEventMessage(
                 payment.getId(),
                 payment.getOrderId(),
@@ -31,7 +32,6 @@ public class PaymentEventsPublisher {
                 eventType
         );
 
-        // ✅ aqui estava o teu bug: exchange/routingKey não existiam
         rabbitTemplate.convertAndSend(paymentsExchangeName, paymentsRoutingKey, message);
     }
 
