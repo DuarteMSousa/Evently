@@ -1,7 +1,11 @@
 package org.example.services;
 
 import com.google.zxing.WriterException;
+import feign.FeignException;
+import org.example.clients.EventsClient;
+import org.example.clients.VenuesClient;
 import org.example.config.MQConfig;
+import org.example.dtos.*;
 import org.example.messages.TicketFileGeneratedMessage;
 import org.example.messages.TicketGeneratedMessage;
 import org.example.exceptions.*;
@@ -21,6 +25,8 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 @Service
@@ -44,13 +50,16 @@ public class TicketFileGenerationService {
     @Autowired
     FileGenerationMessagesPublisher fileGenerationMessagesPublisher;
 
+    @Autowired
+    EventsClient eventsClient;
+    @Autowired
+    private VenuesClient venuesClient;
+
     /**
      * Generates a ticket PDF file in memory.
      *
-     *
      * @param ticket ticket generation message (must include id)
      * @return generated PDF bytes
-     *
      * @throws QrCodeGenerationException if QR code generation fails
      * @throws LogoNotFoundException     if the logo cannot be loaded from classpath
      * @throws TemplateNotFoundException if the HTML template cannot be loaded from classpath
@@ -64,14 +73,59 @@ public class TicketFileGenerationService {
             qrCode = FileGenerationUtils.generateQRCodeImage(ticket.getId().toString(), 150, 150);
         } catch (WriterException ex) {
             logger.error(TICKET_FILE_GENERATION, "Error generating QR Code Image: {}", ex.getMessage());
-            throw new QrCodeGenerationException("");
+            throw new QrCodeGenerationException("Error generating QR Code Image");
+        }
+
+        EventDTO eventDTO;
+        EventSessionDTO eventSessionDTO;
+        SessionTierDTO tierDTO;
+
+        try {
+            eventDTO = eventsClient.getEvent(ticket.getEventId()).getBody();
+        } catch (FeignException e) {
+            logger.error(TICKET_FILE_GENERATION, "Error getting event: {}", e.getMessage());
+            throw new ExternalServiceException("Error getting event");
+        }
+
+        eventSessionDTO = eventDTO.getSessions().stream()
+                .filter(session -> session.getId().equals(ticket.getSessionId()))
+                .findFirst()
+                .orElseThrow(() -> new ExternalServiceException("Session not found"));
+
+        tierDTO = eventSessionDTO.getTiers().stream()
+                .filter(tier -> tier.getId().equals(ticket.getTierId()))
+                .findFirst()
+                .orElseThrow(() -> new ExternalServiceException("Tier not found"));
+
+        VenueDTO venueDTO;
+        try {
+            venueDTO = venuesClient.getVenue(eventSessionDTO.getVenueId()).getBody();
+        } catch (FeignException e) {
+            logger.error(TICKET_FILE_GENERATION, "Error getting venue: {}", e.getMessage());
+            throw new ExternalServiceException("Error getting venue");
+        }
+
+        VenueZoneDTO venueZoneDTO;
+        try {
+            venueZoneDTO = venuesClient.getZone(tierDTO.getZoneId()).getBody();
+        } catch (FeignException e) {
+            logger.error(TICKET_FILE_GENERATION, "Error getting venue zone: {}", e.getMessage());
+            throw new ExternalServiceException("Error getting venue zone");
         }
 
         TicketInformation information = new TicketInformation();
-        information.setEventName("Evento");
-        information.setVenueName("Venue");
-        information.setTier("Tier");
-        information.setEventDate("15/12/2004");
+        information.setEventName(eventDTO.getName());
+        information.setVenueName(venueDTO.getName());
+        information.setTier(venueZoneDTO.getName());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
+        String formattedDate = eventSessionDTO.getStartsAt() // Instant
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate()
+                .format(formatter);
+
+        information.setEventDate(formattedDate);
+
 
         BufferedImage logo;
         try (InputStream logoStream = getClass().getResourceAsStream("/" + IMAGES_PATH + "/evently.jpg")) {
@@ -111,9 +165,7 @@ public class TicketFileGenerationService {
     /**
      * Generates a ticket PDF and saves it on disk under {@link #TICKET_FILE_PATH}.
      *
-     *
      * @param ticket message containing the ticket id and metadata needed for generation
-     *
      * @throws FileSaveException         if writing the file fails
      * @throws QrCodeGenerationException if QR code generation fails (propagated)
      * @throws LogoNotFoundException     if logo/template resources are missing (propagated)
@@ -146,10 +198,8 @@ public class TicketFileGenerationService {
     /**
      * Loads a ticket PDF from disk.
      *
-     *
      * @param ticketId ticket identifier
      * @return PDF bytes
-     *
      * @throws TicketFileNotFoundException if the file does not exist or cannot be read
      */
     public byte[] getTicketPdf(UUID ticketId) {
