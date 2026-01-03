@@ -230,4 +230,39 @@ public class NotificationsService {
         return sendNotification(n, "IN_APP", null);
     }
 
+    @Transactional
+    public Notification notifyRefundRequestSent(UUID userId, UUID refundRequestId, String content) {
+        Notification n = new Notification();
+        n.setUserId(userId);
+        n.setType("REFUND");
+        n.setTitle("Pedido de reembolso submetido");
+        n.setBody("O teu pedido de reembolso foi enviado. Nº: " + refundRequestId + ". Mensagem: " + content);
+        return sendNotification(n, "IN_APP", null);
+    }
+
+    @Transactional
+    public Notification notifyRefundDecision(UUID userId, UUID paymentId, String decisionType, String description) {
+        Notification n = new Notification();
+        n.setUserId(userId);
+        n.setType("REFUND");
+
+        boolean accepted = "ACCEPTED".equalsIgnoreCase(decisionType)
+                || "APPROVED".equalsIgnoreCase(decisionType);
+
+        n.setTitle(accepted ? "Reembolso aprovado" : "Reembolso rejeitado");
+
+        String body = accepted
+                ? "O teu pedido de reembolso foi aprovado."
+                : "O teu pedido de reembolso foi rejeitado.";
+
+        if (description != null && !description.trim().isEmpty()) {
+            body += " Motivo: " + description;
+        }
+
+        body += " (Pagamento: " + paymentId + ")";
+
+        n.setBody(body);
+        return sendNotification(n, "IN_APP", null);
+    }
+
 }

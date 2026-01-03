@@ -9,11 +9,10 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class RefundRequestDecisionRegistered {
+public class RefundRequestDecisionRegisteredMessage  {
 
-    private UUID id;
-    private UUID decidedBy;
+    private UUID userToRefundId;
+    private UUID paymentId;
     private String decisionType;
     private String description;
-    private UUID refundRequestId;
 }
