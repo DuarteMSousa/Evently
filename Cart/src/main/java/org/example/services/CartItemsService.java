@@ -39,12 +39,10 @@ public class CartItemsService {
     /**
      * Adds a new item to the user's cart.
      *
-     *
      * @param userId    identifier of the user who owns the cart
      * @param productId identifier of the product/session tier to add
      * @param quantity  number of units to add (must be > 0)
      * @return the persisted CartItem
-     *
      * @throws InvalidCartItemException       if quantity is invalid (<= 0)
      * @throws ProductNotFoundException       if the product/session tier does not exist in EventsService
      * @throws ExternalServiceException       if EventsService fails with an unexpected error (FeignException)
@@ -101,14 +99,12 @@ public class CartItemsService {
     /**
      * Updates the quantity of an existing cart item.
      *
-     *
      * @param userId    identifier of the user who owns the cart
      * @param productId identifier of the product/session tier to update
      * @param quantity  new quantity (must be > 0)
      * @return the updated persisted CartItem
-     *
-     * @throws InvalidCartItemException   if quantity is invalid (<= 0)
-     * @throws CartItemNotFoundException  if the item does not exist in the cart
+     * @throws InvalidCartItemException  if quantity is invalid (<= 0)
+     * @throws CartItemNotFoundException if the item does not exist in the cart
      */
     @Transactional
     public CartItem updateCartItem(UUID userId, UUID productId, Integer quantity) {
@@ -140,21 +136,16 @@ public class CartItemsService {
     /**
      * Removes an existing item from the user's cart.
      *
-     *
      * @param userId    identifier of the user who owns the cart
      * @param productId identifier of the product/session tier to remove
-     *
      * @throws CartItemNotFoundException if the item is not present in the cart
      */
     @Transactional
     public void removeItemFromCart(UUID userId, UUID productId) {
         logger.info(ITEM_REMOVE, "Method removeItemFromCart entered");
-        Cart cart = cartService.getCart(userId);
-
-        CartItem itemToRemove = cart.getItems().stream()
-                .filter(i -> i.getProductId().equals(productId))
-                .findFirst()
-                .orElse(null);
+        Cart cart = new Cart();
+        cart.setUserId(userId);
+        CartItem itemToRemove = cartItemsRepository.findByCartAndProductId(cart,productId).orElse(null);
 
         if (itemToRemove == null) {
             logger.error(ITEM_REMOVE, "Item not found in cart");

@@ -24,7 +24,10 @@ public class Cart {
     @Id
     private UUID userId;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(
+            mappedBy = "cart",
+            cascade = CascadeType.ALL
+    )
     private List<CartItem> items;
 
     @CreatedDate

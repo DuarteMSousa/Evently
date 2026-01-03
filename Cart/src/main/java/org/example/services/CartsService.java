@@ -106,7 +106,9 @@ public class CartsService {
                 .findById(userId)
                 .orElseThrow(() -> new CartNotFoundException("Cart not found"));
 
-        cartToClear.setItems(new ArrayList<CartItem>());
+        cartItemsRepository.deleteAll(cartToClear.getItems());
+
+        cartToClear.setItems(new ArrayList<>());
 
         return cartsRepository.save(cartToClear);
     }
@@ -158,6 +160,8 @@ public class CartsService {
             logger.error(CART_CHECKOUT, "FeignException while registering order in OrdersService: {}", errorBody);
             throw new ExternalServiceException("Error while registering order in OrdersService");
         }
+
+        cartItemsRepository.deleteAll(cartToCheckout.getItems());
 
         cartToCheckout.setItems(new ArrayList<CartItem>());
 
