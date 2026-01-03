@@ -8,6 +8,7 @@ import org.evently.enums.RefundRequestStatus;
 import org.evently.exceptions.*;
 import org.evently.exceptions.externalServices.UserNotFoundException;
 import org.evently.models.RefundDecision;
+import org.evently.models.RefundRequest;
 import org.evently.publishers.RefundsEventsPublisher;
 import org.evently.repositories.RefundDecisionsRepository;
 import org.evently.repositories.RefundRequestsRepository;
@@ -19,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -39,6 +41,7 @@ public class RefundDecisionsService {
     @Autowired
     private UsersClient usersClient;
 
+    @Autowired
     private RefundsEventsPublisher refundsEventsPublisher;
 
     /**
@@ -89,8 +92,6 @@ public class RefundDecisionsService {
                 decision.getDecisionType(),
                 decision.getRefundRequest() != null ? decision.getRefundRequest().getId() : "NULL");
 
-        validateDecision(decision);
-
         try {
             usersClient.getUser(decision.getDecidedBy());
         } catch (FeignException.NotFound e) {
@@ -103,10 +104,16 @@ public class RefundDecisionsService {
                     "(RefundDecisionsService): Users service error");
         }
 
-        if (!refundRequestsRepository.existsById(decision.getRefundRequest().getId())) {
-            logger.warn(DECISION_REGISTER, "Parent refund request not found (id={})", decision.getRefundRequest().getId());
-            throw new RefundRequestNotFoundException("Refund Request not found");
-        }
+        RefundRequest refundRequest = refundRequestsRepository.findById(decision.getRefundRequest().getId())
+                .orElseThrow(() -> {
+                    logger.warn(DECISION_REGISTER, "Parent refund request not found (id={})",
+                            decision.getRefundRequest().getId());
+                    return new RefundRequestNotFoundException("Refund Request not found");
+                });
+
+        decision.setRefundRequest(refundRequest);
+
+        validateDecision(decision);
 
         RefundDecision saved = refundDecisionsRepository.save(decision);
         logger.info(DECISION_REGISTER, "Decision registered successfully (id={}, type={})",
