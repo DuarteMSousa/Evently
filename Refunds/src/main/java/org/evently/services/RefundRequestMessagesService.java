@@ -38,6 +38,7 @@ public class RefundRequestMessagesService {
     @Autowired
     private UsersClient usersClient;
 
+    @Autowired
     private RefundsEventsPublisher refundsEventsPublisher;
 
     /**

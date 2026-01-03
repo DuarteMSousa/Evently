@@ -49,6 +49,7 @@ public class OrdersService {
     @Autowired
     private TicketManagementClient ticketManagementClient;
 
+    @Autowired
     private OrdersEventsPublisher  ordersEventsPublisher;
 
     private ModelMapper modelMapper = new ModelMapper();

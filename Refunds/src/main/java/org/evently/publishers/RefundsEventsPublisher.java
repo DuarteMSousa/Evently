@@ -6,7 +6,9 @@ import org.evently.messages.RefundRequestMessageSentMessage;
 import org.evently.models.RefundDecision;
 import org.evently.models.RefundRequestMessage;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.stereotype.Component;
 
+@Component
 public class RefundsEventsPublisher {
     private final RabbitTemplate rabbitTemplate;
 

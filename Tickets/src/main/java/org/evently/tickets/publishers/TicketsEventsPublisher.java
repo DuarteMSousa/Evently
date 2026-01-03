@@ -4,7 +4,9 @@ import org.evently.tickets.config.MQConfig;
 import org.evently.tickets.messages.TicketIssuedMessage;
 import org.evently.tickets.models.Ticket;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.stereotype.Component;
 
+@Component
 public class TicketsEventsPublisher {
     private final RabbitTemplate rabbitTemplate;
 

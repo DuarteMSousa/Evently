@@ -35,6 +35,7 @@ public class TicketsService {
     @Autowired
     private TicketsRepository ticketsRepository;
 
+    @Autowired
     private TicketsEventsPublisher ticketsEventsPublisher;
 
     /**
