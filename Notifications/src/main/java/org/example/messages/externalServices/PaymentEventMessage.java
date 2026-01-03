@@ -1,15 +1,14 @@
 package org.example.messages.externalServices;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.example.enums.externalServices.PaymentEventType;
 import org.example.enums.externalServices.PaymentStatus;
 
 import java.util.UUID;
 
+@Data
 @NoArgsConstructor
-@Getter @Setter
+@AllArgsConstructor
 public class PaymentEventMessage {
     private UUID paymentId;
     private UUID orderId;
