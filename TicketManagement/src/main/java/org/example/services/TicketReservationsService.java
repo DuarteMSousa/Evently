@@ -212,6 +212,7 @@ public class TicketReservationsService {
         ticketReservations.forEach(ticketReservation -> {
             ticketReservation.setConfirmedAt(OffsetDateTime.now());
             ticketReservation.setStatus(TicketReservationStatus.CONFIRMED);
+            ticketReservation.setConfirmedAt(OffsetDateTime.now());
             ticketReservationsRepository.save(ticketReservation);
         });
 
