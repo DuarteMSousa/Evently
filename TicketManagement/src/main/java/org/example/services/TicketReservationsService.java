@@ -6,6 +6,7 @@ import org.example.enums.TicketReservationStatus;
 import org.example.exceptions.InvalidTicketReservationException;
 import org.example.exceptions.TicketReservationNotFoundException;
 import org.example.exceptions.TicketStockNotFoundException;
+import org.example.messages.received.OrderPaidMessage;
 import org.example.models.StockMovement;
 import org.example.models.TicketReservation;
 import org.example.models.TicketStock;
@@ -20,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -50,7 +52,7 @@ public class TicketReservationsService {
      * @param ticketReservation the ticket reservation data to be created
      * @return the persisted ticket reservation
      * @throws InvalidTicketReservationException if the quantity is less than or equal to zero
-     * @throws TicketStockNotFoundException if no stock exists for the given event, session, and tier
+     * @throws TicketStockNotFoundException      if no stock exists for the given event, session, and tier
      */
     @Transactional
     public TicketReservation createTicketReservation(TicketReservation ticketReservation) {
@@ -81,7 +83,7 @@ public class TicketReservationsService {
      * @param id the unique identifier of the ticket reservation
      * @return the confirmed ticket reservation
      * @throws TicketReservationNotFoundException if the reservation does not exist
-     * @throws InvalidTicketReservationException if the reservation is already confirmed
+     * @throws InvalidTicketReservationException  if the reservation is already confirmed
      */
     @Transactional
     public TicketReservation confirmTicketReservation(UUID id) {
@@ -109,7 +111,7 @@ public class TicketReservationsService {
      * @param id the unique identifier of the ticket reservation
      * @return the released ticket reservation
      * @throws TicketReservationNotFoundException if the reservation does not exist
-     * @throws InvalidTicketReservationException if the reservation is already released
+     * @throws InvalidTicketReservationException  if the reservation is already released
      */
     @Transactional
     public TicketReservation releaseTicketReservation(UUID id) {
@@ -147,6 +149,7 @@ public class TicketReservationsService {
     /**
      * Checks whether an event has any ticket reservations.
      * <p>
+     *
      * @param eventId the unique identifier of the event
      * @return true if the event has at least one reservation, false otherwise
      */
@@ -157,6 +160,7 @@ public class TicketReservationsService {
     /**
      * Checks whether a session has any ticket reservations.
      * <p>
+     *
      * @param sessionId the unique identifier of the session
      * @return true if the session has at least one reservation, false otherwise
      */
@@ -167,6 +171,7 @@ public class TicketReservationsService {
     /**
      * Checks whether a tier has any ticket reservations.
      * <p>
+     *
      * @param tierId the unique identifier of the tier
      * @return true if the tier has at least one reservation, false otherwise
      */
@@ -193,6 +198,19 @@ public class TicketReservationsService {
         stockMovement.setQuantity(ticketReservation.getQuantity());
         stockMovement.setType(stockMovementType);
         ticketStocksService.addStockMovement(stockMovement);
+    }
+
+    @Transactional
+    public void handleOrderPaid(OrderPaidMessage orderPaidMessage) {
+
+        List<TicketReservation> ticketReservations = ticketReservationsRepository.findByOrderId(orderPaidMessage.getId());
+
+        ticketReservations.forEach(ticketReservation -> {
+           ticketReservation.setConfirmedAt(OffsetDateTime.now());
+           ticketReservation.setStatus(TicketReservationStatus.CONFIRMED);
+           ticketReservationsRepository.save(ticketReservation);
+        });
+
     }
 
 }

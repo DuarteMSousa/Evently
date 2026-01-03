@@ -8,14 +8,11 @@ import org.evently.orders.config.MQConfig;
 import org.evently.orders.dtos.externalServices.EventSessionDTO;
 import org.evently.orders.dtos.externalServices.SessionTierDTO;
 import org.evently.orders.dtos.externalServices.TicketReservationCreateDTO;
-import org.evently.orders.dtos.orderLines.OrderLineDTO;
 import org.evently.orders.enums.OrderStatus;
 import org.evently.orders.exceptions.ExternalServiceException;
 import org.evently.orders.exceptions.InvalidOrderException;
 import org.evently.orders.exceptions.OrderNotFoundException;
 import org.evently.orders.exceptions.externalServices.ProductNotFoundException;
-import org.evently.orders.messages.OrderCreatedMessage;
-import org.evently.orders.messages.OrderPayedMessage;
 import org.evently.orders.models.Order;
 import org.evently.orders.models.OrderLine;
 import org.evently.orders.publishers.OrdersEventsPublisher;
@@ -189,7 +186,7 @@ public class OrdersService {
         Order updatedOrder = ordersRepository.save(order);
         logger.info(ORDER_PAYMENT, "Order marked as paid successfully (id={})", id);
 
-        ordersEventsPublisher.publishOrderPayedEvent(updatedOrder);
+        ordersEventsPublisher.publishOrderPaidEvent(updatedOrder);
 
         return updatedOrder;
     }
@@ -234,7 +231,7 @@ public class OrdersService {
         Order order = getOrder(id);
 
         if (order.getStatus() == OrderStatus.PAYMENT_SUCCESS) {
-            throw new InvalidOrderException("Order is already payed successfully");
+            throw new InvalidOrderException("Order is already paid successfully");
         }
 
         if (order.getStatus() == OrderStatus.CANCELLED) {

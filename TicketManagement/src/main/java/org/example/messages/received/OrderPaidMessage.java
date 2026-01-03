@@ -13,7 +13,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class OrderPayedMessage {
+public class OrderPaidMessage {
 
     private UUID id;
 

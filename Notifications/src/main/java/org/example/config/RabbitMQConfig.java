@@ -17,7 +17,7 @@ public class RabbitMQConfig {
     // Exchanges
     public static final String PAYMENTS_EXCHANGE = "payments_exchange";
     public static final String REFUNDS_EXCHANGE  = "refunds_exchange";
-    public static final String FILES_EXCHANGE    = "filegeneration_exchange";
+    public static final String FILES_EXCHANGE    = "fileGeneration_exchange";
 
     // Queues
     public static final String NOTIF_PAYMENTS_QUEUE = "notifications_payments";

@@ -69,7 +69,7 @@ public class MQConfig {
         return BindingBuilder
                 .bind(queue)
                 .to(exchange)
-                .with("orders.*");
+                .with("orders.paid");
     }
 
     //refunds

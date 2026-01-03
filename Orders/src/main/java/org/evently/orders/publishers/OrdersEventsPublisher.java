@@ -3,7 +3,7 @@ package org.evently.orders.publishers;
 import org.evently.orders.config.MQConfig;
 import org.evently.orders.dtos.orderLines.OrderLineDTO;
 import org.evently.orders.messages.OrderCreatedMessage;
-import org.evently.orders.messages.OrderPayedMessage;
+import org.evently.orders.messages.OrderPaidMessage;
 import org.evently.orders.models.Order;
 import org.modelmapper.ModelMapper;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -28,21 +28,21 @@ public class OrdersEventsPublisher {
         orderCreatedMessage.setUserId(order.getUserId());
         orderCreatedMessage.setTotal(order.getTotal());
 
-        rabbitTemplate.convertAndSend(MQConfig.EXCHANGE, MQConfig.ROUTING_KEY, orderCreatedMessage);
+        rabbitTemplate.convertAndSend(MQConfig.EXCHANGE, MQConfig.ROUTING_KEY + ".created", orderCreatedMessage);
     }
 
-    public void publishOrderPayedEvent(Order order) {
-        OrderPayedMessage orderPayedMessage = new OrderPayedMessage();
-        orderPayedMessage.setId(order.getId());
-        orderPayedMessage.setUserId(order.getUserId());
-        orderPayedMessage.setStatus(order.getStatus());
-        orderPayedMessage.setTotal(order.getTotal());
+    public void publishOrderPaidEvent(Order order) {
+        OrderPaidMessage orderPaidMessage = new OrderPaidMessage();
+        orderPaidMessage.setId(order.getId());
+        orderPaidMessage.setUserId(order.getUserId());
+        orderPaidMessage.setStatus(order.getStatus());
+        orderPaidMessage.setTotal(order.getTotal());
 
         List<OrderLineDTO> orderLines = new ArrayList<>();
         modelMapper.map(order.getLines(), orderLines);
 
-        orderPayedMessage.setLines(orderLines);
+        orderPaidMessage.setLines(orderLines);
 
-        rabbitTemplate.convertAndSend(MQConfig.EXCHANGE, MQConfig.ROUTING_KEY, orderPayedMessage);
+        rabbitTemplate.convertAndSend(MQConfig.EXCHANGE, MQConfig.ROUTING_KEY + ".paid", orderPaidMessage);
     }
 }

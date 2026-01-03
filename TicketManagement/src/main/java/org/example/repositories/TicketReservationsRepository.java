@@ -3,6 +3,7 @@ package org.example.repositories;
 import org.example.models.TicketReservation;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface TicketReservationsRepository extends JpaRepository<TicketReservation, UUID> {
@@ -12,4 +13,6 @@ public interface TicketReservationsRepository extends JpaRepository<TicketReserv
     boolean existsBySessionId(UUID sessionId);
 
     boolean existsByTierId(UUID tierId);
+
+    List<TicketReservation> findByOrderId(UUID orderId);
 }

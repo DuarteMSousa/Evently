@@ -38,7 +38,7 @@ public class MQConfig {
         return BindingBuilder
                 .bind(queue)
                 .to(exchange)
-                .with("tickets.created");
+                .with("tickets.generated");
     }
 
     @Bean

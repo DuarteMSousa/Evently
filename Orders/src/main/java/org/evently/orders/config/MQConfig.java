@@ -39,7 +39,7 @@ public class MQConfig {
         return BindingBuilder
                 .bind(queue)
                 .to(exchange)
-                .with("payments");
+                .with("payments.*");
     }
 
     @Bean
