@@ -95,7 +95,9 @@ public class SessionTiersService {
             throw new SessionTierNotFoundException("Session tier not found");
         }
 
-        validateSessionTier(sessionTier, TIER_UPDATE);
+        existingSessionTier.setPrice(sessionTier.getPrice());
+
+        validateSessionTier(existingSessionTier, TIER_UPDATE);
 
         return sessionTiersRepository.save(existingSessionTier);
     }

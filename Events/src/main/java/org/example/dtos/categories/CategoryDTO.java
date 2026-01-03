@@ -2,8 +2,10 @@ package org.example.dtos.categories;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.example.dtos.events.EventDTO;
 
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -22,4 +24,5 @@ public class CategoryDTO {
 
     private Date updatedAt;
 
+    private List<EventDTO> events;
 }

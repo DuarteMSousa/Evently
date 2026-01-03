@@ -10,7 +10,6 @@ import org.example.enums.StockMovementType;
 import org.example.enums.externalServices.EventStatus;
 import org.example.exceptions.*;
 import org.example.messages.TicketStockGeneratedMessage;
-import org.example.messages.received.EventUpdatedMessage;
 import org.example.models.StockMovement;
 import org.example.models.TicketStock;
 import org.example.models.TicketStockId;
@@ -146,50 +145,50 @@ public class TicketStocksService {
      * @throws VenueZoneNotFoundException if the venue zone does not exist
      * @throws ExternalServiceException if an error occurs while communicating with the Venues service
      */
-    @Transactional
-    public void handleEventUpdatedEvent(EventUpdatedMessage event) {
-        for (EventSessionDTO session : event.getSessions()) {
-            for (SessionTierDTO tier : session.getTiers()) {
-
-                TicketStock stock;
-
-                TicketStockId stockId = new TicketStockId(event.getId(), session.getId(), tier.getId());
-                stock = ticketStocksRepository.findById(stockId).orElse(null);
-
-                if (stock == null && event.getStatus() == EventStatus.PENDING_STOCK_GENERATION) {
-                    stock = new TicketStock();
-                    VenueZoneDTO zone;
-
-                    //ver markers
-                    try {
-                        zone = venuesClient.getZone(tier.getZoneId()).getBody();
-                    } catch (FeignException.NotFound e) {
-                        String errorBody = e.contentUTF8();
-                        logger.error( "Not found response while getting venue zone from VenuesService: {}", errorBody);
-                        throw new VenueZoneNotFoundException("Venue zone not found");
-                    } catch (FeignException e) {
-                        String errorBody = e.contentUTF8();
-                        logger.error( "FeignException while getting venue zone from VenuesService: {}", errorBody);
-                        throw new ExternalServiceException("Error while getting venue zone from VenuesService");
-                    }
-
-                    stock.setAvailableQuantity(zone.getCapacity());
-                    stock.setId(stockId);
-
-                    this.createTicketStock(stock);
-                } else if (stock != null && event.getStatus() == EventStatus.CANCELED) {
-
-                    //ticketStocksService.deleteStock(stock);
-
-                }
-
-            }
-        }
-
-        TicketStockGeneratedMessage stockGeneratedEvent = new TicketStockGeneratedMessage();
-        stockGeneratedEvent.setEventId(event.getId());
-
-        template.convertAndSend(stockGeneratedEvent);
-    }
+//    @Transactional
+//    public void handleEventUpdatedEvent(EventUpdatedMessage event) {
+//        for (EventSessionDTO session : event.getSessions()) {
+//            for (SessionTierDTO tier : session.getTiers()) {
+//
+//                TicketStock stock;
+//
+//                TicketStockId stockId = new TicketStockId(event.getId(), session.getId(), tier.getId());
+//                stock = ticketStocksRepository.findById(stockId).orElse(null);
+//
+//                if (stock == null && event.getStatus() == EventStatus.PENDING_STOCK_GENERATION) {
+//                    stock = new TicketStock();
+//                    VenueZoneDTO zone;
+//
+//                    //ver markers
+//                    try {
+//                        zone = venuesClient.getZone(tier.getZoneId()).getBody();
+//                    } catch (FeignException.NotFound e) {
+//                        String errorBody = e.contentUTF8();
+//                        logger.error( "Not found response while getting venue zone from VenuesService: {}", errorBody);
+//                        throw new VenueZoneNotFoundException("Venue zone not found");
+//                    } catch (FeignException e) {
+//                        String errorBody = e.contentUTF8();
+//                        logger.error( "FeignException while getting venue zone from VenuesService: {}", errorBody);
+//                        throw new ExternalServiceException("Error while getting venue zone from VenuesService");
+//                    }
+//
+//                    stock.setAvailableQuantity(zone.getCapacity());
+//                    stock.setId(stockId);
+//
+//                    this.createTicketStock(stock);
+//                } else if (stock != null && event.getStatus() == EventStatus.CANCELED) {
+//
+//                    //ticketStocksService.deleteStock(stock);
+//
+//                }
+//
+//            }
+//        }
+//
+//        TicketStockGeneratedMessage stockGeneratedEvent = new TicketStockGeneratedMessage();
+//        stockGeneratedEvent.setEventId(event.getId());
+//
+//        template.convertAndSend(stockGeneratedEvent);
+//    }
 
 }

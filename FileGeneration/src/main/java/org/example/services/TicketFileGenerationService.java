@@ -6,6 +6,7 @@ import org.example.messages.TicketFileGeneratedMessage;
 import org.example.messages.TicketGeneratedMessage;
 import org.example.exceptions.*;
 import org.example.models.TicketInformation;
+import org.example.publishers.FileGenerationMessagesPublisher;
 import org.example.utils.FileGenerationUtils;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -39,6 +40,9 @@ public class TicketFileGenerationService {
 
     @Autowired
     RabbitTemplate template;
+
+    @Autowired
+    FileGenerationMessagesPublisher fileGenerationMessagesPublisher;
 
     /**
      * Generates a ticket PDF file in memory.
@@ -136,9 +140,7 @@ public class TicketFileGenerationService {
             throw new FileSaveException("Error saving file");
         }
 
-        TicketFileGeneratedMessage message = modelMapper.map(ticket, TicketFileGeneratedMessage.class);
-
-        template.convertAndSend(MQConfig.FILES_EXCHANGE,MQConfig.FILES_ROUTING_KEY+".generated",message);
+        fileGenerationMessagesPublisher.publishTicketFileGeneratedMessage(ticket);
     }
 
     /**

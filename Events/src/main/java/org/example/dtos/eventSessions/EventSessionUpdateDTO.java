@@ -14,10 +14,6 @@ public class EventSessionUpdateDTO {
 
     private UUID id;
 
-    private UUID eventId;
-
-    private UUID venueId;
-
     private Instant startsAt;
 
     private Instant endsAt;

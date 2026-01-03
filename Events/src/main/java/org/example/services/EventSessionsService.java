@@ -89,12 +89,10 @@ public class EventSessionsService {
             throw new EventSessionNotFoundException("Event Session not found");
         }
 
-        validateEventSession(eventSession, SESSION_UPDATE);
-
-        existingEventSession.setEvent(eventSession.getEvent());
-        existingEventSession.setVenueId(eventSession.getVenueId());
         existingEventSession.setStartsAt(eventSession.getStartsAt());
         existingEventSession.setEndsAt(eventSession.getEndsAt());
+
+        validateEventSession(existingEventSession, SESSION_UPDATE);
 
         return eventSessionsRepository.save(existingEventSession);
     }

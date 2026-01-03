@@ -47,6 +47,7 @@ public class OrdersService {
     @Autowired
     private EventsClient  eventsClient;
 
+    @Autowired
     private OrdersEventsPublisher  ordersEventsPublisher;
 
     private ModelMapper modelMapper = new ModelMapper();

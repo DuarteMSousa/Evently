@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import org.example.exceptions.*;
 import org.example.models.Category;
 import org.example.repositories.CategoriesRepository;
+import org.example.repositories.EventsRepository;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +21,9 @@ public class CategoriesService {
 
     @Autowired
     private CategoriesRepository categoriesRepository;
+
+    @Autowired
+    private EventsRepository eventsRepository;
 
     private ModelMapper modelMapper = new ModelMapper();
 
@@ -139,6 +143,8 @@ public class CategoriesService {
             logger.error(CATEGORY_GET, "Category not found");
             throw new CategoryNotFoundException("Category not found");
         }
+
+        category.setEvents(eventsRepository.findDistinctByCategoriesContaining(category));
 
         return category;
     }

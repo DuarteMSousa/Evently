@@ -63,7 +63,7 @@ public class SessionTiersController {
         return ResponseEntity.status(HttpStatus.OK).body(sessionTier);
     }
 
-    @PutMapping("/update-event-session/{id}")
+    @PutMapping("/update-session-tier/{id}")
     public ResponseEntity<?> updateSessionTier(@PathVariable("id") UUID id, @RequestBody SessionTierUpdateDTO updateDTO) {
         /* HttpStatus(produces)
          * 200 OK - Request processed as expected.
@@ -94,7 +94,7 @@ public class SessionTiersController {
         return ResponseEntity.status(HttpStatus.OK).body(sessionTier);
     }
 
-    @DeleteMapping("/delete-event-session/{id}")
+    @DeleteMapping("/delete-session-tier/{id}")
     public ResponseEntity<?> deleteSessionTier(@PathVariable("id") UUID id) {
         /* HttpStatus(produces)
          * 200 OK - Request processed as expected.

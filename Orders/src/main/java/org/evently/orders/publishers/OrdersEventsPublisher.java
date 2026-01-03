@@ -7,10 +7,12 @@ import org.evently.orders.messages.OrderPayedMessage;
 import org.evently.orders.models.Order;
 import org.modelmapper.ModelMapper;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Component
 public class OrdersEventsPublisher {
     private final RabbitTemplate rabbitTemplate;
 

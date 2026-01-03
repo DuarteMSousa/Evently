@@ -1,6 +1,7 @@
 package org.example.listeners;
 
 import org.example.config.RabbitMQConfig;
+import org.example.messages.externalServices.TicketFileGeneratedMessage;
 import org.example.service.NotificationsService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
@@ -18,7 +19,7 @@ public class FilesEventsListener {
             queues = RabbitMQConfig.NOTIF_FILES_QUEUE,
             containerFactory = "rabbitListenerContainerFactory"
     )
-    public void handleFileEvent(PdfGeneratedEventMessage msg) {
+    public void handleFileEvent(TicketFileGeneratedMessage msg) {
 
         if ("PDF_GENERATED".equalsIgnoreCase(msg.getEventType())) {
             notificationsService.notifyPdfGenerated(

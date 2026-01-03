@@ -83,13 +83,10 @@ public class EventSessionsController {
          */
         logger.info(SESSION_UPDATE, "Method updateEventSession entered");
         EventSession eventSessionToUpdate = new EventSession();
-        Event event = new Event();
-        event.setId(updateDTO.getEventId());
         EventSessionDTO eventSession = null;
 
         try {
-            eventSessionToUpdate.setEvent(event);
-            eventSessionToUpdate.setVenueId(updateDTO.getVenueId());
+            eventSessionToUpdate.setId(updateDTO.getId());
             eventSessionToUpdate.setStartsAt(updateDTO.getStartsAt());
             eventSessionToUpdate.setEndsAt(updateDTO.getEndsAt());
             eventSession = modelMapper.map(eventSessionsService.updateEventSession(id, eventSessionToUpdate), EventSessionDTO.class);
