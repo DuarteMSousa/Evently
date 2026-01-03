@@ -18,7 +18,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Data
 @Entity
-@Table(name = "payments")
+@Table(name = "payments", uniqueConstraints = @UniqueConstraint(columnNames = {"order_id", "user_id"}))
 @EntityListeners(AuditingEntityListener.class)
 public class Payment {
 
