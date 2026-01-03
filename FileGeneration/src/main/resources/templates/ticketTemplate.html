@@ -1,88 +1,98 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
+    <title>{{eventName}}</title>
+
     <style>
+        @page { margin: 22mm; }
+
         body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background: #f4f6fb;
-            padding: 40px;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #ffffff;
+            color: {{textColor}};
+            margin: 0;
         }
 
         .ticket {
-            max-width: 600px;
+            width: 600px;
             margin: auto;
-            background: white;
+            background: {{backgroundColor}};
+            border: 2px solid {{borderColor}};
             border-radius: 18px;
             overflow: hidden;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
         }
 
+        /* HEADER */
         .header {
-            background: linear-gradient(135deg, #1d2b64, #f0544f);
+            background: linear-gradient(135deg, #1d4ed8, #2563eb);
             color: white;
-            padding: 24px;
             text-align: center;
+            padding: 24px;
         }
 
         .header img {
-            width: 120px;
+            width: 110px;
             margin-bottom: 10px;
         }
 
-        .header h1 {
-            margin: 10px 0 0;
-            font-size: 30px;
-            letter-spacing: 1px;
-        }
-
+        /* CONTENT */
         .content {
-            padding: 30px;
+            padding: 26px;
         }
 
-        .info {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 18px;
-            font-size: 16px;
+        h1 {
+            text-align: center;
+            font-size: 34px;
+            margin-bottom: 25px;
+        }
+
+        /* DETAILS */
+        .details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        .box {
+            background: rgba(255,255,255,0.65);
+            border-radius: 12px;
+            padding: 14px 18px;
+            border: 1px solid rgba(0,0,0,0.15);
         }
 
         .label {
-            font-weight: bold;
-            color: #444;
+            font-size: 11px;
+            text-transform: uppercase;
+            opacity: 0.7;
+            letter-spacing: 1px;
         }
 
         .value {
-            color: #222;
+            font-size: 17px;
+            font-weight: bold;
         }
 
-        .divider {
-            height: 1px;
-            background: #e5e5e5;
-            margin: 25px 0;
-        }
-
-        .qr-section {
+        /* QR */
+        .qr {
             text-align: center;
+            margin-top: 28px;
         }
 
-        .qr-section img {
-            width: 180px;
-            margin: 10px 0;
+        .qr img {
+            width: 190px;
+            background: white;
+            padding: 14px;
+            border-radius: 14px;
+            border: 1px solid rgba(0,0,0,0.15);
         }
 
-        .scan {
-            font-size: 14px;
-            color: #777;
-            margin-top: 5px;
-        }
-
+        /* FOOTER */
         .footer {
-            background: #f9f9f9;
-            padding: 15px;
+            margin-top: 20px;
             text-align: center;
-            font-size: 13px;
-            color: #888;
+            font-size: 12px;
+            opacity: 0.7;
         }
     </style>
 </head>
@@ -91,38 +101,36 @@
 <div class="ticket">
 
     <div class="header">
-        <img src="data:image/png;base64,{{logoBase64}}">
-        <h1>{{eventName}}</h1>
+        <img src="data:image/png;base64,{{logoBase64}}" />
     </div>
 
     <div class="content">
+        <h1>{{eventName}}</h1>
 
-        <div class="info">
-            <span class="label">📅 Data</span>
-            <span class="value">{{eventDate}}</span>
+        <div class="details">
+            <div class="box">
+                <div class="label">Data</div>
+                <div class="value">{{eventDate}}</div>
+            </div>
+
+            <div class="box">
+                <div class="label">Local</div>
+                <div class="value">{{venue}}</div>
+            </div>
+
+            <div class="box">
+                <div class="label">Zona</div>
+                <div class="value">{{tier}}</div>
+            </div>
         </div>
 
-        <div class="info">
-            <span class="label">📍 Local</span>
-            <span class="value">{{venue}}</span>
+        <div class="qr">
+            <img src="data:image/png;base64,{{qrCodeBase64}}" />
         </div>
-
-        <div class="info">
-            <span class="label">🎟 Zona</span>
-            <span class="value">{{tier}}</span>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="qr-section">
-            <img src="data:image/png;base64,{{qrCodeBase64}}">
-            <div class="scan">Apresente este QR à entrada</div>
-        </div>
-
     </div>
 
     <div class="footer">
-        Evently © {{year}} • Bilhete digital seguro
+        Apresenta este QR Code à entrada do evento
     </div>
 
 </div>
