@@ -3,7 +3,7 @@ package org.example.service;
 import feign.FeignException;
 import jakarta.transaction.Transactional;
 import org.example.clients.UsersClient;
-import org.example.dtos.UserDTO;
+import org.example.dtos.externalServices.UserDTO;
 import org.example.enums.NotificationChannel;
 import org.example.enums.NotificationType;
 import org.example.enums.OutboxStatus;

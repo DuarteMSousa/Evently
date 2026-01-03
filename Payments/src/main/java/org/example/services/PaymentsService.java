@@ -203,7 +203,7 @@ public class PaymentsService {
             logger.info(PAY_PROVIDER, "Creating PayPal order (paymentId={}, orderId={})",
                     saved.getId(), saved.getOrderId());
 
-            paymentProviderClient.createPaymentOrder(saved); 
+            paymentProviderClient.createPaymentOrder(saved);
             Payment updated = paymentsRepository.save(saved);
 
             createEvent(updated, PaymentEventType.PENDING, null);

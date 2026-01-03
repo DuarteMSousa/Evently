@@ -1,6 +1,6 @@
 package org.example.clients;
 
-import org.example.dtos.UserDTO;
+import org.example.dtos.externalServices.UserDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
