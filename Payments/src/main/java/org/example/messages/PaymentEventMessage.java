@@ -2,6 +2,7 @@ package org.example.messages;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.example.enums.PaymentEventType;
 import org.example.enums.PaymentStatus;
@@ -17,6 +18,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @AllArgsConstructor
+@NoArgsConstructor
 public class PaymentEventMessage {
 
     private UUID paymentId;

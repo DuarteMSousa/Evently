@@ -1,16 +1,14 @@
 package org.evently.orders.messages.received;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.evently.orders.enums.externalServices.PaymentEventType;
 import org.evently.orders.enums.externalServices.PaymentStatus;
 
 import java.util.UUID;
 
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class PaymentEventMessage {
 
     private UUID paymentId;

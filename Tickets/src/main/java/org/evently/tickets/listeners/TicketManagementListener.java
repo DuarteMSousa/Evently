@@ -23,17 +23,19 @@ public class TicketManagementListener {
 
     @RabbitListener(queues = MQConfig.TICKET_MANAGEMENT_QUEUE)
     public void listener(TicketReservationConfirmedMessage event) {
-        Ticket ticket = new Ticket();
-        ticket.setReservationId(event.getId());
-        ticket.setOrderId(event.getOrderId());
-        ticket.setUserId(event.getUserId());
-        ticket.setEventId(event.getEventId());
-        ticket.setSessionId(event.getSessionId());
-        ticket.setTierId(event.getTierId());
-        ticket.setStatus(TicketStatus.ISSUED);
-        ticket.setIssuedAt(new Date());
 
-        ticketsService.issueTicket(ticket);
+        for (int i = 0; i < event.getQuantity(); i++ ){
+            Ticket ticket = new Ticket();
+            ticket.setReservationId(event.getId());
+            ticket.setOrderId(event.getOrderId());
+            ticket.setUserId(event.getUserId());
+            ticket.setEventId(event.getEventId());
+            ticket.setSessionId(event.getSessionId());
+            ticket.setTierId(event.getTierId());
+            ticket.setStatus(TicketStatus.ISSUED);
+            ticket.setIssuedAt(new Date());
 
+            ticketsService.issueTicket(ticket);
+        }
     }
 }

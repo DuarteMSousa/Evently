@@ -1,8 +1,8 @@
-package org.example.dtos.ticketReservations;
+package org.evently.orders.dtos.externalServices;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.example.enums.TicketReservationStatus;
+import org.evently.orders.enums.externalServices.TicketReservationStatus;
 
 import java.time.OffsetDateTime;
 import java.util.Date;
