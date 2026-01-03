@@ -14,12 +14,12 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMQConfig {
 
-    // Exchanges (têm de bater certo com os outros microserviços)
+    // Exchanges
     public static final String PAYMENTS_EXCHANGE = "payments_exchange";
     public static final String REFUNDS_EXCHANGE  = "refunds_exchange";
-    public static final String FILES_EXCHANGE    = "filegen_exchange"; // ajusta ao nome real do FileGeneration
+    public static final String FILES_EXCHANGE    = "filegeneration_exchange";
 
-    // Queues (do notifications)
+    // Queues
     public static final String NOTIF_PAYMENTS_QUEUE = "notifications_payments";
     public static final String NOTIF_REFUNDS_QUEUE  = "notifications_refunds";
     public static final String NOTIF_FILES_QUEUE    = "notifications_files";
@@ -47,15 +47,11 @@ public class RabbitMQConfig {
     // Bindings
     @Bean
     public Binding bindPayments(Queue notificationsPaymentsQueue, TopicExchange paymentsExchange) {
-        // se no payments tu publicas sempre com uma routing-key fixa (ex: "payments.events"),
-        // troca "payments.*" por essa routing-key exata.
         return BindingBuilder.bind(notificationsPaymentsQueue).to(paymentsExchange).with("payments.*");
     }
 
     @Bean
     public Binding bindRefunds(Queue notificationsRefundsQueue, TopicExchange refundsExchange) {
-        // no teu PaymentsService tu estavas a consumir "refunds.accepted"
-        // aqui para notifications podes ouvir todos: refunds.*
         return BindingBuilder.bind(notificationsRefundsQueue).to(refundsExchange).with("refunds.*");
     }
 

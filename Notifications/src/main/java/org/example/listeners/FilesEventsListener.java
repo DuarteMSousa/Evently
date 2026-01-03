@@ -19,19 +19,17 @@ public class FilesEventsListener {
             queues = RabbitMQConfig.NOTIF_FILES_QUEUE,
             containerFactory = "rabbitListenerContainerFactory"
     )
-    public void handleFileEvent(TicketFileGeneratedMessage msg) {
+    public void handleFileGenerated(TicketFileGeneratedMessage msg) {
 
-        if ("PDF_GENERATED".equalsIgnoreCase(msg.getEventType())) {
-            notificationsService.notifyPdfGenerated(
-                    msg.getUserId(),
-                    msg.getOrderId(),
-                    msg.getFileName(),
-                    msg.getDownloadUrl()
-            );
-        }
+        String fileName = msg.getId() + ".pdf";
 
-        if ("PDF_FAILED".equalsIgnoreCase(msg.getEventType())) {
-            notificationsService.notifyPdfFailed(msg.getUserId(), msg.getOrderId(), msg.getFileName());
-        }
+        String downloadUrl = "http://localhost:8083/ticket-files/get-ticket-file/" + msg.getId();
+
+        notificationsService.notifyPdfGenerated(
+                msg.getUserId(),
+                msg.getOrderId(),
+                fileName,
+                downloadUrl
+        );
     }
 }

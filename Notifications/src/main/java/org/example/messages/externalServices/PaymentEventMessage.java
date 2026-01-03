@@ -13,6 +13,6 @@ public class PaymentEventMessage {
     private UUID orderId;
     private UUID userId;
     private float amount;
-    private String status;     // String, não enum
-    private String eventType;  // String, não enum
+    private String status;
+    private String eventType;
 }
