@@ -2,7 +2,7 @@ package org.example.services;
 
 import feign.FeignException;
 import org.example.clients.OrganizationsClient;
-import org.example.clients.TicketReservationsClient;
+import org.example.clients.TicketManagementClient;
 import org.example.dtos.externalServices.organizations.OrganizationDTO;
 import org.example.enums.EventStatus;
 import org.example.exceptions.*;
@@ -18,7 +18,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.http.ResponseEntity;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,7 +29,7 @@ class EventsServiceTest {
 
     @Mock private EventsRepository eventsRepository;
     @Mock private OrganizationsClient organizationsClient;
-    @Mock private TicketReservationsClient ticketReservationsClient;
+    @Mock private TicketManagementClient ticketReservationsClient;
     @Mock private RabbitTemplate template;
 
     @InjectMocks private EventsService eventsService;
@@ -222,7 +221,7 @@ class EventsServiceTest {
         when(eventsRepository.findByIdWithSessionsAndTiers(id)).thenReturn(Optional.of(e));
         when(ticketReservationsClient.checkEventReservations(id)).thenReturn(ResponseEntity.ok(false));
 
-        assertThrows(EventAlreadyCanceledException.class, () -> eventsService.cancelEvent(id));
+        assertThrows(EventNotPublishedException.class, () -> eventsService.cancelEvent(id));
     }
 
     @Test

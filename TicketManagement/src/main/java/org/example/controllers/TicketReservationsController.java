@@ -1,8 +1,8 @@
 package org.example.controllers;
 
 
-import org.example.dtos.TicketReservationCreateDTO;
-import org.example.dtos.TicketReservationDTO;
+import org.example.dtos.ticketReservations.TicketReservationCreateDTO;
+import org.example.dtos.ticketReservations.TicketReservationDTO;
 import org.example.models.TicketReservation;
 import org.example.services.TicketReservationsService;
 import org.modelmapper.ModelMapper;

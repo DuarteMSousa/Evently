@@ -1,7 +1,7 @@
 package org.example.services;
 
 import feign.FeignException;
-import org.example.clients.TicketReservationsClient;
+import org.example.clients.TicketManagementClient;
 import org.example.clients.VenuesClient;
 import org.example.dtos.externalServices.venueszone.VenueZoneDTO;
 import org.example.exceptions.*;
@@ -26,7 +26,7 @@ class SessionTiersServiceTest {
     @Mock private SessionTiersRepository sessionTiersRepository;
     @Mock private EventSessionsService eventSessionsService;
     @Mock private VenuesClient venuesClient;
-    @Mock private TicketReservationsClient ticketReservationsClient;
+    @Mock private TicketManagementClient ticketReservationsClient;
 
     @InjectMocks private SessionTiersService sessionTiersService;
 

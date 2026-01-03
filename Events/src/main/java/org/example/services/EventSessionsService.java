@@ -2,9 +2,10 @@ package org.example.services;
 
 import feign.FeignException;
 import jakarta.transaction.Transactional;
-import org.example.clients.TicketReservationsClient;
+import org.example.clients.TicketManagementClient;
 import org.example.clients.VenuesClient;
 import org.example.dtos.externalServices.venues.VenueDTO;
+import org.example.enums.EventStatus;
 import org.example.exceptions.*;
 import org.example.models.Event;
 import org.example.models.EventSession;
@@ -28,7 +29,8 @@ public class EventSessionsService {
     private EventsService eventsService;
 
     @Autowired
-    private TicketReservationsClient ticketReservationsClient;
+    private TicketManagementClient ticketManagementClient;
+
 
     private Logger logger = LoggerFactory.getLogger(CategoriesService.class);
 
@@ -43,10 +45,8 @@ public class EventSessionsService {
     /**
      * Creates a new event session.
      *
-     *
      * @param eventSession session payload (must include event, venueId, startsAt, endsAt)
      * @return persisted session
-     *
      * @throws InvalidEventSessionException if session payload is invalid (dates/event/venue)
      * @throws ExternalServiceException     if VenuesService fails unexpectedly (FeignException)
      */
@@ -62,11 +62,9 @@ public class EventSessionsService {
     /**
      * Updates an existing event session.
      *
-     *
      * @param id           event session identifier from the request path
      * @param eventSession updated session payload (must include id)
      * @return updated persisted session
-     *
      * @throws InvalidEventSessionUpdateException if path id and body id do not match
      * @throws EventSessionNotFoundException      if the session does not exist
      * @throws InvalidEventSessionException       if session payload is invalid (dates/event/venue)
@@ -102,7 +100,6 @@ public class EventSessionsService {
      *
      * @param sessionId session identifier
      * @return found event session
-     *
      * @throws EventSessionNotFoundException if the session does not exist
      */
     public EventSession getEventSession(UUID sessionId) {
@@ -123,9 +120,7 @@ public class EventSessionsService {
     /**
      * Deletes an event session.
      *
-     *
      * @param id session identifier
-     *
      * @throws EventSessionNotFoundException      if the session does not exist
      * @throws ExternalServiceException           if Ticket Management service fails (FeignException)
      * @throws InvalidEventSessionUpdateException if the session already has reservations
@@ -143,7 +138,7 @@ public class EventSessionsService {
         Boolean hasReservations;
 
         try {
-            hasReservations = ticketReservationsClient.checkSessionReservations(id).getBody();
+            hasReservations = ticketManagementClient.checkSessionReservations(id).getBody();
         } catch (FeignException e) {
             String errorBody = e.contentUTF8();
             logger.error(SESSION_DELETE, "FeignException while checking session reservations through ticket management service: {}", errorBody);
@@ -155,16 +150,26 @@ public class EventSessionsService {
             throw new InvalidEventSessionUpdateException("Session already has reservations");
         }
 
+        Event event = eventSessionToDelete.getEvent();
+
+        if (event.getStatus().equals(EventStatus.PUBLISHED)) {
+            try {
+                ticketManagementClient.deleteSessionTicketStock(eventSessionToDelete.getId());
+            } catch (FeignException e) {
+                String errorBody = e.contentUTF8();
+                logger.error(SESSION_DELETE, "Error while trying to delete stock through ticket management service: {}", errorBody);
+                throw new ExternalServiceException("Error while trying to delete stock through ticket management service");
+            }
+        }
+
         eventSessionsRepository.delete(eventSessionToDelete);
     }
 
     /**
      * Validates an event session payload.
      *
-     *
      * @param eventSession event session to validate
      * @param marker       log marker to use for consistent logging per operation (create/update)
-     *
      * @throws InvalidEventSessionException if session is invalid or references non-existing event/venue
      * @throws ExternalServiceException     if VenuesService fails unexpectedly (FeignException)
      */

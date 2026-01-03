@@ -3,13 +3,17 @@ package org.example.services;
 import feign.FeignException;
 import jakarta.transaction.Transactional;
 import org.example.clients.OrganizationsClient;
-import org.example.clients.TicketReservationsClient;
+import org.example.clients.TicketManagementClient;
+import org.example.clients.VenuesClient;
 import org.example.dtos.externalServices.organizations.OrganizationDTO;
+import org.example.dtos.externalServices.ticketStocks.TicketStockCreateDTO;
+import org.example.dtos.externalServices.ticketStocks.TicketStockIdDTO;
+import org.example.dtos.externalServices.venueszone.VenueZoneDTO;
 import org.example.enums.EventStatus;
-import org.example.messages.EventCanceledMessage;
-import org.example.messages.EventPublishedMessage;
 import org.example.exceptions.*;
 import org.example.models.Event;
+import org.example.models.EventSession;
+import org.example.models.SessionTier;
 import org.example.repositories.EventSessionsRepository;
 import org.example.repositories.EventsRepository;
 import org.modelmapper.ModelMapper;
@@ -39,7 +43,10 @@ public class EventsService {
     private OrganizationsClient organizationsClient;
 
     @Autowired
-    private TicketReservationsClient ticketReservationsClient;
+    private TicketManagementClient ticketManagementClient;
+
+    @Autowired
+    private VenuesClient venuesClient;
 
     @Autowired
     private RabbitTemplate template;
@@ -58,10 +65,8 @@ public class EventsService {
     /**
      * Creates a new event.
      *
-     *
      * @param event event payload
      * @return persisted event
-     *
      * @throws EventAlreadyExistsException if an event with the same name already exists
      * @throws InvalidEventException       if payload is invalid (name/description/org validation)
      * @throws ExternalServiceException    if OrganizationsService fails (FeignException)
@@ -85,11 +90,9 @@ public class EventsService {
     /**
      * Updates an existing event while preserving its current status.
      *
-     *
      * @param id    event identifier from the request path
      * @param event updated event payload (must include id)
      * @return updated persisted event
-     *
      * @throws InvalidEventUpdateException if path id and body id do not match
      * @throws EventNotFoundException      if the event does not exist
      * @throws InvalidEventException       if payload is invalid (name/description/org validation)
@@ -132,7 +135,6 @@ public class EventsService {
      *
      * @param eventId event identifier
      * @return found event
-     *
      * @throws EventNotFoundException if the event does not exist
      */
     public Event getEvent(UUID eventId) {
@@ -153,14 +155,12 @@ public class EventsService {
     /**
      * Cancels an event.
      *
-     *
      * @param eventId event identifier
      * @return canceled event (persisted)
-     *
-     * @throws EventNotFoundException         if the event does not exist
-     * @throws EventAlreadyCanceledException  if the event is already canceled
-     * @throws InvalidEventUpdateException    if the event has reservations and cannot be canceled
-     * @throws ExternalServiceException       if Ticket Management service fails (FeignException)
+     * @throws EventNotFoundException      if the event does not exist
+     * @throws EventNotPublishedException  if the event is already canceled
+     * @throws InvalidEventUpdateException if the event has reservations and cannot be canceled
+     * @throws ExternalServiceException    if Ticket Management service fails (FeignException)
      */
     @Transactional
     public Event cancelEvent(UUID eventId) {
@@ -169,10 +169,19 @@ public class EventsService {
         Event eventToCancel = eventsRepository.findById(eventId)
                 .orElse(null);
 
+        if (eventToCancel == null) {
+            logger.error(EVENT_CANCEL, "Event not found");
+            throw new EventNotFoundException("Event not found");
+        }
+
+        if (!eventToCancel.getStatus().equals(EventStatus.PUBLISHED) && !eventToCancel.getStatus().equals(EventStatus.PENDING_STOCK_GENERATION)) {
+            throw new EventNotPublishedException("Event is not published");
+        }
+
         Boolean hasReservations;
 
         try {
-            hasReservations = ticketReservationsClient.checkEventReservations(eventId).getBody();
+            hasReservations = ticketManagementClient.checkEventReservations(eventId).getBody();
         } catch (FeignException e) {
             String errorBody = e.contentUTF8();
             logger.error(EVENT_CANCEL, "FeignException while checking event reservations through ticket management service: {}", errorBody);
@@ -184,21 +193,15 @@ public class EventsService {
             throw new InvalidEventUpdateException("Event already has reservations");
         }
 
-        if (eventToCancel == null) {
-            logger.error(EVENT_CANCEL, "Event not found");
-            throw new EventNotFoundException("Event not found");
-        }
-
-        if (eventToCancel.getStatus().equals(EventStatus.CANCELED)) {
-            throw new EventAlreadyCanceledException("Event already cancelled");
-        }
-
         eventToCancel.setStatus(EventStatus.CANCELED);
 
-        EventCanceledMessage eventPublishedMessage = new EventCanceledMessage();
-        modelMapper.map(eventToCancel, eventPublishedMessage);
-        logger.info(EVENT_CANCEL, "Sending event canceled message");
-        template.convertAndSend(eventPublishedMessage);
+        try {
+            ticketManagementClient.deleteEventTicketStock(eventToCancel.getId());
+        } catch (FeignException e) {
+            String errorBody = e.contentUTF8();
+            logger.error(EVENT_CANCEL, "Error while trying to delete stock through ticket management service: {}", errorBody);
+            throw new ExternalServiceException("Error while trying to delete stock through ticket management service");
+        }
 
         return eventsRepository.save(eventToCancel);
     }
@@ -206,11 +209,9 @@ public class EventsService {
     /**
      * Publishes an event by transitioning it to a "pending stock generation" state and emitting a message.
      *
-     *
      * @param eventId event identifier
      * @return updated event (persisted)
-     *
-     * @throws EventNotFoundException        if the event does not exist
+     * @throws EventNotFoundException         if the event does not exist
      * @throws EventAlreadyPublishedException if event is already published or pending stock generation
      */
     @Transactional
@@ -233,11 +234,36 @@ public class EventsService {
 
         event.setStatus(EventStatus.PENDING_STOCK_GENERATION);
 
-        EventPublishedMessage eventPublishedMessage = new EventPublishedMessage();
-        modelMapper.map(event, eventPublishedMessage);
+        List<EventSession> sessions = event.getSessions();
 
-        logger.info(EVENT_PUBLISH, "Sending event published message");
-        template.convertAndSend(eventPublishedMessage);
+        for (EventSession eventSession : sessions) {
+            for (SessionTier tier : eventSession.getTiers()) {
+                VenueZoneDTO venueZoneDTO;
+
+                try {
+                    venueZoneDTO = venuesClient.getZone(tier.getZoneId()).getBody();
+                } catch (FeignException e) {
+                    logger.error(EVENT_PUBLISH, "Cannot get venue zone");
+                    throw new ExternalServiceException("Cannot get venue zone");
+                }
+
+                TicketStockIdDTO ticketStockIdDTO = new TicketStockIdDTO();
+                ticketStockIdDTO.setEventId(event.getId());
+                ticketStockIdDTO.setSessionId(eventSession.getId());
+                ticketStockIdDTO.setTierId(tier.getId());
+
+                TicketStockCreateDTO ticketStockCreateDTO = new TicketStockCreateDTO();
+                ticketStockCreateDTO.setAvailableQuantity(venueZoneDTO.getCapacity());
+                ticketStockCreateDTO.setId(ticketStockIdDTO);
+
+                try {
+                    ticketManagementClient.createTicketStock(ticketStockCreateDTO);
+                } catch (FeignException e) {
+                    logger.error(EVENT_PUBLISH, "Cannot create Stock");
+                    throw new ExternalServiceException("Cannot create Stock");
+                }
+            }
+        }
 
         return eventsRepository.save(event);
     }
@@ -267,12 +293,10 @@ public class EventsService {
     /**
      * Validates an event payload.
      *
-     *
-     * @param event   event to validate
-     * @param marker  log marker to use for consistent logging per operation (create/update)
-     *
-     * @throws InvalidEventException     if event data is invalid or user not in organization
-     * @throws ExternalServiceException  if OrganizationsService fails (FeignException)
+     * @param event  event to validate
+     * @param marker log marker to use for consistent logging per operation (create/update)
+     * @throws InvalidEventException    if event data is invalid or user not in organization
+     * @throws ExternalServiceException if OrganizationsService fails (FeignException)
      */
     private void validateEvent(Event event, Marker marker) {
         if (event.getName() == null || event.getName().isEmpty()) {

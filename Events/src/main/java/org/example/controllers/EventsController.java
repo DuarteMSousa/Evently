@@ -152,7 +152,7 @@ public class EventsController {
 
         try {
             event = modelMapper.map(eventsService.cancelEvent(id), EventDTO.class);
-        } catch (EventAlreadyCanceledException e) {
+        } catch (EventNotPublishedException e) {
             logger.error(EVENT_CANCEL, "EventAlreadyCanceledException caught while canceling Event");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (EventNotFoundException e) {

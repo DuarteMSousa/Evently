@@ -1,4 +1,4 @@
-package org.example.dtos;
+package org.example.dtos.ticketReservations;
 
 import lombok.Getter;
 import lombok.Setter;

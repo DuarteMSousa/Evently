@@ -23,6 +23,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 
@@ -35,9 +36,6 @@ public class TicketStocksService {
     @Autowired
     private RabbitTemplate template;
 
-    @Autowired
-    private VenuesClient venuesClient;
-
     private ModelMapper modelMapper = new ModelMapper();
 
     private static final Logger logger = LoggerFactory.getLogger(TicketStocksService.class);
@@ -45,6 +43,9 @@ public class TicketStocksService {
     private static final Marker TICKET_STOCK_GET = MarkerFactory.getMarker("TICKET_STOCK_GET");
     private static final Marker TICKET_STOCK_CREATE = MarkerFactory.getMarker("TICKET_STOCK_CREATE");
     private static final Marker TICKET_STOCK_MOVEMENT_ADD = MarkerFactory.getMarker("TICKET_STOCK_MOVEMENT_ADD");
+    private static final Marker EVENT_TICKET_STOCK_DELETE = MarkerFactory.getMarker("EVENT_TICKET_STOCK_DELETE");
+    private static final Marker SESSION_TICKET_STOCK_DELETE = MarkerFactory.getMarker("SESSION_TICKET_STOCK_DELETE");
+    private static final Marker TIER_TICKET_STOCK_DELETE = MarkerFactory.getMarker("TIER_TICKET_STOCK_DELETE");
 
     /**
      * Creates a new ticket stock entry.
@@ -65,8 +66,6 @@ public class TicketStocksService {
             throw new TicketStockAlreadyExistsException("Ticket stock already exists");
         }
 
-        ticketStock.setAvailableQuantity(0);
-
         return ticketStocksRepository.save(ticketStock);
     }
 
@@ -79,7 +78,7 @@ public class TicketStocksService {
      *
      * @param movement the stock movement to be applied
      * @return the updated ticket stock
-     * @throws TicketStockNotFoundException if the associated ticket stock does not exist
+     * @throws TicketStockNotFoundException  if the associated ticket stock does not exist
      * @throws InvalidStockMovementException if the resulting available quantity would be negative
      */
     @Transactional
@@ -131,64 +130,75 @@ public class TicketStocksService {
     }
 
     /**
-     * Handles an event update message and manages ticket stock accordingly.
-     * <p>
-     * For events with status {@link EventStatus#PENDING_STOCK_GENERATION},
-     * creates ticket stock entries for all sessions and tiers that do not yet have stock.
-     * <p>
-     * For events with status {@link EventStatus#CANCELED},
-     * existing ticket stock entries can be removed or handled accordingly.
-     * <p>
-     * After processing, a {@link TicketStockGeneratedMessage} is published.
+     * Deletes all ticket stock entries associated with a given event.
      *
-     * @param event the event update message containing sessions, tiers, and event status
-     * @throws VenueZoneNotFoundException if the venue zone does not exist
-     * @throws ExternalServiceException if an error occurs while communicating with the Venues service
+     * @param eventId the unique identifier of the event
+     * @return the list of deleted ticket stock entries
+     * @throws TicketStockNotFoundException if no ticket stock exists for the given event
      */
-//    @Transactional
-//    public void handleEventUpdatedEvent(EventUpdatedMessage event) {
-//        for (EventSessionDTO session : event.getSessions()) {
-//            for (SessionTierDTO tier : session.getTiers()) {
-//
-//                TicketStock stock;
-//
-//                TicketStockId stockId = new TicketStockId(event.getId(), session.getId(), tier.getId());
-//                stock = ticketStocksRepository.findById(stockId).orElse(null);
-//
-//                if (stock == null && event.getStatus() == EventStatus.PENDING_STOCK_GENERATION) {
-//                    stock = new TicketStock();
-//                    VenueZoneDTO zone;
-//
-//                    //ver markers
-//                    try {
-//                        zone = venuesClient.getZone(tier.getZoneId()).getBody();
-//                    } catch (FeignException.NotFound e) {
-//                        String errorBody = e.contentUTF8();
-//                        logger.error( "Not found response while getting venue zone from VenuesService: {}", errorBody);
-//                        throw new VenueZoneNotFoundException("Venue zone not found");
-//                    } catch (FeignException e) {
-//                        String errorBody = e.contentUTF8();
-//                        logger.error( "FeignException while getting venue zone from VenuesService: {}", errorBody);
-//                        throw new ExternalServiceException("Error while getting venue zone from VenuesService");
-//                    }
-//
-//                    stock.setAvailableQuantity(zone.getCapacity());
-//                    stock.setId(stockId);
-//
-//                    this.createTicketStock(stock);
-//                } else if (stock != null && event.getStatus() == EventStatus.CANCELED) {
-//
-//                    //ticketStocksService.deleteStock(stock);
-//
-//                }
-//
-//            }
-//        }
-//
-//        TicketStockGeneratedMessage stockGeneratedEvent = new TicketStockGeneratedMessage();
-//        stockGeneratedEvent.setEventId(event.getId());
-//
-//        template.convertAndSend(stockGeneratedEvent);
-//    }
+    @Transactional
+    public List<TicketStock> deleteEventTicketStock(UUID eventId) {
+        logger.info(EVENT_TICKET_STOCK_DELETE, "deleteEventTicketStock method entered for eventId {}", eventId);
+
+        List<TicketStock> stocks = ticketStocksRepository.findByIdEventId(eventId);
+
+        if (stocks.isEmpty()) {
+            logger.error(EVENT_TICKET_STOCK_DELETE, "Ticket Stock not found for eventId {}", eventId);
+            throw new TicketStockNotFoundException("Ticket stock not found for event");
+        }
+
+        ticketStocksRepository.deleteAll(stocks);
+
+        return stocks;
+    }
+
+
+    /**
+     * Deletes all ticket stock entries associated with a given session.
+     *
+     * @param sessionId the unique identifier of the session
+     * @return the list of deleted ticket stock entries
+     * @throws TicketStockNotFoundException if no ticket stock exists for the given session
+     */
+    @Transactional
+    public List<TicketStock> deleteSessionTicketStock(UUID sessionId) {
+        logger.info(SESSION_TICKET_STOCK_DELETE, "deleteSessionTicketStock method entered for sessionId {}", sessionId);
+
+        List<TicketStock> stocks = ticketStocksRepository.findByIdSessionId((sessionId));
+
+        if (stocks.isEmpty()) {
+            logger.error(SESSION_TICKET_STOCK_DELETE, "Ticket Stock not found for sessionId {}", sessionId);
+            throw new TicketStockNotFoundException("Ticket stock not found for session");
+        }
+
+        ticketStocksRepository.deleteAll(stocks);
+
+        return stocks;
+    }
+
+
+    /**
+     * Deletes all ticket stock entries associated with a given tier.
+     *
+     * @param tierId the unique identifier of the tier
+     * @return the list of deleted ticket stock entries
+     * @throws TicketStockNotFoundException if no ticket stock exists for the given tier
+     */
+    @Transactional
+    public List<TicketStock> deleteTierTicketStock(UUID tierId) {
+        logger.info(TIER_TICKET_STOCK_DELETE, "deleteTierTicketStock method entered for tierId {}", tierId);
+
+        List<TicketStock> stocks = ticketStocksRepository.findByIdTierId((tierId));
+
+        if (stocks.isEmpty()) {
+            logger.error(TIER_TICKET_STOCK_DELETE, "Ticket Stock not found for tierId {}", tierId);
+            throw new TicketStockNotFoundException("Ticket stock not found for tier");
+        }
+
+        ticketStocksRepository.deleteAll(stocks);
+
+        return stocks;
+    }
+
 
 }

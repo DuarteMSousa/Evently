@@ -2,10 +2,12 @@ package org.example.services;
 
 import feign.FeignException;
 import jakarta.transaction.Transactional;
-import org.example.clients.TicketReservationsClient;
+import org.example.clients.TicketManagementClient;
 import org.example.clients.VenuesClient;
 import org.example.dtos.externalServices.venueszone.VenueZoneDTO;
+import org.example.enums.EventStatus;
 import org.example.exceptions.*;
+import org.example.models.Event;
 import org.example.models.EventSession;
 import org.example.models.SessionTier;
 import org.example.repositories.SessionTiersRepository;
@@ -31,7 +33,7 @@ public class SessionTiersService {
     private VenuesClient venuesClient;
 
     @Autowired
-    private TicketReservationsClient ticketReservationsClient;
+    private TicketManagementClient ticketManagementClient;
 
     private Logger logger = LoggerFactory.getLogger(EventsService.class);
 
@@ -43,10 +45,8 @@ public class SessionTiersService {
     /**
      * Creates a new session tier.
      *
-     *
      * @param sessionTier tier payload
      * @return persisted tier
-     *
      * @throws SessionTierAlreadyExistsException if a tier already exists for (eventSession, zoneId)
      * @throws InvalidSessionTierException       if payload is invalid (price/session/zone mismatch)
      * @throws ExternalServiceException          if VenuesService fails unexpectedly (FeignException)
@@ -68,11 +68,9 @@ public class SessionTiersService {
     /**
      * Updates an existing session tier.
      *
-     *
      * @param id          session tier identifier from the request path
      * @param sessionTier updated tier payload (must include id)
      * @return updated persisted tier
-     *
      * @throws InvalidSessionTierUpdateException if path id and body id do not match
      * @throws SessionTierNotFoundException      if the tier does not exist
      * @throws InvalidSessionTierException       if payload is invalid
@@ -107,7 +105,6 @@ public class SessionTiersService {
      *
      * @param sessionTierId tier identifier
      * @return found tier
-     *
      * @throws SessionTierNotFoundException if the tier does not exist
      */
     public SessionTier getSessionTier(UUID sessionTierId) {
@@ -128,11 +125,9 @@ public class SessionTiersService {
     /**
      * Deletes a session tier.
      *
-     *
      * @param id tier identifier
-     *
-     * @throws SessionTierNotFoundException      if the tier does not exist
-     * @throws ExternalServiceException          if Ticket Management service fails (FeignException)
+     * @throws SessionTierNotFoundException       if the tier does not exist
+     * @throws ExternalServiceException           if Ticket Management service fails (FeignException)
      * @throws InvalidEventSessionUpdateException if the tier has reservations and cannot be deleted
      */
     public void deleteSessionTier(UUID id) {
@@ -148,7 +143,7 @@ public class SessionTiersService {
         Boolean hasReservations;
 
         try {
-            hasReservations = ticketReservationsClient.checkTierReservations(id).getBody();
+            hasReservations = ticketManagementClient.checkTierReservations(id).getBody();
         } catch (FeignException e) {
             String errorBody = e.contentUTF8();
             logger.error(TIER_DELETE, "FeignException while checking tier reservations through ticket management service: {}", errorBody);
@@ -160,16 +155,28 @@ public class SessionTiersService {
             throw new InvalidEventSessionUpdateException("Tier already has reservations");
         }
 
+        EventSession eventSession = sessionTierToDelete.getEventSession();
+
+        Event event = eventSession.getEvent();
+
+        if (event.getStatus().equals(EventStatus.PUBLISHED)) {
+            try {
+                ticketManagementClient.deleteSessionTicketStock(eventSession.getId());
+            } catch (FeignException e) {
+                String errorBody = e.contentUTF8();
+                logger.error(TIER_DELETE, "Error while trying to delete stock through ticket management service: {}", errorBody);
+                throw new ExternalServiceException("Error while trying to delete stock through ticket management service");
+            }
+        }
+
         sessionTiersRepository.delete(sessionTierToDelete);
     }
 
     /**
      * Validates a session tier payload.
      *
-     *
      * @param sessionTier tier to validate
      * @param marker      log marker to use for consistent logging per operation (create/update)
-     *
      * @throws InvalidSessionTierException if tier is invalid (price/session/zone mismatch or missing references)
      * @throws ExternalServiceException    if VenuesService fails unexpectedly (FeignException)
      */
