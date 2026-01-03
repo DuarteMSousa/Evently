@@ -1,17 +1,17 @@
 package org.example.listeners;
 
 import org.example.config.RabbitMQConfig;
-import org.example.messages.externalServices.RefundEventMessage;
+import org.example.messages.externalServices.RefundRequestDecisionRegisteredMessage;
 import org.example.services.PaymentsService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
 @Component
-public class RefundEventsListener {
+public class RefundDecisionsListener {
 
     private final PaymentsService paymentsService;
 
-    public RefundEventsListener(PaymentsService paymentsService) {
+    public RefundDecisionsListener(PaymentsService paymentsService) {
         this.paymentsService = paymentsService;
     }
 
@@ -19,17 +19,17 @@ public class RefundEventsListener {
             queues = RabbitMQConfig.paymentsRefundsQueueName,
             containerFactory = "rabbitListenerContainerFactory"
     )
-    public void handleRefundEvent(RefundEventMessage message) {
-        // exemplo de lógica:
-        // se refund foi processado -> atualizar Payment para REFUNDED
-        // se falhou -> talvez marcar algo como REFUND_FAILED / manter CAPTURED
+    public void handleRefundDecision(RefundRequestDecisionRegisteredMessage msg) {
 
-        if ("REFUND_PROCESSED".equalsIgnoreCase(message.getEventType())) {
-            paymentsService.onRefundProcessed(message.getPaymentId(), message.getAmount(), message.getRefundId());
+        String dt = msg.getDecisionType();
+
+        if ("ACCEPTED".equalsIgnoreCase(dt) || "APPROVED".equalsIgnoreCase(dt)) {
+            paymentsService.onRefundApproved(msg.getPaymentId());
+            return;
         }
 
-        if ("REFUND_FAILED".equalsIgnoreCase(message.getEventType())) {
-            paymentsService.onRefundFailed(message.getPaymentId(), message.getRefundId());
+        if ("REJECTED".equalsIgnoreCase(dt) || "DENIED".equalsIgnoreCase(dt)) {
+            paymentsService.onRefundRejected(msg.getPaymentId(), msg.getDescription());
         }
     }
 }

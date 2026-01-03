@@ -356,33 +356,29 @@ public class PaymentsService {
     }
 
     @Transactional
-    public void onRefundProcessed(UUID paymentId, float amount, UUID refundId) {
+    public void onRefundApproved(UUID paymentId) {
         Payment payment = paymentsRepository.findById(paymentId)
                 .orElseThrow(() -> new PaymentNotFoundException("Payment not found"));
 
-        if (payment.getStatus() != PaymentStatus.CAPTURED) {
-            return;
-        }
-
-        payment.setStatus(PaymentStatus.REFUNDED);
+        payment.setStatus(PaymentStatus.REFUNDED); // tens de ter este enum
         Payment updated = paymentsRepository.save(payment);
 
         createEvent(updated, PaymentEventType.REFUND, 200);
         publishEvent(PaymentEventType.REFUND, updated);
-
     }
 
     @Transactional
-    public void onRefundFailed(UUID paymentId, UUID refundId) {
+    public void onRefundRejected(UUID paymentId, String reason) {
         Payment payment = paymentsRepository.findById(paymentId)
                 .orElseThrow(() -> new PaymentNotFoundException("Payment not found"));
 
-        payment.setStatus(PaymentStatus.REFUND_FAILED);
+        payment.setStatus(PaymentStatus.REFUND_FAILED); // tens de ter este enum
         Payment updated = paymentsRepository.save(payment);
 
         createEvent(updated, PaymentEventType.REFUND_FAILED, 409);
         publishEvent(PaymentEventType.REFUND_FAILED, updated);
     }
+
 
     @Transactional
     public void onOrderCreated(UUID orderId, UUID userId, float total) {

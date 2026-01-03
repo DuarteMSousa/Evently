@@ -48,14 +48,14 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Binding paymentsRefundsBinding(
+    public Binding paymentsRefundsDecisionBinding(
             @Qualifier("paymentsRefundsQueue") Queue queue,
             @Qualifier("refundsExchange") TopicExchange exchange) {
 
         return BindingBuilder
                 .bind(queue)
                 .to(exchange)
-                .with("refunds.accepted");
+                .with("refunds.decision.registered");
     }
 
     //ORDERS
