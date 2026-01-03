@@ -4,6 +4,7 @@ import feign.FeignException;
 import jakarta.transaction.Transactional;
 import org.example.clients.UsersClient;
 import org.example.dtos.UserDTO;
+import org.example.enums.externalServices.DecisionType;
 import org.example.exceptions.InvalidNotificationException;
 import org.example.exceptions.UserNotFoundException;
 import org.example.models.Notification;
@@ -15,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -30,6 +32,7 @@ public class NotificationsService {
     private static final Marker OUTBOX_CREATE = MarkerFactory.getMarker("OUTBOX_CREATE");
     private static final Marker OUTBOX_UPDATE = MarkerFactory.getMarker("OUTBOX_UPDATE");
     private static final Marker EMAIL_FLOW = MarkerFactory.getMarker("NOTIFICATION_EMAIL_FLOW");
+    private static final Marker USERS_CLIENT = MarkerFactory.getMarker("USERS_CLIENT");
 
     @Autowired
     private NotificationsRepository notificationsRepository;
@@ -43,18 +46,74 @@ public class NotificationsService {
     @Autowired
     private EmailService emailService;
 
+    // -------------------------
+    // Helpers
+    // -------------------------
+
+    private String resolveUserEmail(UUID userId) {
+        try {
+            ResponseEntity<UserDTO> resp = usersClient.getUser(userId);
+            UserDTO user = resp != null ? resp.getBody() : null;
+
+            if (user == null || user.getEmail() == null) {
+                logger.warn(USERS_CLIENT, "Users service returned null/empty email (userId={})", userId);
+                return null;
+            }
+
+            String email = user.getEmail().trim();
+            if (email.isEmpty()) {
+                logger.warn(USERS_CLIENT, "Users service returned blank email (userId={})", userId);
+                return null;
+            }
+
+            return email;
+
+        } catch (FeignException.NotFound e) {
+            logger.warn(USERS_CLIENT, "User not found in Users service (userId={})", userId);
+            return null;
+
+        } catch (FeignException e) {
+            logger.error(USERS_CLIENT, "Users service error while fetching user (userId={})", userId, e);
+            return null;
+
+        } catch (Exception e) {
+            logger.error(USERS_CLIENT, "Unexpected error while fetching user email (userId={})", userId, e);
+            return null;
+        }
+    }
+
     /**
-     * Validates a notification payload and delivery parameters before sending/queuing.
-     *
-     * @param notification notification payload to validate
-     * @param channel      delivery channel (e.g. "EMAIL")
-     * @param emailTo      destination email (required when channel == EMAIL)
-     * @throws InvalidNotificationException if any required field is missing or invalid
-     * @throws UserNotFoundException        if the user is considered not found by the current validation rule
+     * Envia IN_APP sempre e (opcionalmente) EMAIL, buscando o email no Users pelo userId.
      */
-    private void validateNotification(Notification notification,
-                                      String channel,
-                                      String emailTo) {
+    private Notification sendInAppAndMaybeEmail(Notification base, boolean sendEmail) {
+        // IN_APP sempre
+        Notification inApp = sendNotification(base, "IN_APP", null);
+
+        // EMAIL opcional
+        if (sendEmail) {
+            String email = resolveUserEmail(base.getUserId());
+            if (email != null) {
+                Notification emailNotif = new Notification();
+                emailNotif.setUserId(base.getUserId());
+                emailNotif.setType(base.getType());
+                emailNotif.setTitle(base.getTitle());
+                emailNotif.setBody(base.getBody());
+
+                sendNotification(emailNotif, "EMAIL", email);
+            } else {
+                logger.warn(EMAIL_FLOW, "Skipping EMAIL send - could not resolve user email (userId={})",
+                        base.getUserId());
+            }
+        }
+
+        return inApp;
+    }
+
+    // -------------------------
+    // Validation + Core send
+    // -------------------------
+
+    private void validateNotification(Notification notification, String channel, String emailTo) {
 
         logger.debug(NOTIF_VALIDATE,
                 "Validating notification (userId={}, type={}, channel={}, emailToPresent={})",
@@ -96,20 +155,8 @@ public class NotificationsService {
         }
     }
 
-    /**
-     * Sends a notification through a given channel.
-     *
-     * @param notification notification payload
-     * @param channel      delivery channel (e.g. "EMAIL")
-     * @param emailTo      destination email (required when channel == EMAIL)
-     * @return persisted notification
-     * @throws InvalidNotificationException if payload is invalid
-     * @throws UserNotFoundException        if user is considered not found by the current validation rule
-     */
     @Transactional
-    public Notification sendNotification(Notification notification,
-                                         String channel,
-                                         String emailTo) {
+    public Notification sendNotification(Notification notification, String channel, String emailTo) {
 
         logger.info(NOTIF_SEND,
                 "Send notification requested (userId={}, type={}, channel={})",
@@ -149,11 +196,7 @@ public class NotificationsService {
             );
 
             try {
-                emailService.sendNotificationEmail(
-                        emailTo,
-                        saved.getTitle(),
-                        saved.getBody()
-                );
+                emailService.sendNotificationEmail(emailTo, saved.getTitle(), saved.getBody());
 
                 savedMsg.setStatus("SENT");
                 savedMsg.setAttempts(savedMsg.getAttempts() + 1);
@@ -172,8 +215,7 @@ public class NotificationsService {
 
                 logger.error(OUTBOX_UPDATE,
                         "Outbox updated after failure (outboxId={}, status={}, attempts={})",
-                        savedMsg.getId(), savedMsg.getStatus(), savedMsg.getAttempts(),
-                        e
+                        savedMsg.getId(), savedMsg.getStatus(), savedMsg.getAttempts(), e
                 );
             }
         } else {
@@ -184,6 +226,10 @@ public class NotificationsService {
         return saved;
     }
 
+    // -------------------------
+    // Domain notify methods
+    // -------------------------
+
     @Transactional
     public Notification notifyPaymentCaptured(UUID userId, UUID orderId, float amount) {
         Notification n = new Notification();
@@ -191,7 +237,8 @@ public class NotificationsService {
         n.setType("PAYMENT");
         n.setTitle("Pagamento confirmado");
         n.setBody("O pagamento da encomenda " + orderId + " foi confirmado. Total: " + amount);
-        return sendNotification(n, "IN_APP", null);
+
+        return sendInAppAndMaybeEmail(n, true);
     }
 
     @Transactional
@@ -201,7 +248,8 @@ public class NotificationsService {
         n.setType("PAYMENT");
         n.setTitle("Pagamento falhou");
         n.setBody("O pagamento da encomenda " + orderId + " falhou. Total: " + amount);
-        return sendNotification(n, "IN_APP", null);
+
+        return sendInAppAndMaybeEmail(n, true);
     }
 
     @Transactional
@@ -211,7 +259,8 @@ public class NotificationsService {
         n.setType("REFUND");
         n.setTitle("Reembolso realizado");
         n.setBody("Foi feito reembolso da encomenda " + orderId + ". Valor: " + amount);
-        return sendNotification(n, "IN_APP", null);
+
+        return sendInAppAndMaybeEmail(n, true);
     }
 
     @Transactional
@@ -221,17 +270,8 @@ public class NotificationsService {
         n.setType("FILE");
         n.setTitle("PDF gerado");
         n.setBody("O PDF " + fileName + " da encomenda " + orderId + " está pronto. Link: " + url);
-        return sendNotification(n, "IN_APP", null);
-    }
 
-    @Transactional
-    public Notification notifyPdfFailed(UUID userId, UUID orderId, String fileName) {
-        Notification n = new Notification();
-        n.setUserId(userId);
-        n.setType("FILE");
-        n.setTitle("Falha ao gerar PDF");
-        n.setBody("Falhou a geração do PDF " + fileName + " da encomenda " + orderId + ".");
-        return sendNotification(n, "IN_APP", null);
+        return sendInAppAndMaybeEmail(n, true);
     }
 
     @Transactional
@@ -241,21 +281,21 @@ public class NotificationsService {
         n.setType("REFUND");
         n.setTitle("Pedido de reembolso submetido");
         n.setBody("O teu pedido de reembolso foi enviado. Nº: " + refundRequestId + ". Mensagem: " + content);
-        return sendNotification(n, "IN_APP", null);
+
+        return sendInAppAndMaybeEmail(n, true);
     }
 
     @Transactional
-    public Notification notifyRefundDecision(UUID userId, UUID paymentId, String decisionType, String description) {
+    public Notification notifyRefundDecision(UUID userId, UUID paymentId, DecisionType decisionType, String description) {
         Notification n = new Notification();
         n.setUserId(userId);
         n.setType("REFUND");
 
-        boolean accepted = "ACCEPTED".equalsIgnoreCase(decisionType)
-                || "APPROVE".equalsIgnoreCase(decisionType);
+        boolean approved = decisionType == DecisionType.APPROVE;
 
-        n.setTitle(accepted ? "Reembolso aprovado" : "Reembolso rejeitado");
+        n.setTitle(approved ? "Reembolso aprovado" : "Reembolso rejeitado");
 
-        String body = accepted
+        String body = approved
                 ? "O teu pedido de reembolso foi aprovado."
                 : "O teu pedido de reembolso foi rejeitado.";
 
@@ -264,9 +304,8 @@ public class NotificationsService {
         }
 
         body += " (Pagamento: " + paymentId + ")";
-
         n.setBody(body);
-        return sendNotification(n, "IN_APP", null);
-    }
 
+        return sendInAppAndMaybeEmail(n, true);
+    }
 }

@@ -1,10 +1,7 @@
 package org.example.controllers;
 
 import org.example.dtos.members.MemberDTO;
-import org.example.exceptions.MemberNotFoundException;
-import org.example.exceptions.OrganizationNotFoundException;
-import org.example.exceptions.PermissionDeniedException;
-import org.example.exceptions.UserNotFoundException;
+import org.example.exceptions.*;
 import org.example.models.Member;
 import org.example.service.OrganizationMembersService;
 import org.modelmapper.ModelMapper;
@@ -107,7 +104,13 @@ public class OrganizationMembersController {
             logger.warn(ORG_MEMBER_ADD, "Add member failed - organization not found (orgId={})", orgId);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
 
-        } catch (UserNotFoundException e) {
+        } catch (MemberAlreadyExistsException e) {
+            logger.warn(ORG_MEMBER_ADD,
+                    "Add member failed - already member (orgId={}, userId={}, requesterId={})",
+                    orgId, userId, requesterId);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+
+        }catch (UserNotFoundException e) {
             logger.warn(ORG_MEMBER_ADD, "Add member failed - user not found (userId={})", userId);
             return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(e.getMessage());
 

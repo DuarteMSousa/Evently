@@ -132,8 +132,8 @@ public class OrganizationMembersService {
         MemberId memberId = new MemberId(orgId, userId);
 
         if (membersRepository.existsById(memberId)) {
-            logger.info(MEMBER_ADD, "User already member (orgId={}, userId={})", orgId, userId);
-            return membersRepository.findById(memberId).get();
+            logger.warn(MEMBER_ADD, "User already member (orgId={}, userId={})", orgId, userId);
+            throw new MemberAlreadyExistsException("User is already a member of this organization");
         }
 
         Member member = new Member();

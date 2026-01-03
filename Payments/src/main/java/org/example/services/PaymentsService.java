@@ -230,7 +230,7 @@ public class PaymentsService {
         payment.setStatus(PaymentStatus.CAPTURED);
         Payment updated = paymentsRepository.save(payment);
 
-        createEvent(updated, PaymentEventType.CAPTURED, 200); // ou CAPTURED
+        createEvent(updated, PaymentEventType.CAPTURED, 200);
         publishEvent(PaymentEventType.CAPTURED, updated);
 
         logger.info(PAY_CAPTURE, "Capture completed (paymentId={}, status={})",
@@ -360,7 +360,7 @@ public class PaymentsService {
         Payment payment = paymentsRepository.findById(paymentId)
                 .orElseThrow(() -> new PaymentNotFoundException("Payment not found"));
 
-        payment.setStatus(PaymentStatus.REFUNDED); // tens de ter este enum
+        payment.setStatus(PaymentStatus.REFUNDED);
         Payment updated = paymentsRepository.save(payment);
 
         createEvent(updated, PaymentEventType.REFUND, 200);
@@ -368,24 +368,10 @@ public class PaymentsService {
     }
 
     @Transactional
-    public void onRefundRejected(UUID paymentId, String reason) {
-        Payment payment = paymentsRepository.findById(paymentId)
-                .orElseThrow(() -> new PaymentNotFoundException("Payment not found"));
-
-        payment.setStatus(PaymentStatus.REFUND_FAILED); // tens de ter este enum
-        Payment updated = paymentsRepository.save(payment);
-
-        createEvent(updated, PaymentEventType.REFUND_FAILED, 409);
-        publishEvent(PaymentEventType.REFUND_FAILED, updated);
-    }
-
-
-    @Transactional
     public void onOrderCreated(UUID orderId, UUID userId, float total) {
         logger.info(PAY_EVENT, "OrderCreated event received (orderId={}, userId={}, total={})",
                 orderId, userId, total);
 
-        // ✅ idempotência (AGORA FUNCIONA MESMO)
         if (paymentsRepository.findByOrderId(orderId).isPresent()) {
             logger.info(PAY_EVENT, "Ignoring duplicated OrderCreated (orderId={}) - payment already exists", orderId);
             return;
@@ -396,7 +382,6 @@ public class PaymentsService {
         payment.setUserId(userId);
         payment.setAmount(total);
 
-        // se no teu model for obrigatório
         payment.setPaymentProvider(PaymentProvider.PAYPAL);
 
         payment.setStatus(PaymentStatus.PENDING);

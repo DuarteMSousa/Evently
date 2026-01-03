@@ -21,16 +21,34 @@ public class PaymentsEventsListener {
     )
     public void handlePaymentEvent(PaymentEventMessage msg) {
 
-        if ("CAPTURED".equalsIgnoreCase(msg.getEventType())) {
-            notificationsService.notifyPaymentCaptured(msg.getUserId(), msg.getOrderId(), msg.getAmount());
-        }
+        switch (msg.getEventType()) {
 
-        if ("FAILED".equalsIgnoreCase(msg.getEventType())) {
-            notificationsService.notifyPaymentFailed(msg.getUserId(), msg.getOrderId(), msg.getAmount());
-        }
+            case CAPTURED:
+                notificationsService.notifyPaymentCaptured(
+                        msg.getUserId(),
+                        msg.getOrderId(),
+                        msg.getAmount()
+                );
+                break;
 
-        if ("REFUND".equalsIgnoreCase(msg.getEventType()) || "REFUNDED".equalsIgnoreCase(msg.getEventType())) {
-            notificationsService.notifyPaymentRefunded(msg.getUserId(), msg.getOrderId(), msg.getAmount());
+            case FAILED:
+                notificationsService.notifyPaymentFailed(
+                        msg.getUserId(),
+                        msg.getOrderId(),
+                        msg.getAmount()
+                );
+                break;
+
+            case REFUND:
+                notificationsService.notifyPaymentRefunded(
+                        msg.getUserId(),
+                        msg.getOrderId(),
+                        msg.getAmount()
+                );
+                break;
+
+            default:
+                break;
         }
     }
 }
