@@ -58,6 +58,22 @@ public class RefundDecisionsService {
     }
 
     /**
+     * Retrieves a refund decision by its refund request unique identifier.
+     *
+     * @param requestId refund request identifier
+     * @return found refund decision
+     * @throws RefundRequestDecisionNotFoundException if the decision does not exist
+     */
+    public RefundDecision getRefundDecisionByRequest(UUID requestId) {
+        logger.debug(DECISION_GET, "Get decision requested by refund request (requestId={})", requestId);
+        return refundDecisionsRepository.findByRefundRequest_Id(requestId)
+                .orElseThrow(() -> {
+                    logger.warn(DECISION_GET, "Decision not found for the refund request (requestId={})", requestId);
+                    return new RefundRequestDecisionNotFoundException("Refund Decision not found");
+                });
+    }
+
+    /**
      * Registers a new refund decision after validating its data and related entities.
      *
      * @param decision refund decision to be registered

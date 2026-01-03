@@ -222,7 +222,13 @@ public class OrdersService {
      * @return page of user orders
      */
     public Page<Order> getOrdersByUser(UUID userId, Integer pageNumber, Integer pageSize) {
-        pageSize = Math.min(pageSize, 50);
+        if (pageSize > 50 || pageSize < 1) {
+            pageSize = 50;
+        }
+
+        if (pageNumber < 1) {
+            pageNumber = 0;
+        }
 
         logger.debug(ORDER_GET, "Fetching orders for user (userId={}, page={}, size={})",
                 userId, pageNumber, pageSize);

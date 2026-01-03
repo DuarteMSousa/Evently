@@ -119,7 +119,7 @@ public class OrdersController {
     }
 
     @PutMapping("/mark-order-payment-success/{id}")
-    public ResponseEntity<?> markAsPaid(@PathVariable UUID id) {
+    public ResponseEntity<?> markAsPaid(@PathVariable("id") UUID id) {
         /* HttpStatus(produces)
          * 200 OK - Payment marked as successful.
          * 404 NOT_FOUND - No order exists with the provided ID.
@@ -144,7 +144,7 @@ public class OrdersController {
     }
 
     @PutMapping("/mark-order-payment-failed/{id}")
-    public ResponseEntity<?> markAsFailed(@PathVariable UUID id) {
+    public ResponseEntity<?> markAsFailed(@PathVariable("id") UUID id) {
         /* HttpStatus(produces)
          * 200 OK - Order marked as payment failed.
          * 404 NOT_FOUND - No order exists with the provided ID.
@@ -169,7 +169,7 @@ public class OrdersController {
     }
 
     @PutMapping("/cancel-order/{id}")
-    public ResponseEntity<?> cancelOrder(@PathVariable UUID id) {
+    public ResponseEntity<?> cancelOrder(@PathVariable("id") UUID id) {
         /* HttpStatus(produces)
          * 200 OK - Order cancelled successfully.
          * 404 NOT_FOUND - No order exists with the provided ID.

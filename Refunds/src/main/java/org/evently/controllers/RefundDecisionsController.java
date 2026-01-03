@@ -54,6 +54,28 @@ public class RefundDecisionsController {
         }
     }
 
+    @GetMapping("/get-decision-by-request/{requestId}")
+    public ResponseEntity<?> getDecisionByRequest(@PathVariable("requestId") UUID requestId) {
+        /* HttpStatus(produces)
+         * 200 OK - Refund decision found.
+         * 404 NOT_FOUND - No decision exists for the provided request ID.
+         * 400 BAD_REQUEST - Unexpected error during processing.
+         */
+
+        logger.info(DECISION_GET, "Method getDecisionByRequest entered for requestID: {}", requestId);
+        try {
+            RefundDecision decision = refundDecisionsService.getRefundDecisionByRequest(requestId);
+            logger.info(DECISION_GET, "200 OK returned, decision found");
+            return ResponseEntity.ok(convertToDTO(decision));
+        } catch (RefundRequestDecisionNotFoundException e) {
+            logger.warn(DECISION_GET, "RefundRequestDecisionNotFoundException caught: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            logger.error(DECISION_GET, "Exception caught while getting decision: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
     @PostMapping("/register-decision")
     public ResponseEntity<?> registerDecision(@RequestBody RefundDecisionCreateDTO decisionDTO) {
         /* HttpStatus(produces)

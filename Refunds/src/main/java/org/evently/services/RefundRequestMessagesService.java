@@ -113,7 +113,7 @@ public class RefundRequestMessagesService {
         }
 
         if (pageNumber < 1) {
-            pageNumber = 1;
+            pageNumber = 0;
         }
 
         logger.debug(MESSAGE_GET, "Fetching messages for request (requestId={})", refundRequest.getId());

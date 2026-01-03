@@ -152,7 +152,7 @@ public class RefundRequestsService {
         }
 
         if (pageNumber < 1) {
-            pageNumber = 1;
+            pageNumber = 0;
         }
 
         logger.debug(REFUND_GET, "Fetching refund requests for user (userId={}, page={})", userId, pageNumber);

@@ -154,7 +154,7 @@ public class TicketsService {
         }
 
         if (pageNumber < 1) {
-            pageNumber = 1;
+            pageNumber = 0;
         }
 
         logger.debug(TICKET_GET, "Fetching tickets for user (userId={}, page={}, size={})",

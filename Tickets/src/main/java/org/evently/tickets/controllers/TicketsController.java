@@ -103,7 +103,7 @@ public class TicketsController {
     }
 
     @PutMapping("/use-ticket/{id}")
-    public ResponseEntity<?> useTicket(@PathVariable UUID id) {
+    public ResponseEntity<?> useTicket(@PathVariable("id") UUID id) {
         /* HttpStatus(produces)
          * 200 OK - Ticket validated/used successfully.
          * 404 NOT_FOUND - No ticket exists with the provided ID.
@@ -125,7 +125,7 @@ public class TicketsController {
     }
 
     @PutMapping("/cancel-ticket/{id}")
-    public ResponseEntity<?> cancelTicket(@PathVariable UUID id) {
+    public ResponseEntity<?> cancelTicket(@PathVariable("id") UUID id) {
         /* HttpStatus(produces)
          * 200 OK - Ticket cancelled successfully.
          * 404 NOT_FOUND - No ticket exists with the provided ID.
