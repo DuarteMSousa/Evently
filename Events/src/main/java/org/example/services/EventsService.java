@@ -232,7 +232,7 @@ public class EventsService {
             throw new EventAlreadyPublishedException("Event already Published");
         }
 
-        event.setStatus(EventStatus.PENDING_STOCK_GENERATION);
+        event.setStatus(EventStatus.PUBLISHED);
 
         List<EventSession> sessions = event.getSessions();
 
