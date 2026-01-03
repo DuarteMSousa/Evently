@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.example.enums.NotificationChannel;
+import org.example.enums.OutboxStatus;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -26,10 +28,10 @@ public class OutBoxMessage {
     private UUID notificationId;
 
     @Column(nullable = false, length = 10)
-    private String channel;
+    private NotificationChannel channel;
 
     @Column(nullable = false, length = 10)
-    private String status;
+    private OutboxStatus status;
 
     @Column(nullable = false)
     private Integer attempts;

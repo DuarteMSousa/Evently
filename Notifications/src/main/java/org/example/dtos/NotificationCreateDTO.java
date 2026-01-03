@@ -2,6 +2,8 @@ package org.example.dtos;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.example.enums.NotificationChannel;
+import org.example.enums.NotificationType;
 
 import java.util.UUID;
 
@@ -10,9 +12,9 @@ import java.util.UUID;
 public class NotificationCreateDTO {
 
     private UUID userId;
-    private String type;
+    private NotificationType type;
     private String title;
     private String body;
-    private String channel;
+    private NotificationChannel channel;
     private String emailTo;
 }

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.example.enums.NotificationType;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -26,7 +27,7 @@ public class Notification {
     private UUID userId;
 
     @Column(nullable = false, length = 30)
-    private String type;
+    private NotificationType type;
 
     @Column(nullable = false, length = 200)
     private String title;

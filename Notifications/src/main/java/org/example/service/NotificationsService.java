@@ -4,6 +4,9 @@ import feign.FeignException;
 import jakarta.transaction.Transactional;
 import org.example.clients.UsersClient;
 import org.example.dtos.UserDTO;
+import org.example.enums.NotificationChannel;
+import org.example.enums.NotificationType;
+import org.example.enums.OutboxStatus;
 import org.example.enums.externalServices.DecisionType;
 import org.example.exceptions.InvalidNotificationException;
 import org.example.exceptions.UserNotFoundException;
@@ -86,10 +89,9 @@ public class NotificationsService {
      * Envia IN_APP sempre e (opcionalmente) EMAIL, buscando o email no Users pelo userId.
      */
     private Notification sendInAppAndMaybeEmail(Notification base, boolean sendEmail) {
-        // IN_APP sempre
-        Notification inApp = sendNotification(base, "IN_APP", null);
 
-        // EMAIL opcional
+        Notification inApp = sendNotification(base, NotificationChannel.IN_APP, null);
+
         if (sendEmail) {
             String email = resolveUserEmail(base.getUserId());
             if (email != null) {
@@ -99,21 +101,21 @@ public class NotificationsService {
                 emailNotif.setTitle(base.getTitle());
                 emailNotif.setBody(base.getBody());
 
-                sendNotification(emailNotif, "EMAIL", email);
+                sendNotification(emailNotif, NotificationChannel.EMAIL, email);
             } else {
-                logger.warn(EMAIL_FLOW, "Skipping EMAIL send - could not resolve user email (userId={})",
-                        base.getUserId());
+                logger.warn(EMAIL_FLOW, "Skipping EMAIL send - could not resolve user email (userId={})", base.getUserId());
             }
         }
 
         return inApp;
     }
 
+
     // -------------------------
     // Validation + Core send
     // -------------------------
 
-    private void validateNotification(Notification notification, String channel, String emailTo) {
+    private void validateNotification(Notification notification, NotificationChannel channel, String emailTo) {
 
         logger.debug(NOTIF_VALIDATE,
                 "Validating notification (userId={}, type={}, channel={}, emailToPresent={})",
@@ -144,7 +146,7 @@ public class NotificationsService {
             throw new InvalidNotificationException("Channel is required");
         }
 
-        if ("EMAIL".equalsIgnoreCase(channel) && emailTo == null) {
+        if (channel == NotificationChannel.EMAIL && (emailTo == null || emailTo.trim().isEmpty())) {
             logger.warn(NOTIF_VALIDATE, "EMAIL channel requires emailTo (userId={})", notification.getUserId());
             throw new InvalidNotificationException("emailTo is required for EMAIL channel");
         }
@@ -156,7 +158,7 @@ public class NotificationsService {
     }
 
     @Transactional
-    public Notification sendNotification(Notification notification, String channel, String emailTo) {
+    public Notification sendNotification(Notification notification, NotificationChannel  channel, String emailTo) {
 
         logger.info(NOTIF_SEND,
                 "Send notification requested (userId={}, type={}, channel={})",
@@ -178,7 +180,7 @@ public class NotificationsService {
         OutBoxMessage message = new OutBoxMessage();
         message.setNotificationId(saved.getId());
         message.setChannel(channel);
-        message.setStatus("PENDING");
+        message.setStatus(OutboxStatus.PENDING);
         message.setAttempts(0);
         message.setSentAt(null);
 
@@ -189,7 +191,7 @@ public class NotificationsService {
                 savedMsg.getId(), saved.getId(), channel, savedMsg.getStatus()
         );
 
-        if ("EMAIL".equalsIgnoreCase(channel)) {
+        if (channel == NotificationChannel.EMAIL) {
             logger.info(EMAIL_FLOW,
                     "Attempting EMAIL send (notificationId={}, outboxId={}, to={}, subject={})",
                     saved.getId(), savedMsg.getId(), emailTo, saved.getTitle()
@@ -198,7 +200,7 @@ public class NotificationsService {
             try {
                 emailService.sendNotificationEmail(emailTo, saved.getTitle(), saved.getBody());
 
-                savedMsg.setStatus("SENT");
+                savedMsg.setStatus(OutboxStatus.SENT);
                 savedMsg.setAttempts(savedMsg.getAttempts() + 1);
                 savedMsg.setSentAt(new Date());
                 outBoxMessagesRepository.save(savedMsg);
@@ -209,7 +211,7 @@ public class NotificationsService {
                 );
 
             } catch (Exception e) {
-                savedMsg.setStatus("FAILED");
+                savedMsg.setStatus(OutboxStatus.FAILED);
                 savedMsg.setAttempts(savedMsg.getAttempts() + 1);
                 outBoxMessagesRepository.save(savedMsg);
 
@@ -234,7 +236,7 @@ public class NotificationsService {
     public Notification notifyPaymentCaptured(UUID userId, UUID orderId, float amount) {
         Notification n = new Notification();
         n.setUserId(userId);
-        n.setType("PAYMENT");
+        n.setType(NotificationType.PAYMENT);
         n.setTitle("Pagamento confirmado");
         n.setBody("O pagamento da encomenda " + orderId + " foi confirmado. Total: " + amount);
 
@@ -245,7 +247,7 @@ public class NotificationsService {
     public Notification notifyPaymentFailed(UUID userId, UUID orderId, float amount) {
         Notification n = new Notification();
         n.setUserId(userId);
-        n.setType("PAYMENT");
+        n.setType(NotificationType.PAYMENT);
         n.setTitle("Pagamento falhou");
         n.setBody("O pagamento da encomenda " + orderId + " falhou. Total: " + amount);
 
@@ -256,7 +258,7 @@ public class NotificationsService {
     public Notification notifyPaymentRefunded(UUID userId, UUID orderId, float amount) {
         Notification n = new Notification();
         n.setUserId(userId);
-        n.setType("REFUND");
+        n.setType(NotificationType.REFUND);
         n.setTitle("Reembolso realizado");
         n.setBody("Foi feito reembolso da encomenda " + orderId + ". Valor: " + amount);
 
@@ -267,7 +269,7 @@ public class NotificationsService {
     public Notification notifyPdfGenerated(UUID userId, UUID orderId, String fileName, String url) {
         Notification n = new Notification();
         n.setUserId(userId);
-        n.setType("FILE");
+        n.setType(NotificationType.FILE);
         n.setTitle("PDF gerado");
         n.setBody("O PDF " + fileName + " da encomenda " + orderId + " está pronto. Link: " + url);
 
@@ -278,7 +280,7 @@ public class NotificationsService {
     public Notification notifyRefundRequestSent(UUID userId, UUID refundRequestId, String content) {
         Notification n = new Notification();
         n.setUserId(userId);
-        n.setType("REFUND");
+        n.setType(NotificationType.REFUND);
         n.setTitle("Pedido de reembolso submetido");
         n.setBody("O teu pedido de reembolso foi enviado. Nº: " + refundRequestId + ". Mensagem: " + content);
 
@@ -289,7 +291,7 @@ public class NotificationsService {
     public Notification notifyRefundDecision(UUID userId, UUID paymentId, DecisionType decisionType, String description) {
         Notification n = new Notification();
         n.setUserId(userId);
-        n.setType("REFUND");
+        n.setType(NotificationType.REFUND);
 
         boolean approved = decisionType == DecisionType.APPROVE;
 
