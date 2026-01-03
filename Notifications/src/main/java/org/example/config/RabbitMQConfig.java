@@ -21,7 +21,8 @@ public class RabbitMQConfig {
 
     // Queues
     public static final String NOTIF_PAYMENTS_QUEUE = "notifications_payments";
-    public static final String NOTIF_REFUNDS_QUEUE  = "notifications_refunds";
+    public static final String NOTIF_REFUND_REQUESTS_QUEUE  = "notifications_refunds_requests";
+    public static final String NOTIF_REFUND_DECISIONS_QUEUE = "notifications_refunds_decisions";
     public static final String NOTIF_FILES_QUEUE    = "notifications_files";
 
     // Exchanges
@@ -39,7 +40,14 @@ public class RabbitMQConfig {
     public Queue notificationsPaymentsQueue() { return new Queue(NOTIF_PAYMENTS_QUEUE, true); }
 
     @Bean
-    public Queue notificationsRefundsQueue() { return new Queue(NOTIF_REFUNDS_QUEUE, true); }
+    public Queue notificationsRefundRequestsQueue() {
+        return new Queue(NOTIF_REFUND_REQUESTS_QUEUE, true);
+    }
+
+    @Bean
+    public Queue notificationsRefundDecisionsQueue() {
+        return new Queue(NOTIF_REFUND_DECISIONS_QUEUE, true);
+    }
 
     @Bean
     public Queue notificationsFilesQueue() { return new Queue(NOTIF_FILES_QUEUE, true); }
@@ -51,8 +59,19 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Binding bindRefunds(Queue notificationsRefundsQueue, TopicExchange refundsExchange) {
-        return BindingBuilder.bind(notificationsRefundsQueue).to(refundsExchange).with("refunds.*");
+    public Binding bindRefundRequests(Queue notificationsRefundRequestsQueue,
+                                      TopicExchange refundsExchange) {
+        return BindingBuilder.bind(notificationsRefundRequestsQueue)
+                .to(refundsExchange)
+                .with("refunds.request.sent");
+    }
+
+    @Bean
+    public Binding bindRefundDecisions(Queue notificationsRefundDecisionsQueue,
+                                       TopicExchange refundsExchange) {
+        return BindingBuilder.bind(notificationsRefundDecisionsQueue)
+                .to(refundsExchange)
+                .with("refunds.decision.registered");
     }
 
     @Bean

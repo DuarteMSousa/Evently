@@ -17,10 +17,10 @@ public class RefundsEventsListener {
     }
 
     @RabbitListener(
-            queues = RabbitMQConfig.NOTIF_REFUNDS_QUEUE,
+            queues = RabbitMQConfig.NOTIF_REFUND_REQUESTS_QUEUE,
             containerFactory = "rabbitListenerContainerFactory"
     )
-    public void handleRefundRequestMessageSent(RefundRequestMessageSentMessage msg) {
+    public void handleRefundRequestSent(RefundRequestMessageSentMessage msg) {
         notificationsService.notifyRefundRequestSent(
                 msg.getUserId(),
                 msg.getRefundRequestId(),
@@ -29,10 +29,10 @@ public class RefundsEventsListener {
     }
 
     @RabbitListener(
-            queues = RabbitMQConfig.NOTIF_REFUNDS_QUEUE,
+            queues = RabbitMQConfig.NOTIF_REFUND_DECISIONS_QUEUE,
             containerFactory = "rabbitListenerContainerFactory"
     )
-    public void handleRefundDecisionRegistered(RefundRequestDecisionRegisteredMessage msg) {
+    public void handleRefundDecision(RefundRequestDecisionRegisteredMessage msg) {
         notificationsService.notifyRefundDecision(
                 msg.getUserToRefundId(),
                 msg.getPaymentId(),
@@ -41,53 +41,3 @@ public class RefundsEventsListener {
         );
     }
 }
-
-/*
-package org.example.listeners;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import org.example.config.RabbitMQConfig;
-import org.example.service.NotificationsService;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.stereotype.Component;
-
-import java.util.UUID;
-
-@Component
-public class RefundsEventsListener {
-
-    private final NotificationsService notificationsService;
-
-    public RefundsEventsListener(NotificationsService notificationsService) {
-        this.notificationsService = notificationsService;
-    }
-
-    @RabbitListener(
-            queues = RabbitMQConfig.NOTIF_REFUNDS_QUEUE,
-            containerFactory = "rabbitListenerContainerFactory"
-    )
-    public void handleRefundEvent(JsonNode msg) {
-
-        // formato: RefundRequestMessageSentMessage
-        if (msg.hasNonNull("refundRequestId") && msg.hasNonNull("userId") && msg.hasNonNull("content")) {
-            notificationsService.notifyRefundRequestSent(
-                    UUID.fromString(msg.get("userId").asText()),
-                    UUID.fromString(msg.get("refundRequestId").asText()),
-                    msg.get("content").asText()
-            );
-            return;
-        }
-
-        // formato: RefundRequestDecisionRegisteredMessage
-        if (msg.hasNonNull("userToRefundId") && msg.hasNonNull("paymentId") && msg.hasNonNull("decisionType")) {
-            notificationsService.notifyRefundDecision(
-                    UUID.fromString(msg.get("userToRefundId").asText()),
-                    UUID.fromString(msg.get("paymentId").asText()),
-                    msg.get("decisionType").asText(),
-                    msg.hasNonNull("description") ? msg.get("description").asText() : null
-            );
-        }
-    }
-}
-
- */

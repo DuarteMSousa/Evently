@@ -19,8 +19,8 @@ public class MQConfig {
 
     public static final String EXCHANGE = "refunds_exchange";
 
-    public static final String ROUTING_KEY = "refunds";
-
+    public static final String RK_REFUND_REQUEST_MESSAGE_SENT = "refunds.request.sent";
+    public static final String RK_REFUND_DECISION_REGISTERED  = "refunds.decision.registered";
 
     @Bean
     public TopicExchange paymentsExchange() {

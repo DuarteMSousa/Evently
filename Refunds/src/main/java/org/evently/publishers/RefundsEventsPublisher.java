@@ -15,22 +15,29 @@ public class RefundsEventsPublisher {
     }
 
     public void publishRefundRequestDecisionRegisteredEvent(RefundDecision decision) {
-        RefundRequestDecisionRegisteredMessage refundRequestDecisionRegistered = new RefundRequestDecisionRegisteredMessage();
-        refundRequestDecisionRegistered.setUserToRefundId(decision.getRefundRequest().getUserId());
-        refundRequestDecisionRegistered.setPaymentId(decision.getRefundRequest().getPaymentId());
-        refundRequestDecisionRegistered.setDecisionType(decision.getDecisionType());
-        refundRequestDecisionRegistered.setDescription(decision.getDescription());
+        RefundRequestDecisionRegisteredMessage msg = new RefundRequestDecisionRegisteredMessage();
+        msg.setUserToRefundId(decision.getRefundRequest().getUserId());
+        msg.setPaymentId(decision.getRefundRequest().getPaymentId());
+        msg.setDecisionType(decision.getDecisionType());
+        msg.setDescription(decision.getDescription());
 
-        rabbitTemplate.convertAndSend(MQConfig.EXCHANGE, MQConfig.ROUTING_KEY, refundRequestDecisionRegistered);
+        rabbitTemplate.convertAndSend(
+                MQConfig.EXCHANGE,
+                MQConfig.RK_REFUND_DECISION_REGISTERED,
+                msg
+        );
     }
 
     public void publishRefundRequestMessageSentEvent(RefundRequestMessage message) {
-        RefundRequestMessageSentMessage refundRequestMessageSent = new RefundRequestMessageSentMessage();
-        refundRequestMessageSent.setUserId(message.getUserId());
-        refundRequestMessageSent.setContent(message.getContent());
-        refundRequestMessageSent.setRefundRequestId(message.getRefundRequest().getId());
+        RefundRequestMessageSentMessage msg = new RefundRequestMessageSentMessage();
+        msg.setUserId(message.getUserId());
+        msg.setContent(message.getContent());
+        msg.setRefundRequestId(message.getRefundRequest().getId());
 
-        rabbitTemplate.convertAndSend(MQConfig.EXCHANGE, MQConfig.ROUTING_KEY, refundRequestMessageSent);
+        rabbitTemplate.convertAndSend(
+                MQConfig.EXCHANGE,
+                MQConfig.RK_REFUND_REQUEST_MESSAGE_SENT,
+                msg
+        );
     }
-
 }
