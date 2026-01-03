@@ -1,33 +1,130 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt">
 <head>
+    <meta charset="UTF-8">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: {{backgroundColor}};
-            color: {{textColor}};
-            padding: 20px;
-            width: 600px;
-            border: 2px solid {{borderColor}};
-            border-radius: 10px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f4f6fb;
+            padding: 40px;
         }
-        .header { text-align: center; }
-        .qr { text-align: center; margin-top: 20px; }
-        .details { margin-top: 20px; }
+
+        .ticket {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1d2b64, #f0544f);
+            color: white;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .header img {
+            width: 120px;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            margin: 10px 0 0;
+            font-size: 30px;
+            letter-spacing: 1px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 18px;
+            font-size: 16px;
+        }
+
+        .label {
+            font-weight: bold;
+            color: #444;
+        }
+
+        .value {
+            color: #222;
+        }
+
+        .divider {
+            height: 1px;
+            background: #e5e5e5;
+            margin: 25px 0;
+        }
+
+        .qr-section {
+            text-align: center;
+        }
+
+        .qr-section img {
+            width: 180px;
+            margin: 10px 0;
+        }
+
+        .scan {
+            font-size: 14px;
+            color: #777;
+            margin-top: 5px;
+        }
+
+        .footer {
+            background: #f9f9f9;
+            padding: 15px;
+            text-align: center;
+            font-size: 13px;
+            color: #888;
+        }
     </style>
 </head>
+
 <body>
-<div class="header">
-    <img src="data:image/png;base64,{{logoBase64}}" width="100"/>
-    <h1>{{eventName}}</h1>
-</div>
-<div class="details">
-    <p>Data: {{eventDate}}</p>
-    <p>Local: {{venue}}</p>
-    <p>Zona: {{tier}}</p>
-</div>
-<div class="qr">
-    <img src="data:image/png;base64,{{qrCodeBase64}}" width="150"/>
+<div class="ticket">
+
+    <div class="header">
+        <img src="data:image/png;base64,{{logoBase64}}">
+        <h1>{{eventName}}</h1>
+    </div>
+
+    <div class="content">
+
+        <div class="info">
+            <span class="label">📅 Data</span>
+            <span class="value">{{eventDate}}</span>
+        </div>
+
+        <div class="info">
+            <span class="label">📍 Local</span>
+            <span class="value">{{venue}}</span>
+        </div>
+
+        <div class="info">
+            <span class="label">🎟 Zona</span>
+            <span class="value">{{tier}}</span>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="qr-section">
+            <img src="data:image/png;base64,{{qrCodeBase64}}">
+            <div class="scan">Apresente este QR à entrada</div>
+        </div>
+
+    </div>
+
+    <div class="footer">
+        Evently © {{year}} • Bilhete digital seguro
+    </div>
+
 </div>
 </body>
 </html>
