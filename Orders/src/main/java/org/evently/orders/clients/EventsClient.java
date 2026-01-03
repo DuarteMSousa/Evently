@@ -1,5 +1,6 @@
 package org.evently.orders.clients;
 
+import org.evently.orders.dtos.externalServices.EventSessionDTO;
 import org.evently.orders.dtos.externalServices.SessionTierDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +11,9 @@ import java.util.UUID;
 
 @FeignClient(name = "events", path = "/events")
 public interface EventsClient {
+
+    @GetMapping("/sessions/get-event-session/{id}")
+    public ResponseEntity<EventSessionDTO> getEventSession(@PathVariable("id") UUID id);
 
     @GetMapping("/sessions/tiers/get-session-tier/{id}")
     ResponseEntity<SessionTierDTO> getSessionTier(@PathVariable("id") UUID id);

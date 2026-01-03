@@ -1,22 +1,26 @@
 package org.evently.orders.dtos.externalServices;
 
-
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.Instant;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
-@Setter
+
 @Getter
-public class SessionTierDTO {
+@Setter
+public class EventSessionDTO {
 
     private UUID id;
 
-    private UUID eventSessionId;
+    private UUID eventId;
 
-    private UUID zoneId;
+    private UUID venueId;
 
-    private float price;
+    private Instant startsAt;
+
+    private Instant endsAt;
 
     private UUID createdBy;
 

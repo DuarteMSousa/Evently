@@ -3,8 +3,11 @@ package org.evently.orders.services;
 import feign.FeignException;
 import jakarta.transaction.Transactional;
 import org.evently.orders.clients.EventsClient;
+import org.evently.orders.clients.TicketManagementClient;
 import org.evently.orders.config.MQConfig;
+import org.evently.orders.dtos.externalServices.EventSessionDTO;
 import org.evently.orders.dtos.externalServices.SessionTierDTO;
+import org.evently.orders.dtos.externalServices.TicketReservationCreateDTO;
 import org.evently.orders.dtos.orderLines.OrderLineDTO;
 import org.evently.orders.enums.OrderStatus;
 import org.evently.orders.exceptions.ExternalServiceException;
@@ -27,8 +30,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class OrdersService {
@@ -48,6 +50,8 @@ public class OrdersService {
     private EventsClient  eventsClient;
 
     @Autowired
+    private TicketManagementClient ticketManagementClient;
+
     private OrdersEventsPublisher  ordersEventsPublisher;
 
     private ModelMapper modelMapper = new ModelMapper();
@@ -85,6 +89,7 @@ public class OrdersService {
                 order.getUserId(), order.getTotal());
 
         float orderTotal = 0;
+        Map<UUID, SessionTierDTO> ticketsToReserve = new HashMap<>();
 
         /// Recreating order lines based in actual products prices
         for (OrderLine line : order.getLines()) {
@@ -108,6 +113,7 @@ public class OrdersService {
                 throw new ProductNotFoundException("Product not found");
             }
 
+            ticketsToReserve.put(tier.getId(), tier);
             line.setUnitPrice(tier.getPrice());
             orderTotal += line.getQuantity() * line.getUnitPrice();
         }
@@ -122,6 +128,37 @@ public class OrdersService {
 
         logger.info(ORDER_CREATE, "Order created successfully (id={}, status={})",
                 savedOrder.getId(), savedOrder.getStatus());
+
+        for (OrderLine line : savedOrder.getLines()) {
+            EventSessionDTO eventSession;
+            SessionTierDTO tier = ticketsToReserve.get(line.getId().getProductId());
+
+            try {
+                TicketReservationCreateDTO ticketReservation = new TicketReservationCreateDTO();
+                ticketReservation.setUserId(order.getUserId());
+                ticketReservation.setOrderId(savedOrder.getId());
+                ticketReservation.setTierId(tier.getId());
+                ticketReservation.setSessionId(tier.getEventSessionId());
+                ticketReservation.setQuantity(line.getQuantity());
+
+                try {
+                    eventSession = eventsClient.getEventSession(tier.getEventSessionId()).getBody();
+                } catch (FeignException e) {
+                    String errorBody = e.contentUTF8();
+                    logger.error(ORDER_CREATE, "(OrdersService): Events service error: {}", errorBody);
+                    throw new ExternalServiceException("(OrdersService): Events service error");
+                }
+
+                if (eventSession != null) {
+                    ticketReservation.setEventId(eventSession.getEventId());
+                }
+
+                ticketManagementClient.reserveTicket(ticketReservation);
+            } catch (FeignException e) {
+                logger.error(ORDER_CREATE, "Error reserving ticket: {}", e.contentUTF8());
+                throw new ExternalServiceException("TicketManagement service error");
+            }
+        }
 
         ordersEventsPublisher.publishOrderCreatedEvent(savedOrder);
 
