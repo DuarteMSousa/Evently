@@ -11,6 +11,7 @@ import org.example.models.StockMovement;
 import org.example.models.TicketReservation;
 import org.example.models.TicketStock;
 import org.example.models.TicketStockId;
+import org.example.publishers.TicketManagementMessagesPublisher;
 import org.example.repositories.TicketReservationsRepository;
 import org.example.repositories.TicketStocksRepository;
 import org.slf4j.Logger;
@@ -26,6 +27,9 @@ import java.util.UUID;
 
 @Service
 public class TicketReservationsService {
+
+    @Autowired
+    private TicketManagementMessagesPublisher ticketManagementMessagesPublisher;
 
     @Autowired
     private TicketReservationsRepository ticketReservationsRepository;
@@ -206,11 +210,14 @@ public class TicketReservationsService {
         List<TicketReservation> ticketReservations = ticketReservationsRepository.findByOrderId(orderPaidMessage.getId());
 
         ticketReservations.forEach(ticketReservation -> {
-           ticketReservation.setConfirmedAt(OffsetDateTime.now());
-           ticketReservation.setStatus(TicketReservationStatus.CONFIRMED);
-           ticketReservationsRepository.save(ticketReservation);
+            ticketReservation.setConfirmedAt(OffsetDateTime.now());
+            ticketReservation.setStatus(TicketReservationStatus.CONFIRMED);
+            ticketReservationsRepository.save(ticketReservation);
         });
 
+        ticketReservations.forEach(ticketReservation -> {
+            ticketManagementMessagesPublisher.publishTicketReservationConfirmedMessage(ticketReservation);
+        });
     }
 
 }

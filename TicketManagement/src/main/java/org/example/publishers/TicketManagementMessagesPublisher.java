@@ -22,13 +22,13 @@ public class TicketManagementMessagesPublisher {
     public void publishTicketReservationConfirmedMessage(TicketReservation reservation) {
         TicketReservationConfirmedMessage message = modelMapper.map(reservation, TicketReservationConfirmedMessage.class) ;
 
-        rabbitTemplate.convertAndSend(MQConfig.EXCHANGE, MQConfig.ROUTING_KEY+".reservation_confirmed", message);
+        rabbitTemplate.convertAndSend(MQConfig.EXCHANGE, MQConfig.ROUTING_KEY+".reservation.confirmed", message);
     }
 
     public void publishTicketStockGeneratedMessage(TicketStock stock) {
         TicketStockGeneratedMessage message = new TicketStockGeneratedMessage() ;
         message.setEventId(stock.getId().getEventId());
 
-        rabbitTemplate.convertAndSend(MQConfig.EXCHANGE, MQConfig.ROUTING_KEY+".stock_generated", message);
+        rabbitTemplate.convertAndSend(MQConfig.EXCHANGE, MQConfig.ROUTING_KEY+".stock.generated", message);
     }
 }

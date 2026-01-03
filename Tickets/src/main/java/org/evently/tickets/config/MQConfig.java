@@ -32,14 +32,14 @@ public class MQConfig {
     }
 
     @Bean
-    public Binding refundsPayementsBinding(
+    public Binding ticketsTicketManagementBinding(
             @Qualifier("ticketsTicketManagementQueue") Queue queue,
             @Qualifier("ticketManagementExchange") TopicExchange exchange) {
 
         return BindingBuilder
                 .bind(queue)
                 .to(exchange)
-                .with("ticketManagement");
+                .with("ticketManagement.reservation.confirmed");
     }
 
     @Bean

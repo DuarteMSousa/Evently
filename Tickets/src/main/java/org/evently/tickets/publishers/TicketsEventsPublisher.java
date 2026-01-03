@@ -22,6 +22,6 @@ public class TicketsEventsPublisher {
         ticketIssuedMessage.setSessionId(ticket.getSessionId());
         ticketIssuedMessage.setTierId(ticket.getTierId());
 
-        rabbitTemplate.convertAndSend(MQConfig.EXCHANGE, MQConfig.ROUTING_KEY, ticketIssuedMessage);
+        rabbitTemplate.convertAndSend(MQConfig.EXCHANGE, MQConfig.ROUTING_KEY+".generated", ticketIssuedMessage);
     }
 }
