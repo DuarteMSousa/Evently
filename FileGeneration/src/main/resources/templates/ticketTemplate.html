@@ -1,138 +1,385 @@
+<!--<!DOCTYPE html>-->
+<!--<html lang="pt">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8" />-->
+<!--    <title>{{eventName}}</title>-->
+
+<!--    <style>-->
+<!--        @page { margin: 22mm; }-->
+
+<!--        body {-->
+<!--            font-family: "Segoe UI", Arial, sans-serif;-->
+<!--            background: #ffffff;-->
+<!--            color: {{textColor}};-->
+<!--            margin: 0;-->
+<!--        }-->
+
+<!--        .ticket {-->
+<!--            width: 600px;-->
+<!--            margin: auto;-->
+<!--            background: {{backgroundColor}};-->
+<!--            border: 2px solid {{borderColor}};-->
+<!--            border-radius: 18px;-->
+<!--            overflow: hidden;-->
+<!--        }-->
+
+<!--        /* HEADER */-->
+<!--        .header {-->
+<!--            background: linear-gradient(135deg, #1d4ed8, #2563eb);-->
+<!--            color: white;-->
+<!--            text-align: center;-->
+<!--            padding: 24px;-->
+<!--        }-->
+
+<!--        .header img {-->
+<!--            width: 110px;-->
+<!--            margin-bottom: 10px;-->
+<!--        }-->
+
+<!--        /* CONTENT */-->
+<!--        .content {-->
+<!--            padding: 26px;-->
+<!--        }-->
+
+<!--        h1 {-->
+<!--            text-align: center;-->
+<!--            font-size: 34px;-->
+<!--            margin-bottom: 25px;-->
+<!--        }-->
+
+<!--        /* DETAILS */-->
+<!--        .details {-->
+<!--            display: grid;-->
+<!--            grid-template-columns: 1fr 1fr;-->
+<!--            gap: 18px;-->
+<!--        }-->
+
+<!--        .box {-->
+<!--            background: rgba(255,255,255,0.65);-->
+<!--            border-radius: 12px;-->
+<!--            padding: 14px 18px;-->
+<!--            border: 1px solid rgba(0,0,0,0.15);-->
+<!--        }-->
+
+<!--        .label {-->
+<!--            font-size: 11px;-->
+<!--            text-transform: uppercase;-->
+<!--            opacity: 0.7;-->
+<!--            letter-spacing: 1px;-->
+<!--        }-->
+
+<!--        .value {-->
+<!--            font-size: 17px;-->
+<!--            font-weight: bold;-->
+<!--        }-->
+
+<!--        /* QR */-->
+<!--        .qr {-->
+<!--            text-align: center;-->
+<!--            margin-top: 28px;-->
+<!--        }-->
+
+<!--        .qr img {-->
+<!--            width: 190px;-->
+<!--            background: white;-->
+<!--            padding: 14px;-->
+<!--            border-radius: 14px;-->
+<!--            border: 1px solid rgba(0,0,0,0.15);-->
+<!--        }-->
+
+<!--        /* FOOTER */-->
+<!--        .footer {-->
+<!--            margin-top: 20px;-->
+<!--            text-align: center;-->
+<!--            font-size: 12px;-->
+<!--            opacity: 0.7;-->
+<!--        }-->
+<!--    </style>-->
+<!--</head>-->
+
+<!--<body>-->
+<!--<div class="ticket">-->
+
+<!--    <div class="header">-->
+<!--        <img src="data:image/png;base64,{{logoBase64}}" />-->
+<!--    </div>-->
+
+<!--    <div class="content">-->
+<!--        <h1>{{eventName}}</h1>-->
+
+<!--        <div class="details">-->
+<!--            <div class="box">-->
+<!--                <div class="label">Data</div>-->
+<!--                <div class="value">{{eventDate}}</div>-->
+<!--            </div>-->
+
+<!--            <div class="box">-->
+<!--                <div class="label">Local</div>-->
+<!--                <div class="value">{{venue}}</div>-->
+<!--            </div>-->
+
+<!--            <div class="box">-->
+<!--                <div class="label">Zona</div>-->
+<!--                <div class="value">{{tier}}</div>-->
+<!--            </div>-->
+<!--        </div>-->
+
+<!--        <div class="qr">-->
+<!--            <img src="data:image/png;base64,{{qrCodeBase64}}" />-->
+<!--        </div>-->
+<!--    </div>-->
+
+<!--    <div class="footer">-->
+<!--        Apresenta este QR Code à entrada do evento-->
+<!--    </div>-->
+
+<!--</div>-->
+<!--</body>-->
+<!--</html>-->
+
 <!DOCTYPE html>
 <html lang="pt">
 <head>
     <meta charset="UTF-8" />
-    <title>{{eventName}}</title>
-
     <style>
-        @page { margin: 22mm; }
+        @page { margin: 16mm; }
 
-        body {
+        :root{
+            --bg: #ffffff;
+            --card: #ffffff;
+            --ink: #0f172a;         /* slate-900 */
+            --muted: #64748b;       /* slate-500 */
+            --line: #e2e8f0;        /* slate-200 */
+            --accent: #2563eb;      /* blue-600 */
+            --accent2: #1e40af;     /* blue-800 */
+            --radius: 18px;
+        }
+
+        body{
+            margin:0;
+            background: var(--bg);
             font-family: "Segoe UI", Arial, sans-serif;
-            background: #ffffff;
-            color: {{textColor}};
-            margin: 0;
-        }
-
-        .ticket {
-            width: 600px;
-            margin: auto;
-            background: {{backgroundColor}};
-            border: 2px solid {{borderColor}};
-            border-radius: 18px;
-            overflow: hidden;
-        }
-
-        /* HEADER */
-        .header {
-            background: linear-gradient(135deg, #1d4ed8, #2563eb);
-            color: white;
-            text-align: center;
+            color: var(--ink);
             padding: 24px;
         }
 
-        .header img {
+        /* Ticket container */
+        .ticket{
+            width: 900px;
+            max-width: 100%;
+            margin: 0 auto;
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.10);
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            position: relative;
+        }
+
+        /* Perforation divider */
+        .divider{
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: calc(100% - 320px);
+            width: 0;
+            border-left: 2px dashed #cbd5e1;
+            opacity: .9;
+        }
+
+        /* Little “half circles” like ticket cuts */
+        .cut{
+            position: absolute;
+            left: calc(100% - 320px - 12px);
+            width: 24px;
+            height: 24px;
+            background: var(--bg);
+            border: 1px solid var(--line);
+            border-radius: 999px;
+        }
+        .cut.top{ top: -12px; }
+        .cut.bottom{ bottom: -12px; }
+
+        /* LEFT SIDE */
+        .left{
+            padding: 28px 30px 26px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            background: linear-gradient(180deg, rgba(37,99,235,0.06), transparent 38%);
+        }
+
+        .brand{
+            display:flex;
+            align-items:center;
+            gap: 12px;
+        }
+        .brand img{
             width: 110px;
-            margin-bottom: 10px;
+            height: auto;
         }
 
-        /* CONTENT */
-        .content {
-            padding: 26px;
-        }
-
-        h1 {
-            text-align: center;
+        .title{
+            margin: 0;
             font-size: 34px;
-            margin-bottom: 25px;
+            line-height: 1.1;
+            letter-spacing: -0.4px;
         }
 
-        /* DETAILS */
-        .details {
+        .meta{
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 18px;
+            gap: 14px 18px;
+            padding-top: 6px;
         }
 
-        .box {
-            background: rgba(255,255,255,0.65);
-            border-radius: 12px;
-            padding: 14px 18px;
-            border: 1px solid rgba(0,0,0,0.15);
+        .item{
+            padding: 14px 14px;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            background: #fff;
         }
 
-        .label {
+        .label{
+            display:block;
             font-size: 11px;
             text-transform: uppercase;
-            opacity: 0.7;
-            letter-spacing: 1px;
+            letter-spacing: .12em;
+            color: var(--muted);
+            margin-bottom: 6px;
         }
 
-        .value {
-            font-size: 17px;
-            font-weight: bold;
+        .value{
+            font-size: 16px;
+            font-weight: 650;
+            color: var(--ink);
+            word-break: break-word;
         }
 
-        /* QR */
-        .qr {
-            text-align: center;
-            margin-top: 28px;
-        }
-
-        .qr img {
-            width: 190px;
-            background: white;
-            padding: 14px;
-            border-radius: 14px;
-            border: 1px solid rgba(0,0,0,0.15);
-        }
-
-        /* FOOTER */
-        .footer {
-            margin-top: 20px;
-            text-align: center;
+        .hint{
+            margin-top: 4px;
             font-size: 12px;
-            opacity: 0.7;
+            color: var(--muted);
+        }
+
+        /* RIGHT SIDE */
+        .right{
+            padding: 24px 22px;
+            background: linear-gradient(135deg, rgba(30,64,175,0.08), rgba(37,99,235,0.02));
+            display:flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+        }
+
+        .rightHeader{
+            width: 100%;
+            padding: 12px 12px;
+            border-radius: 14px;
+            border: 1px solid rgba(37,99,235,0.25);
+            background: rgba(37,99,235,0.10);
+            text-align:center;
+            font-weight: 700;
+            color: var(--accent2);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: .10em;
+        }
+
+        .qrBox{
+            width: 100%;
+            padding: 16px;
+            border-radius: 16px;
+            background: #fff;
+            border: 1px solid var(--line);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        }
+
+        .qrBox img{
+            width: 220px;
+            height: 220px;
+            object-fit: contain;
+        }
+
+        .cta{
+            width: 100%;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--accent2), var(--accent));
+            color: #fff;
+            text-align:center;
+            padding: 14px 12px;
+            font-weight: 800;
+            font-size: 18px;
+            letter-spacing: .02em;
+        }
+
+        .small{
+            font-size: 11px;
+            color: var(--muted);
+            text-align:center;
+            margin-top: -6px;
+        }
+
+        /* Better PDF scaling */
+        @media print{
+            body{ padding: 0; }
+            .ticket{ box-shadow: none; }
+            .cut{ background: white; }
         }
     </style>
 </head>
 
 <body>
 <div class="ticket">
+    <div class="divider"></div>
+    <div class="cut top"></div>
+    <div class="cut bottom"></div>
 
-    <div class="header">
-        <img src="data:image/png;base64,{{logoBase64}}" />
-    </div>
+    <!-- LEFT -->
+    <div class="left">
+        <div class="brand">
+            <img src="data:image/png;base64,{{logoBase64}}" alt="Evently logo" />
+        </div>
 
-    <div class="content">
-        <h1>{{eventName}}</h1>
+        <h1 class="title">{{eventName}}</h1>
 
-        <div class="details">
-            <div class="box">
-                <div class="label">Data</div>
+        <div class="meta">
+            <div class="item">
+                <span class="label">Data</span>
                 <div class="value">{{eventDate}}</div>
             </div>
 
-            <div class="box">
-                <div class="label">Local</div>
+            <div class="item">
+                <span class="label">Local</span>
                 <div class="value">{{venue}}</div>
             </div>
 
-            <div class="box">
-                <div class="label">Zona</div>
+            <div class="item" style="grid-column: 1 / span 2;">
+                <span class="label">Zona</span>
                 <div class="value">{{tier}}</div>
+                <div class="hint">Apresenta o QR Code à entrada do evento.</div>
             </div>
         </div>
+    </div>
 
-        <div class="qr">
-            <img src="data:image/png;base64,{{qrCodeBase64}}" />
+    <!-- RIGHT -->
+    <div class="right">
+        <div class="rightHeader">Digital Ticket</div>
+
+        <div class="qrBox">
+            <img src="data:image/png;base64,{{qrCodeBase64}}" alt="QR Code" />
+        </div>
+
+        <div style="width:100%;">
+            <div class="cta">Escaneia para validar</div>
+            <div class="small">Guarda este bilhete</div>
         </div>
     </div>
-
-    <div class="footer">
-        Apresenta este QR Code à entrada do evento
-    </div>
-
 </div>
 </body>
 </html>
