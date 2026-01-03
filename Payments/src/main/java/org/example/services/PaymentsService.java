@@ -147,7 +147,6 @@ public class PaymentsService {
 
         validatePaymentForProcess(payment);
 
-        // 1) Impedir duplicados por orderId
         var existingOpt = paymentsRepository.findByOrderId(payment.getOrderId());
 
         if (existingOpt.isPresent()) {
@@ -156,20 +155,16 @@ public class PaymentsService {
             logger.info(PAY_PROCESS, "Existing payment found for orderId={} (paymentId={}, status={}, providerRef={})",
                     existing.getOrderId(), existing.getId(), existing.getStatus(), existing.getProviderRef());
 
-            // Se já está pendente e já tem providerRef, devolve o mesmo link (reutiliza)
             if (existing.getStatus() == PaymentStatus.PENDING && existing.getProviderRef() != null) {
                 return existing;
             }
 
-            // Se já foi pago/cancelado/etc, não faz sentido criar outro payment para a mesma order
             if (existing.getStatus() == PaymentStatus.CAPTURED ||
                     existing.getStatus() == PaymentStatus.REFUNDED ||
                     existing.getStatus() == PaymentStatus.CANCELED) {
                 throw new InvalidPaymentException("This order already has a finalized payment: " + existing.getStatus());
             }
 
-            // Se FAILED (ou PENDING sem providerRef), vamos tentar criar/reativar a order no PayPal
-            // Reutilizamos o mesmo registo (não criamos outro)
             existing.setUserId(payment.getUserId());
             existing.setAmount(payment.getAmount());
             existing.setPaymentProvider(payment.getPaymentProvider());
@@ -198,7 +193,6 @@ public class PaymentsService {
             }
         }
 
-        // 2) Se não existe payment para a order, cria normalmente
         payment.setStatus(PaymentStatus.PENDING);
         Payment saved = paymentsRepository.save(payment);
 
@@ -209,7 +203,7 @@ public class PaymentsService {
             logger.info(PAY_PROVIDER, "Creating PayPal order (paymentId={}, orderId={})",
                     saved.getId(), saved.getOrderId());
 
-            paymentProviderClient.createPaymentOrder(saved); // setProviderRef(...)
+            paymentProviderClient.createPaymentOrder(saved); 
             Payment updated = paymentsRepository.save(saved);
 
             createEvent(updated, PaymentEventType.PENDING, null);
