@@ -310,4 +310,31 @@ public class NotificationsService {
 
         return sendInAppAndMaybeEmail(n, true);
     }
+
+    @Transactional
+    public void notifyPdfGeneratedWithAttachment(UUID userId, UUID orderId, String fileName, byte[] pdfBytes) {
+
+        // cria notificação IN_APP (opcional)
+        Notification n = new Notification();
+        n.setUserId(userId);
+        n.setType(NotificationType.FILE);
+        n.setTitle("PDF gerado");
+        n.setBody("O teu PDF está anexado: " + fileName);
+
+        // guarda notificação (IN_APP)
+        sendNotification(n, NotificationChannel.IN_APP, null);
+
+        // resolve email e envia com anexo
+        String email = resolveUserEmail(userId);
+        if (email != null) {
+            emailService.sendNotificationEmailWithAttachment(
+                    email,
+                    "PDF gerado",
+                    "Segue em anexo o teu PDF.",
+                    pdfBytes,
+                    fileName
+            );
+        }
+    }
+
 }

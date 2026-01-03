@@ -1,5 +1,7 @@
 package org.example.listeners;
 
+import lombok.var;
+import org.example.clients.FileClient;
 import org.example.config.RabbitMQConfig;
 import org.example.messages.externalServices.TicketFileGeneratedMessage;
 import org.example.service.NotificationsService;
@@ -10,26 +12,31 @@ import org.springframework.stereotype.Component;
 public class FilesEventsListener {
 
     private final NotificationsService notificationsService;
+    private final FileClient fileClient;
 
-    public FilesEventsListener(NotificationsService notificationsService) {
+    public FilesEventsListener(NotificationsService notificationsService, FileClient fileClient) {
         this.notificationsService = notificationsService;
+        this.fileClient = fileClient;
     }
 
-    @RabbitListener(
-            queues = RabbitMQConfig.NOTIF_FILES_QUEUE,
-            containerFactory = "rabbitListenerContainerFactory"
-    )
+    @RabbitListener(queues = RabbitMQConfig.NOTIF_FILES_QUEUE,
+            containerFactory = "rabbitListenerContainerFactory")
     public void handleFileGenerated(TicketFileGeneratedMessage msg) {
 
+        var resp = fileClient.getTicketPdf(msg.getId());
+
+        if (resp == null || !resp.getStatusCode().is2xxSuccessful() || resp.getBody() == null) {
+            throw new RuntimeException("Could not download pdf for fileId=" + msg.getId());
+        }
+
+        byte[] pdfBytes = resp.getBody();
         String fileName = msg.getId() + ".pdf";
 
-        String downloadUrl = "http://localhost:8083/ticket-files/get-ticket-file/" + msg.getId();
-
-        notificationsService.notifyPdfGenerated(
+        notificationsService.notifyPdfGeneratedWithAttachment(
                 msg.getUserId(),
                 msg.getOrderId(),
                 fileName,
-                downloadUrl
+                pdfBytes
         );
     }
 }
