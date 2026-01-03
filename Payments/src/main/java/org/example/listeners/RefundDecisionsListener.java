@@ -1,6 +1,7 @@
 package org.example.listeners;
 
 import org.example.config.RabbitMQConfig;
+import org.example.enums.externalServices.DecisionType;
 import org.example.messages.externalServices.RefundRequestDecisionRegisteredMessage;
 import org.example.services.PaymentsService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -21,15 +22,11 @@ public class RefundDecisionsListener {
     )
     public void handleRefundDecision(RefundRequestDecisionRegisteredMessage msg) {
 
-        String dt = msg.getDecisionType();
+        DecisionType dt = msg.getDecisionType();
 
-        if ("ACCEPTED".equalsIgnoreCase(dt) || "APPROVED".equalsIgnoreCase(dt)) {
+        if (DecisionType.APPROVE.equals(dt)) {
             paymentsService.onRefundApproved(msg.getPaymentId());
-            return;
         }
 
-        if ("REJECTED".equalsIgnoreCase(dt) || "DENIED".equalsIgnoreCase(dt)) {
-            paymentsService.onRefundRejected(msg.getPaymentId(), msg.getDescription());
-        }
     }
 }

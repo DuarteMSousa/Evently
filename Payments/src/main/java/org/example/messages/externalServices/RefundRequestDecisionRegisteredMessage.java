@@ -3,6 +3,7 @@ package org.example.messages.externalServices;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.example.enums.externalServices.DecisionType;
 
 import java.util.UUID;
 
@@ -13,6 +14,6 @@ public class RefundRequestDecisionRegisteredMessage {
 
     private UUID userToRefundId;
     private UUID paymentId;
-    private String decisionType;
+    private DecisionType decisionType;
     private String description;
 }

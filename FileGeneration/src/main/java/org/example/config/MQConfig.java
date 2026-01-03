@@ -16,7 +16,7 @@ public class MQConfig {
 
     public static final String TICKETS_EXCHANGE = "tickets_exchange";
 
-    public static final String FILES_EXCHANGE = "files_exchange";
+    public static final String FILES_EXCHANGE = "fileGeneration_exchange";
 
     public static final String FILES_ROUTING_KEY = "files";
 

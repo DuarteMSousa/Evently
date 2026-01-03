@@ -1,6 +1,9 @@
 package org.example.service;
 
+import feign.FeignException;
 import jakarta.transaction.Transactional;
+import org.example.clients.UsersClient;
+import org.example.dtos.UserDTO;
 import org.example.exceptions.InvalidNotificationException;
 import org.example.exceptions.UserNotFoundException;
 import org.example.models.Notification;
@@ -35,17 +38,19 @@ public class NotificationsService {
     private OutBoxMessagesRepository outBoxMessagesRepository;
 
     @Autowired
+    private UsersClient usersClient;
+
+    @Autowired
     private EmailService emailService;
 
     /**
      * Validates a notification payload and delivery parameters before sending/queuing.
      *
-     *
      * @param notification notification payload to validate
-     * @param channel delivery channel (e.g. "EMAIL")
-     * @param emailTo destination email (required when channel == EMAIL)
+     * @param channel      delivery channel (e.g. "EMAIL")
+     * @param emailTo      destination email (required when channel == EMAIL)
      * @throws InvalidNotificationException if any required field is missing or invalid
-     * @throws UserNotFoundException if the user is considered not found by the current validation rule
+     * @throws UserNotFoundException        if the user is considered not found by the current validation rule
      */
     private void validateNotification(Notification notification,
                                       String channel,
@@ -94,13 +99,12 @@ public class NotificationsService {
     /**
      * Sends a notification through a given channel.
      *
-     *
      * @param notification notification payload
-     * @param channel delivery channel (e.g. "EMAIL")
-     * @param emailTo destination email (required when channel == EMAIL)
+     * @param channel      delivery channel (e.g. "EMAIL")
+     * @param emailTo      destination email (required when channel == EMAIL)
      * @return persisted notification
      * @throws InvalidNotificationException if payload is invalid
-     * @throws UserNotFoundException if user is considered not found by the current validation rule
+     * @throws UserNotFoundException        if user is considered not found by the current validation rule
      */
     @Transactional
     public Notification sendNotification(Notification notification,
@@ -247,7 +251,7 @@ public class NotificationsService {
         n.setType("REFUND");
 
         boolean accepted = "ACCEPTED".equalsIgnoreCase(decisionType)
-                || "APPROVED".equalsIgnoreCase(decisionType);
+                || "APPROVE".equalsIgnoreCase(decisionType);
 
         n.setTitle(accepted ? "Reembolso aprovado" : "Reembolso rejeitado");
 

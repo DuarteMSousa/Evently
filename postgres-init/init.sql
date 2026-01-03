@@ -9,4 +9,5 @@ CREATE DATABASE reviews;
 CREATE DATABASE ticketManagement;
 CREATE DATABASE tickets;
 CREATE DATABASE venues;
+CREATE DATABASE notifications;
 

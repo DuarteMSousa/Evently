@@ -8,6 +8,7 @@ import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFacto
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -16,28 +17,36 @@ public class RabbitMQConfig {
 
     // Exchanges
     public static final String PAYMENTS_EXCHANGE = "payments_exchange";
-    public static final String REFUNDS_EXCHANGE  = "refunds_exchange";
-    public static final String FILES_EXCHANGE    = "fileGeneration_exchange";
+    public static final String REFUNDS_EXCHANGE = "refunds_exchange";
+    public static final String FILES_EXCHANGE = "fileGeneration_exchange";
 
     // Queues
     public static final String NOTIF_PAYMENTS_QUEUE = "notifications_payments";
-    public static final String NOTIF_REFUND_REQUESTS_QUEUE  = "notifications_refunds_requests";
+    public static final String NOTIF_REFUND_REQUESTS_QUEUE = "notifications_refunds_requests";
     public static final String NOTIF_REFUND_DECISIONS_QUEUE = "notifications_refunds_decisions";
-    public static final String NOTIF_FILES_QUEUE    = "notifications_files";
+    public static final String NOTIF_FILES_QUEUE = "notifications_files";
 
     // Exchanges
     @Bean
-    public TopicExchange paymentsExchange() { return new TopicExchange(PAYMENTS_EXCHANGE); }
+    public TopicExchange paymentsExchange() {
+        return new TopicExchange(PAYMENTS_EXCHANGE);
+    }
 
     @Bean
-    public TopicExchange refundsExchange() { return new TopicExchange(REFUNDS_EXCHANGE); }
+    public TopicExchange refundsExchange() {
+        return new TopicExchange(REFUNDS_EXCHANGE);
+    }
 
     @Bean
-    public TopicExchange filesExchange() { return new TopicExchange(FILES_EXCHANGE); }
+    public TopicExchange filesExchange() {
+        return new TopicExchange(FILES_EXCHANGE);
+    }
 
     // Queues
     @Bean
-    public Queue notificationsPaymentsQueue() { return new Queue(NOTIF_PAYMENTS_QUEUE, true); }
+    public Queue notificationsPaymentsQueue() {
+        return new Queue(NOTIF_PAYMENTS_QUEUE, true);
+    }
 
     @Bean
     public Queue notificationsRefundRequestsQueue() {
@@ -50,32 +59,34 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Queue notificationsFilesQueue() { return new Queue(NOTIF_FILES_QUEUE, true); }
+    public Queue notificationsFilesQueue() {
+        return new Queue(NOTIF_FILES_QUEUE, true);
+    }
 
     // Bindings
     @Bean
-    public Binding bindPayments(Queue notificationsPaymentsQueue, TopicExchange paymentsExchange) {
+    public Binding bindPayments(@Qualifier("notificationsPaymentsQueue") Queue notificationsPaymentsQueue,@Qualifier("paymentsExchange") TopicExchange paymentsExchange) {
         return BindingBuilder.bind(notificationsPaymentsQueue).to(paymentsExchange).with("payments.*");
     }
 
     @Bean
-    public Binding bindRefundRequests(Queue notificationsRefundRequestsQueue,
-                                      TopicExchange refundsExchange) {
+    public Binding bindRefundRequests(@Qualifier("notificationsRefundRequestsQueue") Queue notificationsRefundRequestsQueue,
+                                      @Qualifier("refundsExchange") TopicExchange refundsExchange) {
         return BindingBuilder.bind(notificationsRefundRequestsQueue)
                 .to(refundsExchange)
                 .with("refunds.request.sent");
     }
 
     @Bean
-    public Binding bindRefundDecisions(Queue notificationsRefundDecisionsQueue,
-                                       TopicExchange refundsExchange) {
+    public Binding bindRefundDecisions(@Qualifier("notificationsRefundDecisionsQueue") Queue notificationsRefundDecisionsQueue,
+                                       @Qualifier("refundsExchange") TopicExchange refundsExchange) {
         return BindingBuilder.bind(notificationsRefundDecisionsQueue)
                 .to(refundsExchange)
                 .with("refunds.decision.registered");
     }
 
     @Bean
-    public Binding bindFiles(Queue notificationsFilesQueue, TopicExchange filesExchange) {
+    public Binding bindFiles(@Qualifier("notificationsFilesQueue") Queue notificationsFilesQueue, @Qualifier("filesExchange") TopicExchange filesExchange) {
         return BindingBuilder.bind(notificationsFilesQueue).to(filesExchange).with("files.*");
     }
 
