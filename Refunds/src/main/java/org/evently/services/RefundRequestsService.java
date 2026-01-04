@@ -4,6 +4,7 @@ import feign.FeignException;
 import jakarta.transaction.Transactional;
 import org.evently.clients.PaymentsClient;
 import org.evently.clients.UsersClient;
+import org.evently.dtos.externalServices.PaymentDTO;
 import org.evently.enums.RefundRequestStatus;
 import org.evently.enums.externalServices.PaymentStatus;
 import org.evently.exceptions.ExternalServiceException;
@@ -96,10 +97,10 @@ public class RefundRequestsService {
                     "(RefundRequestsService): Users service error");
         }
 
-        PaymentStatus paymentStatus = null;
+        PaymentDTO paymentDTO = null;
 
         try {
-            paymentStatus = paymentsClient.checkPaymentStatus(refundRequest.getPaymentId()).getBody().getStatus();
+            paymentDTO = paymentsClient.getPayment(refundRequest.getPaymentId()).getBody();
         } catch (FeignException.NotFound e) {
             logger.warn(REFUND_CREATE, "(RefundRequestsService): Payment not found in Payments service");
             throw new PaymentNotFoundException(
@@ -110,8 +111,12 @@ public class RefundRequestsService {
                     "(RefundRequestsService): Payments service error");
         }
 
-        if (paymentStatus != PaymentStatus.CAPTURED){
-            throw new InvalidRefundRequestException("Payment is not processed yet");
+        if (paymentDTO != null){
+            refundRequest.setOrderId(paymentDTO.getOrderId());
+
+            if (paymentDTO.getStatus() != PaymentStatus.CAPTURED) {
+                throw new InvalidRefundRequestException("Payment is not processed yet");
+            }
         }
 
         RefundRequest saved = refundRequestsRepository.save(refundRequest);

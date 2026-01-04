@@ -16,6 +16,8 @@ public class RefundRequestDecisionRegisteredMessage {
 
     private UUID paymentId;
 
+    private UUID orderId;
+
     private DecisionType decisionType;
 
     private String description;

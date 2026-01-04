@@ -27,6 +27,7 @@ public class PaymentsController {
 
     private static final Logger logger = LoggerFactory.getLogger(PaymentsController.class);
 
+    private static final Marker PAYMENT_GET = MarkerFactory.getMarker("PAYMENT_GET");
     private static final Marker PAYMENT_STATUS = MarkerFactory.getMarker("PAYMENT_STATUS");
     private static final Marker PAYMENT_USER_LIST = MarkerFactory.getMarker("PAYMENT_USER_LIST");
     private static final Marker PAYMENT_PROCESS = MarkerFactory.getMarker("PAYMENT_PROCESS");
@@ -46,6 +47,36 @@ public class PaymentsController {
 
     private PaymentDTO toPaymentDTO(Payment payment) {
         return modelMapper.map(payment, PaymentDTO.class);
+    }
+
+    @GetMapping("/get-payment/{paymentId}")
+    public ResponseEntity<?> getPayment(@PathVariable("paymentId") UUID paymentId) {
+        /* HttpStatus(produces)
+         * 200 OK - Payment retrieved successfully.
+         * 404 NOT_FOUND - Payment not found.
+         * 400 BAD_REQUEST - Generic error.
+         */
+        logger.info(PAYMENT_GET, "Method getPayment entered for Payment ID: {}", paymentId);
+
+        try {
+            Payment payment = paymentsService.getPayment(paymentId);
+            PaymentDTO dto = toPaymentDTO(payment);
+
+            logger.info(PAYMENT_GET,
+                    "200 OK returned, payment retrieved (paymentId={}, status={})",
+                    payment.getId(), payment.getStatus());
+
+            return ResponseEntity.ok(dto);
+        } catch (PaymentNotFoundException e) {
+            logger.warn(PAYMENT_GET, "404 NOT_FOUND: Payment {} not found", paymentId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+
+        } catch (Exception e) {
+            logger.error(PAYMENT_GET,
+                    "400 BAD_REQUEST: Exception caught while getting payment: {}",
+                    e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
     @GetMapping("/check-payment-status/{paymentId}")

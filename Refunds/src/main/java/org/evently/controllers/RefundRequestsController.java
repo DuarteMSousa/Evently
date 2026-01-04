@@ -79,6 +79,7 @@ public class RefundRequestsController {
         try {
             RefundRequest refundRequest = new RefundRequest();
             refundRequest.setPaymentId(refundDTO.getPayment());
+            refundRequest.setOrderId(UUID.randomUUID());
             refundRequest.setUserId(refundDTO.getUser());
             refundRequest.setTitle(refundDTO.getTitle());
             refundRequest.setDescription(refundDTO.getDescription());
