@@ -2,6 +2,7 @@ package org.evently.dtos.externalServices;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.evently.enums.externalServices.PaymentStatus;
 
 import java.util.UUID;
 
@@ -10,5 +11,5 @@ import java.util.UUID;
 public class PaymentStatusDTO {
 
     private UUID paymentId;
-    private String status;
+    private PaymentStatus status;
 }
