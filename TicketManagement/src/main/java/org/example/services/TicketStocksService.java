@@ -1,15 +1,8 @@
 package org.example.services;
 
-import feign.FeignException;
 import jakarta.transaction.Transactional;
-import org.example.clients.VenuesClient;
-import org.example.dtos.externalServices.eventSessions.EventSessionDTO;
-import org.example.dtos.externalServices.sessionTiers.SessionTierDTO;
-import org.example.dtos.externalServices.venueszone.VenueZoneDTO;
 import org.example.enums.StockMovementType;
-import org.example.enums.externalServices.EventStatus;
 import org.example.exceptions.*;
-import org.example.messages.TicketStockGeneratedMessage;
 import org.example.models.StockMovement;
 import org.example.models.TicketStock;
 import org.example.models.TicketStockId;
