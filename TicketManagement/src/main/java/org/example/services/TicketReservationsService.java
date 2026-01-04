@@ -7,6 +7,7 @@ import org.example.exceptions.InvalidTicketReservationException;
 import org.example.exceptions.TicketReservationNotFoundException;
 import org.example.exceptions.TicketStockNotFoundException;
 import org.example.messages.received.OrderPaidMessage;
+import org.example.messages.received.RefundRequestDecisionRegisteredMessage;
 import org.example.models.StockMovement;
 import org.example.models.TicketReservation;
 import org.example.models.TicketStock;
@@ -219,6 +220,15 @@ public class TicketReservationsService {
         ticketReservations.forEach(ticketReservation -> {
             ticketManagementMessagesPublisher.publishTicketReservationConfirmedMessage(ticketReservation);
         });
+    }
+
+    @Transactional
+    public void handleRefundRequestDecision(RefundRequestDecisionRegisteredMessage message) {
+
+
+//        ticketReservations.forEach(ticketReservation -> {
+//            ticketManagementMessagesPublisher.publishTicketReservationConfirmedMessage(ticketReservation);
+//        });
     }
 
 }

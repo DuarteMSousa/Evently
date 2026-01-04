@@ -91,7 +91,7 @@ public class MQConfig {
         return BindingBuilder
                 .bind(queue)
                 .to(exchange)
-                .with("refunds.*");
+                .with("refunds.decision.registered");
     }
 
     @Bean

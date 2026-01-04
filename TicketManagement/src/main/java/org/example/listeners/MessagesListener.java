@@ -2,6 +2,7 @@ package org.example.listeners;
 
 import org.example.config.MQConfig;
 import org.example.messages.received.OrderPaidMessage;
+import org.example.messages.received.RefundRequestDecisionRegisteredMessage;
 import org.example.publishers.TicketManagementMessagesPublisher;
 import org.example.services.TicketReservationsService;
 import org.example.services.TicketStocksService;
@@ -26,5 +27,10 @@ public class MessagesListener {
         ticketReservationsService.handleOrderPaid(message);
 
 
+    }
+
+    @RabbitListener(queues = MQConfig.REFUNDS_QUEUE)
+    public void listener(RefundRequestDecisionRegisteredMessage message) {
+        ticketReservationsService.handleRefundDecision(message);
     }
 }
