@@ -111,6 +111,10 @@ public class RefundDecisionsService {
                     return new RefundRequestNotFoundException("Refund Request not found");
                 });
 
+        if (refundRequest.getUserId() == decision.getDecidedBy()) {
+            throw new InvalidRefundRequestDecisionException("The user who made the refund request cannot give a decision about it");
+        }
+
         decision.setRefundRequest(refundRequest);
 
         validateDecision(decision);

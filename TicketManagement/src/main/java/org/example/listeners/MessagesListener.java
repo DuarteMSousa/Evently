@@ -31,6 +31,6 @@ public class MessagesListener {
 
     @RabbitListener(queues = MQConfig.REFUNDS_QUEUE)
     public void listener(RefundRequestDecisionRegisteredMessage message) {
-        ticketReservationsService.handleRefundDecision(message);
+        //ticketReservationsService.handleRefundDecision(message);
     }
 }
