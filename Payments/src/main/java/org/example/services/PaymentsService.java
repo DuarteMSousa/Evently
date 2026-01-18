@@ -165,7 +165,13 @@ public class PaymentsService {
                 return existing;
             }
 
-            OrderDTO order = null;
+            if (existing.getStatus() == PaymentStatus.CAPTURED ||
+                    existing.getStatus() == PaymentStatus.REFUNDED ||
+                    existing.getStatus() == PaymentStatus.CANCELED) {
+                throw new InvalidPaymentException("This order already has a finalized payment: " + existing.getStatus());
+            }
+
+            OrderDTO order;
 
             try {
                 order = ordersClient.getOrder(existingOpt.get().getOrderId()).getBody();
@@ -179,12 +185,6 @@ public class PaymentsService {
                 if (order.getTotal() != payment.getAmount()) {
                     throw new InvalidPaymentException("Payment amount is different from order total amount");
                 }
-            }
-
-            if (existing.getStatus() == PaymentStatus.CAPTURED ||
-                    existing.getStatus() == PaymentStatus.REFUNDED ||
-                    existing.getStatus() == PaymentStatus.CANCELED) {
-                throw new InvalidPaymentException("This order already has a finalized payment: " + existing.getStatus());
             }
 
             existing.setUserId(payment.getUserId());
