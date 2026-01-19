@@ -245,6 +245,8 @@ public class OrdersService {
 
         logger.info(ORDER_CANCEL, "Order cancelled successfully (id={})", id);
 
+        ordersEventsPublisher.publishOrderCancelledEvent(order.getId());
+
         return cancelledOrder;
     }
 

@@ -2,6 +2,7 @@ package org.evently.orders.publishers;
 
 import org.evently.orders.config.MQConfig;
 import org.evently.orders.dtos.orderLines.OrderLineDTO;
+import org.evently.orders.messages.OrderCancelledMessage;
 import org.evently.orders.messages.OrderCreatedMessage;
 import org.evently.orders.messages.OrderPaidMessage;
 import org.evently.orders.models.Order;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Component
 public class OrdersEventsPublisher {
@@ -44,5 +46,12 @@ public class OrdersEventsPublisher {
         orderPaidMessage.setLines(orderLines);
 
         rabbitTemplate.convertAndSend(MQConfig.EXCHANGE, MQConfig.ROUTING_KEY + ".paid", orderPaidMessage);
+    }
+
+    public void publishOrderCancelledEvent(UUID orderId) {
+        OrderCancelledMessage orderCanceledMessage = new OrderCancelledMessage();
+        orderCanceledMessage.setId(orderId);
+
+        rabbitTemplate.convertAndSend(MQConfig.EXCHANGE, MQConfig.ROUTING_KEY + ".cancelled", orderCanceledMessage);
     }
 }
