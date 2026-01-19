@@ -107,7 +107,7 @@ public class TicketsController {
         /* HttpStatus(produces)
          * 200 OK - Ticket validated/used successfully.
          * 404 NOT_FOUND - No ticket exists with the provided ID.
-         * 400 BAD_REQUEST - Ticket is already used or cancelled.
+         * 400 BAD_REQUEST - Ticket is already used or canceled.
          */
 
         logger.info(TICKET_USE, "Method useTicket entered for id: {}", id);
@@ -127,16 +127,16 @@ public class TicketsController {
     @PutMapping("/cancel-ticket/{id}")
     public ResponseEntity<?> cancelTicket(@PathVariable("id") UUID id) {
         /* HttpStatus(produces)
-         * 200 OK - Ticket cancelled successfully.
+         * 200 OK - Ticket canceled successfully.
          * 404 NOT_FOUND - No ticket exists with the provided ID.
-         * 400 BAD_REQUEST - Ticket is already used or already cancelled.
+         * 400 BAD_REQUEST - Ticket is already used or already canceled.
          */
 
         logger.info(TICKET_CANCEL, "Method cancelTicket entered for id: {}", id);
         try {
-            Ticket cancelledTicket = ticketsService.cancelTicket(id);
-            logger.info(TICKET_CANCEL, "200 OK returned, ticket marked as CANCELLED");
-            return ResponseEntity.ok(convertToDTO(cancelledTicket));
+            Ticket canceledTicket = ticketsService.cancelTicket(id);
+            logger.info(TICKET_CANCEL, "200 OK returned, ticket marked as CANCELED");
+            return ResponseEntity.ok(convertToDTO(canceledTicket));
         } catch (TicketNotFoundException e) {
             logger.error(TICKET_CANCEL, "TicketNotFoundException caught: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());

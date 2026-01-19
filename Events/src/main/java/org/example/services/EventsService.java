@@ -62,6 +62,8 @@ public class EventsService {
     private static final Marker EVENT_CREATE = MarkerFactory.getMarker("EVENT_CREATE");
     private static final Marker EVENT_CANCEL = MarkerFactory.getMarker("EVENT_CANCEL");
     private static final Marker EVENT_PUBLISH = MarkerFactory.getMarker("EVENT_PUBLISH");
+    private static final Marker STOCK_GENERATED = MarkerFactory.getMarker("STOCK_GENERATED");
+    private static final Marker STOCK_FAILED = MarkerFactory.getMarker("STOCK_FAILED");
 
     /**
      * Creates a new event.
@@ -242,44 +244,67 @@ public class EventsService {
         return savedEvent;
     }
 
+    /**
+     * Handles the successful generation of stock for an event.
+     * <p>
+     * This method retrieves the event by its ID. If found, it transitions the
+     * event status to {@code PUBLISHED} to indicate it is live and ready for
+     * ticket sales.
+     *
+     * @param eventId The unique identifier of the event.
+     * @return The updated and persisted Event entity.
+     * @throws EventNotFoundException if no event exists with the provided ID.
+     */
     @Transactional
     public Event handleEventStockGeneratedMessage(UUID eventId) {
-//        logger.info(EVENT_PUBLISH, "publishEvent method entered");
+        logger.info(STOCK_GENERATED,"Handling stock generated success message for Event ID: {}", eventId);
 
         Event event = eventsRepository.findById(eventId)
                 .orElse(null);
 
         if (event == null) {
-            //logger.error(EVENT_PUBLISH, "Event not found");
+            logger.error(STOCK_GENERATED,"Failed to publish event. Event not found for ID: {}", eventId);
             throw new EventNotFoundException("Event not found");
         }
 
         event.setStatus(EventStatus.PUBLISHED);
-
         Event savedEvent = eventsRepository.save(event);
+
+        logger.info(STOCK_GENERATED,"Event {} successfully updated to status PUBLISHED", eventId);
 
         return savedEvent;
     }
 
+    /**
+     * Handles the failure of stock generation for an event.
+     * <p>
+     * If the stock generation process fails, this method reverts the event status
+     * back to {@code DRAFT} so that the errors can be addressed before attempting
+     * to publish again.
+     *
+     * @param eventId The unique identifier of the event.
+     * @return The updated and persisted Event entity.
+     * @throws EventNotFoundException if no event exists with the provided ID.
+     */
     @Transactional
     public Event handleEventStockGenerationFailedMessage(UUID eventId) {
-        //logger.info(EVENT_PUBLISH, "publishEvent method entered");
+        logger.info(STOCK_FAILED,"Handling stock generation failure message for Event ID: {}", eventId);
 
         Event event = eventsRepository.findById(eventId)
                 .orElse(null);
 
         if (event == null) {
-            //logger.error(EVENT_PUBLISH, "Event not found");
+            logger.error(STOCK_FAILED,"Failed to revert event status. Event not found for ID: {}", eventId);
             throw new EventNotFoundException("Event not found");
         }
 
         event.setStatus(EventStatus.DRAFT);
-
         Event savedEvent = eventsRepository.save(event);
+
+        logger.info(STOCK_FAILED,"Event {} status reverted to DRAFT due to stock generation failure", eventId);
 
         return savedEvent;
     }
-
 
     /**
      * Retrieves a paginated list of published events.

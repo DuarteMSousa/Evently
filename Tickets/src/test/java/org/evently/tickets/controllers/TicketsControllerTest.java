@@ -178,17 +178,17 @@ class TicketsControllerTest {
     @Test
     void cancelTicket_valid_returns200() throws Exception {
         UUID id = UUID.randomUUID();
-        Ticket cancelled = new Ticket();
-        cancelled.setId(id);
-        cancelled.setStatus(TicketStatus.CANCELLED);
+        Ticket canceled = new Ticket();
+        canceled.setId(id);
+        canceled.setStatus(TicketStatus.CANCELED);
 
-        when(ticketsService.cancelTicket(id)).thenReturn(cancelled);
+        when(ticketsService.cancelTicket(id)).thenReturn(canceled);
 
         mockMvc.perform(put("/tickets/cancel-ticket/{id}", id)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(id.toString()))
-                .andExpect(jsonPath("$.status").value("CANCELLED"));
+                .andExpect(jsonPath("$.status").value("CANCELED"));
     }
 
     @Test
@@ -204,10 +204,10 @@ class TicketsControllerTest {
     @Test
     void cancelTicket_invalid_returns400() throws Exception {
         UUID id = UUID.randomUUID();
-        when(ticketsService.cancelTicket(id)).thenThrow(new InvalidTicketUpdateException("Ticket is already cancelled"));
+        when(ticketsService.cancelTicket(id)).thenThrow(new InvalidTicketUpdateException("Ticket is already canceled"));
 
         mockMvc.perform(put("/tickets/cancel-ticket/{id}", id))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Ticket is already cancelled"));
+                .andExpect(content().string("Ticket is already canceled"));
     }
 }

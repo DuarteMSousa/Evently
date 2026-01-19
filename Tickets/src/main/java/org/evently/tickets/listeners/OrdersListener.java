@@ -2,7 +2,7 @@ package org.evently.tickets.listeners;
 
 import org.evently.tickets.config.MQConfig;
 import org.evently.tickets.enums.externalServices.DecisionType;
-import org.evently.tickets.messages.received.OrderCancelledMessage;
+import org.evently.tickets.messages.received.OrderCanceledMessage;
 import org.evently.tickets.messages.received.RefundRequestDecisionRegisteredMessage;
 import org.evently.tickets.models.Ticket;
 import org.evently.tickets.services.TicketsService;
@@ -23,8 +23,8 @@ public class OrdersListener {
     private RabbitTemplate template;
 
     @RabbitListener(queues = MQConfig.ORDERS_QUEUE)
-    public void listener(OrderCancelledMessage orderCancelledMessage) {
-        List<Ticket> orderTickets = ticketsService.findAllByOrderId(orderCancelledMessage.getId());
+    public void listener(OrderCanceledMessage orderCanceledMessage) {
+        List<Ticket> orderTickets = ticketsService.findAllByOrderId(orderCanceledMessage.getId());
 
         orderTickets.forEach(orderTicket -> {
             ticketsService.cancelTicket(orderTicket.getId());

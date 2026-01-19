@@ -1,4 +1,4 @@
-package org.evently.orders.messages;
+package org.evently.tickets.messages.received;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,6 +9,6 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class OrderCancelledMessage {
+public class OrderCanceledMessage {
     private UUID id;
 }

@@ -226,7 +226,7 @@ public class PaymentsController {
     @GetMapping("/paypal-cancel")
     public ResponseEntity<?> paypalCancel(@RequestParam(value = "token", required = false) String token) {
         /* HttpStatus(produces)
-         * 200 OK - Payment cancelled by user on PayPal.
+         * 200 OK - Payment canceled by user on PayPal.
          */
 
         logger.info(PAYPAL_CANCEL, "Method paypalCancel entered (token={})", token);
@@ -239,9 +239,9 @@ public class PaymentsController {
     @PostMapping("/cancel-payment/{paymentId}")
     public ResponseEntity<?> cancelPayment(@PathVariable("paymentId") UUID paymentId) {
         /* HttpStatus(produces)
-         * 200 OK - Payment cancelled successfully.
+         * 200 OK - Payment canceled successfully.
          * 404 NOT_FOUND - Payment does not exist.
-         * 400 BAD_REQUEST - Invalid state (already cancelled) / invalid request / generic error.
+         * 400 BAD_REQUEST - Invalid state (already canceled) / invalid request / generic error.
          */
 
         logger.info(PAYMENT_CANCEL, "Method cancelPayment entered for Payment ID: {}", paymentId);
@@ -249,7 +249,7 @@ public class PaymentsController {
         try {
             Payment updated = paymentsService.cancelPayment(paymentId);
 
-            logger.info(PAYMENT_CANCEL, "200 OK returned, payment cancelled (paymentId={}, status={})",
+            logger.info(PAYMENT_CANCEL, "200 OK returned, payment canceled (paymentId={}, status={})",
                     updated.getId(), updated.getStatus());
 
             return ResponseEntity.ok(toPaymentDTO(updated));

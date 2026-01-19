@@ -9,12 +9,6 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class OrderCreatedMessage {
-
+public class OrderCanceledMessage {
     private UUID id;
-
-    private UUID userId;
-
-    private float total;
-
 }

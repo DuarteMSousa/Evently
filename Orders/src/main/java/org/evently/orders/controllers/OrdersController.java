@@ -171,16 +171,16 @@ public class OrdersController {
     @PutMapping("/cancel-order/{id}")
     public ResponseEntity<?> cancelOrder(@PathVariable("id") UUID id) {
         /* HttpStatus(produces)
-         * 200 OK - Order cancelled successfully.
+         * 200 OK - Order canceled successfully.
          * 404 NOT_FOUND - No order exists with the provided ID.
-         * 400 BAD_REQUEST - Order is already used or already cancelled.
+         * 400 BAD_REQUEST - Order is already used or already canceled.
          */
 
         logger.info(ORDER_CANCEL, "Method cancelOrder entered (id={})", id);
         try {
-            Order cancelledOrder = ordersService.cancelOrder(id);
-            logger.info(ORDER_CANCEL, "200 OK returned, order cancelled");
-            return ResponseEntity.ok(convertToDTO(cancelledOrder));
+            Order canceledOrder = ordersService.cancelOrder(id);
+            logger.info(ORDER_CANCEL, "200 OK returned, order canceled");
+            return ResponseEntity.ok(convertToDTO(canceledOrder));
         } catch (OrderNotFoundException e) {
             logger.error(ORDER_CANCEL, "OrderNotFoundException caught: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());

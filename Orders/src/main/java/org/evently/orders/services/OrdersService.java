@@ -218,12 +218,12 @@ public class OrdersService {
     }
 
     /**
-     * Cancels an existing order, as long as it has not been successfully paid or already cancelled.
+     * Cancels an existing order, as long as it has not been successfully paid or already canceled.
      *
      * @param id order identifier
-     * @return cancelled order
+     * @return canceled order
      * @throws OrderNotFoundException      if the order does not exist
-     * @throws InvalidOrderException if the order is already paid or cancelled
+     * @throws InvalidOrderException if the order is already paid or canceled
      */
     @Transactional
     public Order cancelOrder(UUID id) {
@@ -231,20 +231,20 @@ public class OrdersService {
 
         Order order = getOrder(id);
 
-        if (order.getStatus() == OrderStatus.CANCELLED) {
-            throw new InvalidOrderException("Order is already cancelled");
+        if (order.getStatus() == OrderStatus.CANCELED) {
+            throw new InvalidOrderException("Order is already canceled");
         }
 
-        order.setStatus(OrderStatus.CANCELLED);
+        order.setStatus(OrderStatus.CANCELED);
         order.setCanceledAt(new Date());
 
-        Order cancelledOrder = ordersRepository.save(order);
+        Order canceledOrder = ordersRepository.save(order);
 
-        logger.info(ORDER_CANCEL, "Order cancelled successfully (id={})", id);
+        logger.info(ORDER_CANCEL, "Order canceled successfully (id={})", id);
 
-        ordersEventsPublisher.publishOrderCancelledEvent(order.getId());
+        ordersEventsPublisher.publishOrderCanceledEvent(order.getId());
 
-        return cancelledOrder;
+        return canceledOrder;
     }
 
     /**

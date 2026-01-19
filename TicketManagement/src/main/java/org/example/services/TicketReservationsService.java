@@ -6,6 +6,7 @@ import org.example.enums.TicketReservationStatus;
 import org.example.exceptions.InvalidTicketReservationException;
 import org.example.exceptions.TicketReservationNotFoundException;
 import org.example.exceptions.TicketStockNotFoundException;
+import org.example.messages.received.OrderCanceledMessage;
 import org.example.messages.received.OrderPaidMessage;
 import org.example.messages.received.RefundRequestDecisionRegisteredMessage;
 import org.example.models.StockMovement;
@@ -205,6 +206,16 @@ public class TicketReservationsService {
         ticketStocksService.addStockMovement(stockMovement);
     }
 
+    /**
+     * Handles the event when an order is successfully paid.
+     * <p>
+     * This method retrieves all ticket reservations associated with the order ID,
+     * updates their status to {@code CONFIRMED}, sets the confirmation timestamp,
+     * and persists the changes. Finally, it publishes a confirmation message for
+     * each ticket.
+     *
+     * @param orderPaidMessage the message containing the paid order details.
+     */
     @Transactional
     public void handleOrderPaid(OrderPaidMessage orderPaidMessage) {
 
@@ -222,6 +233,31 @@ public class TicketReservationsService {
         });
     }
 
+    /**
+     * Handles the event when an order is canceled.
+     * <p>
+     * This method retrieves all ticket reservations linked to the canceled order
+     * and triggers the release process for each individual reservation.
+     *
+     * @param message the message containing the canceled order details.
+     */
+    @Transactional
+    public void handleOrderCanceled(OrderCanceledMessage message) {
+        List<TicketReservation> ticketReservations = ticketReservationsRepository.findByOrderId(message.getId());
+
+        ticketReservations.forEach(ticketReservation -> {
+            this.releaseTicketReservation(ticketReservation.getId());
+        });
+    }
+
+    /**
+     * Processes the decision made regarding a refund request.
+     * <p>
+     * Upon receiving a refund decision, this method finds the associated ticket
+     * reservations and releases them.
+     *
+     * @param message the message containing the refund decision and order ID.
+     */
     @Transactional
     public void handleRefundRequestDecision(RefundRequestDecisionRegisteredMessage message) {
         List<TicketReservation> ticketReservations = ticketReservationsRepository.findByOrderId(message.getOrderId());

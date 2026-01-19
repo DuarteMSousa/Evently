@@ -349,7 +349,7 @@ class OrdersServiceTest {
     // -------- cancelOrder --------
 
     @Test
-    void cancelOrder_success_fromCreated_setsCancelled() {
+    void cancelOrder_success_fromCreated_setsCanceled() {
         Order o = new Order();
         o.setId(orderId);
         o.setStatus(OrderStatus.CREATED);
@@ -359,7 +359,7 @@ class OrdersServiceTest {
 
         Order res = ordersService.cancelOrder(orderId);
 
-        assertEquals(OrderStatus.CANCELLED, res.getStatus());
+        assertEquals(OrderStatus.CANCELED, res.getStatus());
         // Nota: no teu código estás a fazer order.setPaidAt(new Date()) ao cancelar (provável bug),
         // então validamos o comportamento atual:
         assertNotNull(res.getPaidAt());
@@ -377,10 +377,10 @@ class OrdersServiceTest {
     }
 
     @Test
-    void cancelOrder_alreadyCancelled_throwsInvalidOrderException() {
+    void cancelOrder_alreadyCanceled_throwsInvalidOrderException() {
         Order o = new Order();
         o.setId(orderId);
-        o.setStatus(OrderStatus.CANCELLED);
+        o.setStatus(OrderStatus.CANCELED);
 
         when(ordersRepository.findById(orderId)).thenReturn(Optional.of(o));
 

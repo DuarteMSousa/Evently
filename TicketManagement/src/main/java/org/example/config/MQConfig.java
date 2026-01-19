@@ -16,7 +16,9 @@ public class MQConfig {
 
     public static final String EVENTS_EXCHANGE = "events_exchange";
 
-    public static final String ORDERS_QUEUE = "ticketManagement_orders_queue";
+    public static final String ORDERS_PAID_QUEUE = "ticketManagement_orders_paid_queue";
+
+    public static final String ORDERS_CANCELED_QUEUE = "ticketManagement_orders_canceled_queue";
 
     public static final String ORDERS_EXCHANGE = "orders_exchange";
 
@@ -57,19 +59,35 @@ public class MQConfig {
     }
 
     @Bean
-    public Queue ticketManagementOrdersQueue() {
-        return new Queue(ORDERS_QUEUE, true);
+    public Queue ticketManagementOrdersCanceledQueue() {
+        return new Queue(ORDERS_CANCELED_QUEUE, true);
     }
 
     @Bean
-    public Binding ticketManagementOrdersBinding(
-            @Qualifier("ticketManagementOrdersQueue") Queue queue,
+    public Binding ticketManagementOrdersCanceledBinding(
+            @Qualifier("ticketManagementOrdersCanceledQueue") Queue queue,
             @Qualifier("ordersExchange") TopicExchange exchange) {
 
         return BindingBuilder
                 .bind(queue)
                 .to(exchange)
                 .with("orders.paid");
+    }
+
+    @Bean
+    public Queue ticketManagementOrdersPaidQueue() {
+        return new Queue(ORDERS_PAID_QUEUE, true);
+    }
+
+    @Bean
+    public Binding ticketManagementOrdersPaidBinding(
+            @Qualifier("ticketManagementOrdersPaidQueue") Queue queue,
+            @Qualifier("ordersExchange") TopicExchange exchange) {
+
+        return BindingBuilder
+                .bind(queue)
+                .to(exchange)
+                .with("orders.canceled");
     }
 
     //refunds

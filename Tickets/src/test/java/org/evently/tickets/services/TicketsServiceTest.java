@@ -185,10 +185,10 @@ class TicketsServiceTest {
     }
 
     @Test
-    void cancelTicket_cancelled_throwsInvalidTicketUpdate() {
+    void cancelTicket_canceled_throwsInvalidTicketUpdate() {
         UUID id = UUID.randomUUID();
         Ticket t = cloneTicket(baseTicket);
-        t.setStatus(TicketStatus.CANCELLED);
+        t.setStatus(TicketStatus.CANCELED);
 
         when(ticketsRepository.findById(id)).thenReturn(Optional.of(t));
 
@@ -197,7 +197,7 @@ class TicketsServiceTest {
     }
 
     @Test
-    void cancelTicket_issued_setsCancelledAndSaves() {
+    void cancelTicket_issued_setsCanceledAndSaves() {
         UUID id = UUID.randomUUID();
         Ticket t = cloneTicket(baseTicket);
         t.setStatus(TicketStatus.ISSUED);
@@ -207,7 +207,7 @@ class TicketsServiceTest {
 
         Ticket res = ticketsService.cancelTicket(id);
 
-        assertEquals(TicketStatus.CANCELLED, res.getStatus());
+        assertEquals(TicketStatus.CANCELED, res.getStatus());
         verify(ticketsRepository).save(t);
     }
 
@@ -237,10 +237,10 @@ class TicketsServiceTest {
     }
 
     @Test
-    void useTicket_cancelled_throwsInvalidTicketUpdate() {
+    void useTicket_canceled_throwsInvalidTicketUpdate() {
         UUID id = UUID.randomUUID();
         Ticket t = cloneTicket(baseTicket);
-        t.setStatus(TicketStatus.CANCELLED);
+        t.setStatus(TicketStatus.CANCELED);
 
         when(ticketsRepository.findById(id)).thenReturn(Optional.of(t));
 

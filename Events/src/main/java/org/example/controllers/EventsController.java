@@ -163,7 +163,7 @@ public class EventsController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
 
-        logger.info(EVENT_CANCEL, "200 OK returned, event cancelled");
+        logger.info(EVENT_CANCEL, "200 OK returned, event canceled");
         return ResponseEntity.status(HttpStatus.OK).body(event);
     }
 

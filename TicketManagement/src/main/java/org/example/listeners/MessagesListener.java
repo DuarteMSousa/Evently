@@ -2,6 +2,7 @@ package org.example.listeners;
 
 import org.example.config.MQConfig;
 import org.example.enums.externalServices.DecisionType;
+import org.example.messages.received.OrderCanceledMessage;
 import org.example.messages.received.OrderPaidMessage;
 import org.example.messages.received.RefundRequestDecisionRegisteredMessage;
 import org.example.services.TicketReservationsService;
@@ -19,9 +20,14 @@ public class MessagesListener {
     @Autowired
     private RabbitTemplate template;
 
-    @RabbitListener(queues = MQConfig.ORDERS_QUEUE)
+    @RabbitListener(queues = MQConfig.ORDERS_PAID_QUEUE)
     public void listener(OrderPaidMessage message) {
         ticketReservationsService.handleOrderPaid(message);
+    }
+
+    @RabbitListener(queues = MQConfig.ORDERS_CANCELED_QUEUE)
+    public void listener(OrderCanceledMessage message) {
+        ticketReservationsService.handleOrderCanceled(message);
     }
 
     @RabbitListener(queues = MQConfig.REFUNDS_QUEUE)

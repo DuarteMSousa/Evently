@@ -176,13 +176,13 @@ class OrdersControllerTest {
     @Test
     void cancelOrder_success_returns200() throws Exception {
         UUID id = UUID.randomUUID();
-        Order o = new Order(); o.setId(id); o.setStatus(OrderStatus.CANCELLED);
+        Order o = new Order(); o.setId(id); o.setStatus(OrderStatus.CANCELED);
 
         when(ordersService.cancelOrder(id)).thenReturn(o);
 
         mockMvc.perform(put("/orders/cancel-order/{id}", id))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("CANCELLED"));
+                .andExpect(jsonPath("$.status").value("CANCELED"));
     }
 
     @Test
@@ -197,7 +197,7 @@ class OrdersControllerTest {
     @Test
     void cancelOrder_invalid_returns400() throws Exception {
         UUID id = UUID.randomUUID();
-        when(ordersService.cancelOrder(id)).thenThrow(new InvalidOrderException("Order already cancelled"));
+        when(ordersService.cancelOrder(id)).thenThrow(new InvalidOrderException("Order already canceled"));
 
         mockMvc.perform(put("/orders/cancel-order/{id}", id))
                 .andExpect(status().isBadRequest());

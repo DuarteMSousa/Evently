@@ -91,12 +91,12 @@ public class TicketsService {
     }
 
     /**
-     * Cancels an existing ticket, as long as it has not been used or already cancelled.
+     * Cancels an existing ticket, as long as it has not been used or already canceled.
      *
      * @param id ticket identifier
-     * @return cancelled ticket
+     * @return canceled ticket
      * @throws TicketNotFoundException if the ticket does not exist
-     * @throws InvalidTicketUpdateException if the ticket is already used or cancelled
+     * @throws InvalidTicketUpdateException if the ticket is already used or canceled
      */
     @Transactional
     public Ticket cancelTicket(UUID id) {
@@ -108,17 +108,17 @@ public class TicketsService {
             throw new InvalidTicketUpdateException("Ticket is already used");
         }
 
-        if (ticket.getStatus() == TicketStatus.CANCELLED) {
-            throw new InvalidTicketUpdateException("Ticket is already cancelled");
+        if (ticket.getStatus() == TicketStatus.CANCELED) {
+            throw new InvalidTicketUpdateException("Ticket is already canceled");
         }
 
-        ticket.setStatus(TicketStatus.CANCELLED);
+        ticket.setStatus(TicketStatus.CANCELED);
 
-        Ticket cancelledTicket = ticketsRepository.save(ticket);
+        Ticket canceledTicket = ticketsRepository.save(ticket);
 
-        logger.info(TICKET_CANCEL, "Ticket cancelled successfully (id={})", id);
+        logger.info(TICKET_CANCEL, "Ticket canceled successfully (id={})", id);
 
-        return cancelledTicket;
+        return canceledTicket;
     }
 
     /**
@@ -127,7 +127,7 @@ public class TicketsService {
      * @param id ticket identifier
      * @return updated ticket marked as used
      * @throws TicketNotFoundException if the ticket does not exist
-     * @throws InvalidTicketUpdateException if the ticket is already used or cancelled
+     * @throws InvalidTicketUpdateException if the ticket is already used or canceled
      */
     @Transactional
     public Ticket useTicket(UUID id) {
@@ -139,8 +139,8 @@ public class TicketsService {
             throw new InvalidTicketUpdateException("Ticket is already used");
         }
 
-        if (ticket.getStatus() == TicketStatus.CANCELLED) {
-            throw new InvalidTicketUpdateException("Ticket is already cancelled");
+        if (ticket.getStatus() == TicketStatus.CANCELED) {
+            throw new InvalidTicketUpdateException("Ticket is already canceled");
         }
 
         ticket.setStatus(TicketStatus.USED);
