@@ -25,12 +25,10 @@ public class MessagesListener {
     @RabbitListener(queues = MQConfig.ORDERS_QUEUE)
     public void listener(OrderPaidMessage message) {
         ticketReservationsService.handleOrderPaid(message);
-
-
     }
 
     @RabbitListener(queues = MQConfig.REFUNDS_QUEUE)
     public void listener(RefundRequestDecisionRegisteredMessage message) {
-        //ticketReservationsService.handleRefundDecision(message);
+        ticketReservationsService.handleRefundRequestDecision(message);
     }
 }

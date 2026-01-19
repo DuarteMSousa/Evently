@@ -1,5 +1,7 @@
 package org.example.messages;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.example.dtos.categories.CategoryDTO;
 import org.example.dtos.eventSessions.EventSessionDTO;
 import org.example.enums.EventStatus;
@@ -7,6 +9,8 @@ import org.example.enums.EventStatus;
 import java.util.List;
 import java.util.UUID;
 
+@Data
+@NoArgsConstructor
 public class EventCanceledMessage {
 
     private UUID id;
