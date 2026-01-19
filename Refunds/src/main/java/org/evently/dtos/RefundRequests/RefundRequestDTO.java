@@ -17,6 +17,8 @@ public class RefundRequestDTO {
 
     private UUID userId;
 
+    private UUID orderId;
+
     private String title;
 
     private String description;
