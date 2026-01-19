@@ -30,6 +30,9 @@ public class SessionTiersService {
     private EventSessionsService eventSessionsService;
 
     @Autowired
+    private EventsService eventsService;
+
+    @Autowired
     private VenuesClient venuesClient;
 
     @Autowired
@@ -216,6 +219,20 @@ public class SessionTiersService {
         if (!zone.getVenueId().equals(eventSession.getVenueId())) {
             logger.error(marker, "Invalid zone, does not correspond to venue");
             throw new InvalidSessionTierException("Invalid zone, does not correspond to venue");
+        }
+
+        Event event;
+
+        try {
+            event = eventsService.getEvent(eventSession.getEvent().getId());
+        } catch (EventNotFoundException e) {
+            logger.error(marker, "Event not found");
+            throw new InvalidEventSessionException("Event not found");
+        }
+
+        if(event.getStatus().equals(EventStatus.PUBLISHED)) {
+            //send tier updated
+            
         }
     }
 }

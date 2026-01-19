@@ -17,6 +17,7 @@ import org.slf4j.MarkerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -182,6 +183,13 @@ public class EventSessionsService {
         if (eventSession.getEndsAt().isBefore(eventSession.getStartsAt())) {
             logger.error(marker, "End time is before start time");
             throw new InvalidEventSessionException("End time is before start time");
+        }
+
+        List<EventSession> existingSessions = eventSessionsRepository.findSessionsByVenueAndInterval(eventSession.getVenueId(), eventSession.getStartsAt(), eventSession.getEndsAt());
+
+        if (existingSessions.stream().anyMatch(s -> !s.getId().equals(eventSession.getId()))) {
+            logger.error(marker, "There is already existing event session at the same venue at the same time");
+            throw new InvalidEventSessionException("There is already existing event session at the same venue at the same time");
         }
 
         Event event;

@@ -224,11 +224,11 @@ public class TicketReservationsService {
 
     @Transactional
     public void handleRefundRequestDecision(RefundRequestDecisionRegisteredMessage message) {
+        List<TicketReservation> ticketReservations = ticketReservationsRepository.findByOrderId(message.getOrderId());
 
-
-//        ticketReservations.forEach(ticketReservation -> {
-//            ticketManagementMessagesPublisher.publishTicketReservationConfirmedMessage(ticketReservation);
-//        });
+        ticketReservations.forEach(ticketReservation -> {
+            this.releaseTicketReservation(ticketReservation.getId());
+        });
     }
 
 }
