@@ -114,6 +114,10 @@ public class RefundRequestsService {
         if (paymentDTO != null){
             refundRequest.setOrderId(paymentDTO.getOrderId());
 
+            if (paymentDTO.getUserId() != refundRequest.getUserId()) {
+                throw new InvalidRefundRequestException("The user requesting the refound is not the one who made the payment");
+            }
+
             if (paymentDTO.getStatus() != PaymentStatus.CAPTURED) {
                 throw new InvalidRefundRequestException("Payment is not processed yet");
             }

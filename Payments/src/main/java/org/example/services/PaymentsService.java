@@ -1,7 +1,10 @@
 package org.example.services;
 
+import feign.FeignException;
 import jakarta.transaction.Transactional;
 import lombok.var;
+import org.example.clients.OrdersClient;
+import org.example.dtos.externalServices.OrderDTO;
 import org.example.enums.PaymentEventType;
 import org.example.enums.PaymentProvider;
 import org.example.enums.PaymentStatus;
@@ -48,6 +51,9 @@ public class PaymentsService {
 
     @Autowired
     private PaymentProviderClient paymentProviderClient;
+
+    @Autowired
+    private OrdersClient  ordersClient;
 
     /**
      * Validates a payment payload before starting the payment process.
@@ -163,6 +169,22 @@ public class PaymentsService {
                     existing.getStatus() == PaymentStatus.REFUNDED ||
                     existing.getStatus() == PaymentStatus.CANCELED) {
                 throw new InvalidPaymentException("This order already has a finalized payment: " + existing.getStatus());
+            }
+
+            OrderDTO order;
+
+            try {
+                order = ordersClient.getOrder(existingOpt.get().getOrderId()).getBody();
+            } catch (FeignException e) {
+                String errorBody = e.contentUTF8();
+                logger.error(PAY_PROVIDER, "(PaymentsService): Orders service error: {}", errorBody);
+                throw new ExternalServiceException("(PaymentsService): Orders service error");
+            }
+
+            if (order == null) {
+                if (order.getTotal() != payment.getAmount()) {
+                    throw new InvalidPaymentException("Payment amount is different from order total amount");
+                }
             }
 
             existing.setUserId(payment.getUserId());
