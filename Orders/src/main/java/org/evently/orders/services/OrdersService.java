@@ -231,15 +231,12 @@ public class OrdersService {
 
         Order order = getOrder(id);
 
-        if (order.getStatus() == OrderStatus.PAYMENT_SUCCESS) {
-            throw new InvalidOrderException("Order is already paid successfully");
-        }
-
         if (order.getStatus() == OrderStatus.CANCELLED) {
             throw new InvalidOrderException("Order is already cancelled");
         }
 
         order.setStatus(OrderStatus.CANCELLED);
+        order.setCanceledAt(new Date());
 
         Order cancelledOrder = ordersRepository.save(order);
 
