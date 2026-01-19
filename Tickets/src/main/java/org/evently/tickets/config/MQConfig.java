@@ -20,6 +20,10 @@ public class MQConfig {
 
     public static final String REFUNDS_EXCHANGE = "refunds_exchange";
 
+    public static final String ORDERS_QUEUE = "orders_queue";
+
+    public static final String ORDERS_EXCHANGE = "orders_exchange";
+
     public static final String EXCHANGE = "tickets_exchange";
 
     public static final String ROUTING_KEY = "tickets";
@@ -65,6 +69,27 @@ public class MQConfig {
                 .bind(queue)
                 .to(exchange)
                 .with("refunds.decision.registered");
+    }
+
+    @Bean
+    public TopicExchange ordersExchange() {
+        return new TopicExchange(ORDERS_EXCHANGE);
+    }
+
+    @Bean
+    public Queue ticketsOrdersQueue() {
+        return new Queue(ORDERS_QUEUE);
+    }
+
+    @Bean
+    public Binding ticketsOrdersBinding(
+            @Qualifier("ticketsOrdersQueue") Queue queue,
+            @Qualifier("ordersExchange") TopicExchange exchange) {
+
+        return BindingBuilder
+                .bind(queue)
+                .to(exchange)
+                .with("orders.cancelled");
     }
 
     @Bean
