@@ -1,22 +1,30 @@
 package org.example.services;
 
+import feign.FeignException;
 import jakarta.transaction.Transactional;
+import org.example.clients.VenuesClient;
+import org.example.dtos.externalServices.eventSessions.EventSessionDTO;
+import org.example.dtos.externalServices.sessionTiers.SessionTierDTO;
+import org.example.dtos.externalServices.venueszone.VenueZoneDTO;
 import org.example.enums.StockMovementType;
 import org.example.exceptions.*;
 import org.example.models.StockMovement;
 import org.example.models.TicketStock;
 import org.example.models.TicketStockId;
+import org.example.publishers.EventTicketManagementMessagesPublisher;
 import org.example.repositories.TicketStocksRepository;
+import org.example.services.received.EventPublishedMessage;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 
@@ -27,7 +35,7 @@ public class TicketStocksService {
     private TicketStocksRepository ticketStocksRepository;
 
     @Autowired
-    private RabbitTemplate template;
+    private EventTicketManagementMessagesPublisher ticketManagementMessagesPublisher;
 
     private ModelMapper modelMapper = new ModelMapper();
 
@@ -39,6 +47,9 @@ public class TicketStocksService {
     private static final Marker EVENT_TICKET_STOCK_DELETE = MarkerFactory.getMarker("EVENT_TICKET_STOCK_DELETE");
     private static final Marker SESSION_TICKET_STOCK_DELETE = MarkerFactory.getMarker("SESSION_TICKET_STOCK_DELETE");
     private static final Marker TIER_TICKET_STOCK_DELETE = MarkerFactory.getMarker("TIER_TICKET_STOCK_DELETE");
+
+    @Autowired
+    private VenuesClient venuesClient;
 
     /**
      * Creates a new ticket stock entry.
@@ -191,6 +202,59 @@ public class TicketStocksService {
         ticketStocksRepository.deleteAll(stocks);
 
         return stocks;
+    }
+
+    @Transactional
+    public void handleEventPublishedMessage(EventPublishedMessage message) {
+
+        try {
+
+            List<VenueZoneDTO> venueZoneCache= new ArrayList<VenueZoneDTO>();
+            for (EventSessionDTO eventSession : message.getSessions()) {
+                for (SessionTierDTO tier : eventSession.getTiers()) {
+                    Optional<VenueZoneDTO> optionalZone = venueZoneCache.stream()
+                            .filter(zone -> zone.getId().equals(tier.getZoneId()))
+                            .findFirst();
+
+                    VenueZoneDTO venueZoneDTO;
+
+                    if (optionalZone.isPresent()) {
+                        venueZoneDTO = optionalZone.get();
+                    } else {
+                        try {
+                            venueZoneDTO = venuesClient.getZone(tier.getZoneId()).getBody();
+                            venueZoneCache.add(venueZoneDTO);
+                        } catch (FeignException e) {
+                            logger.error("Cannot get venue zone", e);
+                            throw new ExternalServiceException("Cannot get venue zone");
+                        }
+                    }
+
+                    TicketStockId ticketStockIdDTO = new TicketStockId();
+                    ticketStockIdDTO.setEventId(message.getId());
+                    ticketStockIdDTO.setSessionId(eventSession.getId());
+                    ticketStockIdDTO.setTierId(tier.getId());
+
+                    TicketStock ticketStockCreate = new TicketStock();
+                    ticketStockCreate.setAvailableQuantity(venueZoneDTO.getCapacity());
+                    ticketStockCreate.setId(ticketStockIdDTO);
+
+                    try {
+                        this.createTicketStock(ticketStockCreate);
+                    } catch (TicketStockAlreadyExistsException e) {
+                        //do nothing
+                    }
+
+                }
+            }
+
+            ticketManagementMessagesPublisher.publishEventTicketStockGeneratedMessage(message.getId());
+
+        } catch (Exception e) {
+            ticketManagementMessagesPublisher.publishEventTicketStockGenerationFailedMessage(message.getId());
+        }
+
+
     }
 
 

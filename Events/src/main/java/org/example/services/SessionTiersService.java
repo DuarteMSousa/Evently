@@ -4,6 +4,8 @@ import feign.FeignException;
 import jakarta.transaction.Transactional;
 import org.example.clients.TicketManagementClient;
 import org.example.clients.VenuesClient;
+import org.example.dtos.externalServices.ticketStocks.TicketStockCreateDTO;
+import org.example.dtos.externalServices.ticketStocks.TicketStockIdDTO;
 import org.example.dtos.externalServices.venueszone.VenueZoneDTO;
 import org.example.enums.EventStatus;
 import org.example.exceptions.*;
@@ -63,7 +65,7 @@ public class SessionTiersService {
             throw new SessionTierAlreadyExistsException("Session tier already exists");
         }
 
-        validateSessionTier(sessionTier, TIER_CREATE);
+        validateSessionTier(sessionTier, TIER_CREATE,true);
 
         return sessionTiersRepository.save(sessionTier);
     }
@@ -98,7 +100,7 @@ public class SessionTiersService {
 
         existingSessionTier.setPrice(sessionTier.getPrice());
 
-        validateSessionTier(existingSessionTier, TIER_UPDATE);
+        validateSessionTier(existingSessionTier, TIER_UPDATE,false);
 
         return sessionTiersRepository.save(existingSessionTier);
     }
@@ -183,7 +185,7 @@ public class SessionTiersService {
      * @throws InvalidSessionTierException if tier is invalid (price/session/zone mismatch or missing references)
      * @throws ExternalServiceException    if VenuesService fails unexpectedly (FeignException)
      */
-    public void validateSessionTier(SessionTier sessionTier, Marker marker) {
+    public void validateSessionTier(SessionTier sessionTier, Marker marker, boolean publishMessage) {
         if (sessionTier.getPrice() <= 0) {
             logger.error(marker, "Session tier price must be greater than 0");
             throw new InvalidSessionTierException("Session tier price must be greater than 0");
@@ -230,9 +232,22 @@ public class SessionTiersService {
             throw new InvalidEventSessionException("Event not found");
         }
 
-        if(event.getStatus().equals(EventStatus.PUBLISHED)) {
-            //send tier updated
-            
+        if (event.getStatus().equals(EventStatus.PUBLISHED) && publishMessage) {
+            TicketStockIdDTO ticketStockIdDTO = new TicketStockIdDTO();
+            ticketStockIdDTO.setEventId(event.getId());
+            ticketStockIdDTO.setSessionId(eventSession.getId());
+            ticketStockIdDTO.setTierId(sessionTier.getId());
+
+            TicketStockCreateDTO ticketStockCreateDTO = new TicketStockCreateDTO();
+            ticketStockCreateDTO.setAvailableQuantity(zone.getCapacity());
+            ticketStockCreateDTO.setId(ticketStockIdDTO);
+
+            try {
+                ticketManagementClient.createTicketStock(ticketStockCreateDTO);
+            } catch (FeignException e) {
+                logger.error(marker, "Error creating Stock through ticket management service");
+                throw new ExternalServiceException("Error creating Stock through ticket management service");
+            }
         }
     }
 }

@@ -1,17 +1,14 @@
 package org.example.listeners;
 
 import org.example.config.MQConfig;
+import org.example.enums.externalServices.DecisionType;
 import org.example.messages.received.OrderPaidMessage;
 import org.example.messages.received.RefundRequestDecisionRegisteredMessage;
-import org.example.publishers.TicketManagementMessagesPublisher;
 import org.example.services.TicketReservationsService;
-import org.example.services.TicketStocksService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 public class MessagesListener {
@@ -29,6 +26,8 @@ public class MessagesListener {
 
     @RabbitListener(queues = MQConfig.REFUNDS_QUEUE)
     public void listener(RefundRequestDecisionRegisteredMessage message) {
-        ticketReservationsService.handleRefundRequestDecision(message);
+        if (message.getDecisionType().equals(DecisionType.APPROVE)) {
+            ticketReservationsService.handleRefundRequestDecision(message);
+        }
     }
 }

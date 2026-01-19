@@ -12,7 +12,7 @@ import org.example.models.StockMovement;
 import org.example.models.TicketReservation;
 import org.example.models.TicketStock;
 import org.example.models.TicketStockId;
-import org.example.publishers.TicketManagementMessagesPublisher;
+import org.example.publishers.EventTicketManagementMessagesPublisher;
 import org.example.repositories.TicketReservationsRepository;
 import org.example.repositories.TicketStocksRepository;
 import org.slf4j.Logger;
@@ -30,7 +30,7 @@ import java.util.UUID;
 public class TicketReservationsService {
 
     @Autowired
-    private TicketManagementMessagesPublisher ticketManagementMessagesPublisher;
+    private EventTicketManagementMessagesPublisher ticketManagementMessagesPublisher;
 
     @Autowired
     private TicketReservationsRepository ticketReservationsRepository;

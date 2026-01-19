@@ -6,11 +6,10 @@ import org.example.exceptions.InvalidTicketReservationException;
 import org.example.exceptions.TicketReservationNotFoundException;
 import org.example.exceptions.TicketStockNotFoundException;
 import org.example.messages.received.OrderPaidMessage;
-import org.example.models.StockMovement;
 import org.example.models.TicketReservation;
 import org.example.models.TicketStock;
 import org.example.models.TicketStockId;
-import org.example.publishers.TicketManagementMessagesPublisher;
+import org.example.publishers.EventTicketManagementMessagesPublisher;
 import org.example.repositories.TicketReservationsRepository;
 import org.example.repositories.TicketStocksRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,7 +27,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class TicketReservationsServiceTest {
 
-    @Mock private TicketManagementMessagesPublisher ticketManagementMessagesPublisher;
+    @Mock private EventTicketManagementMessagesPublisher ticketManagementMessagesPublisher;
     @Mock private TicketReservationsRepository ticketReservationsRepository;
     @Mock private TicketStocksService ticketStocksService;
     @Mock private TicketStocksRepository ticketStocksRepository;

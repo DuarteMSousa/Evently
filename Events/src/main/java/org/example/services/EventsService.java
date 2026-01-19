@@ -14,6 +14,7 @@ import org.example.exceptions.*;
 import org.example.models.Event;
 import org.example.models.EventSession;
 import org.example.models.SessionTier;
+import org.example.publishers.EventMessagesPublisher;
 import org.example.repositories.EventSessionsRepository;
 import org.example.repositories.EventsRepository;
 import org.modelmapper.ModelMapper;
@@ -49,7 +50,7 @@ public class EventsService {
     private VenuesClient venuesClient;
 
     @Autowired
-    private RabbitTemplate template;
+    private EventMessagesPublisher  eventMessagesPublisher;
 
     private ModelMapper modelMapper = new ModelMapper();
 
@@ -232,41 +233,53 @@ public class EventsService {
             throw new EventAlreadyPublishedException("Event already Published");
         }
 
-        event.setStatus(EventStatus.PUBLISHED);
+        event.setStatus(EventStatus.PENDING_STOCK_GENERATION);
 
-        List<EventSession> sessions = event.getSessions();
+        Event savedEvent = eventsRepository.save(event);
 
-        for (EventSession eventSession : sessions) {
-            for (SessionTier tier : eventSession.getTiers()) {
-                VenueZoneDTO venueZoneDTO;
+        eventMessagesPublisher.publishEventPublishedMessage(savedEvent);
 
-                try {
-                    venueZoneDTO = venuesClient.getZone(tier.getZoneId()).getBody();
-                } catch (FeignException e) {
-                    logger.error(EVENT_PUBLISH, "Cannot get venue zone");
-                    throw new ExternalServiceException("Cannot get venue zone");
-                }
+        return savedEvent;
+    }
 
-                TicketStockIdDTO ticketStockIdDTO = new TicketStockIdDTO();
-                ticketStockIdDTO.setEventId(event.getId());
-                ticketStockIdDTO.setSessionId(eventSession.getId());
-                ticketStockIdDTO.setTierId(tier.getId());
+    @Transactional
+    public Event handleEventStockGeneratedMessage(UUID eventId) {
+//        logger.info(EVENT_PUBLISH, "publishEvent method entered");
 
-                TicketStockCreateDTO ticketStockCreateDTO = new TicketStockCreateDTO();
-                ticketStockCreateDTO.setAvailableQuantity(venueZoneDTO.getCapacity());
-                ticketStockCreateDTO.setId(ticketStockIdDTO);
+        Event event = eventsRepository.findById(eventId)
+                .orElse(null);
 
-                try {
-                    ticketManagementClient.createTicketStock(ticketStockCreateDTO);
-                } catch (FeignException e) {
-                    logger.error(EVENT_PUBLISH, "Cannot create Stock");
-                    throw new ExternalServiceException("Cannot create Stock");
-                }
-            }
+        if (event == null) {
+            //logger.error(EVENT_PUBLISH, "Event not found");
+            throw new EventNotFoundException("Event not found");
         }
 
-        return eventsRepository.save(event);
+        event.setStatus(EventStatus.PUBLISHED);
+
+        Event savedEvent = eventsRepository.save(event);
+
+        return savedEvent;
     }
+
+    @Transactional
+    public Event handleEventStockGenerationFailedMessage(UUID eventId) {
+        //logger.info(EVENT_PUBLISH, "publishEvent method entered");
+
+        Event event = eventsRepository.findById(eventId)
+                .orElse(null);
+
+        if (event == null) {
+            //logger.error(EVENT_PUBLISH, "Event not found");
+            throw new EventNotFoundException("Event not found");
+        }
+
+        event.setStatus(EventStatus.DRAFT);
+
+        Event savedEvent = eventsRepository.save(event);
+
+        return savedEvent;
+    }
+
 
     /**
      * Retrieves a paginated list of published events.
