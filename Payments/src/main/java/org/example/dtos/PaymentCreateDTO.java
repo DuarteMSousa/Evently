@@ -11,7 +11,5 @@ import java.util.UUID;
 public class PaymentCreateDTO {
 
     private UUID orderId;
-    private UUID userId;
-    private float amount;
     private PaymentProvider provider;
 }

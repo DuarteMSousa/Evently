@@ -142,26 +142,18 @@ public class PaymentsController {
         }
     }
 
-    @PostMapping("/process-payment")
-    public ResponseEntity<?> processPayment(@RequestBody PaymentCreateDTO dto) {
+    @PostMapping("/process-payment/{paymentId}")
+    public ResponseEntity<?> processPayment(@PathVariable("paymentId") UUID paymentId) {
         /* HttpStatus(produces)
          * 201 CREATED - Payment created and initiated successfully.
          * 402 PAYMENT_REQUIRED - Payment refused by provider.
          * 400 BAD_REQUEST - Invalid data provided / generic error.
          */
 
-        logger.info(PAYMENT_PROCESS,
-                "Method processPayment entered (orderId={}, userId={}, amount={}, provider={})",
-                dto.getOrderId(), dto.getUserId(), dto.getAmount(), dto.getProvider());
+        logger.info(PAYMENT_PROCESS, "Method processPayment entered");
 
         try {
-            Payment paymentRequest = new Payment();
-            paymentRequest.setOrderId(dto.getOrderId());
-            paymentRequest.setUserId(dto.getUserId());
-            paymentRequest.setAmount(dto.getAmount());
-            paymentRequest.setPaymentProvider(dto.getProvider());
-
-            Payment created = paymentsService.processPayment(paymentRequest);
+            Payment created = paymentsService.processPayment(paymentId);
 
             String approvalUrl = "https://www.sandbox.paypal.com/checkoutnow?token=" + created.getProviderRef();
 
@@ -180,14 +172,12 @@ public class PaymentsController {
 
         } catch (InvalidPaymentException e) {
             logger.warn(PAYMENT_PROCESS,
-                    "400 BAD_REQUEST: Invalid payment payload (orderId={}, userId={}) reason={}",
-                    dto.getOrderId(), dto.getUserId(), e.getMessage());
+                    "400 BAD_REQUEST: Invalid payment payload reason={}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
 
         } catch (PaymentRefusedException e) {
             logger.warn(PAYMENT_PROCESS,
-                    "402 PAYMENT_REQUIRED: Payment refused by provider (orderId={}, userId={}, provider={}) reason={}",
-                    dto.getOrderId(), dto.getUserId(), dto.getProvider(), e.getMessage());
+                    "402 PAYMENT_REQUIRED: Payment refused by provider reason={}", e.getMessage());
             return ResponseEntity.status(402).body(e.getMessage());
 
         } catch (Exception e) {

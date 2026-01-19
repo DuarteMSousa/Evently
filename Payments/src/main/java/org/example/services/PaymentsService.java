@@ -136,87 +136,40 @@ public class PaymentsService {
      * Creates and initiates a payment through the configured payment provider.
      *
      *
-     * @param payment payment request payload
+     * @param paymentId payment request payload
      * @return persisted payment with updated provider reference
      * @throws InvalidPaymentException if payload is invalid or provider not supported
      * @throws PaymentRefusedException if provider refuses the payment
      * @throws RuntimeException for unexpected errors during persistence/provider communication
      */
     @Transactional
-    public Payment processPayment(Payment payment) {
-        logger.info(PAY_PROCESS, "Process payment requested (orderId={}, userId={}, provider={}, amount={})",
-                payment != null ? payment.getOrderId() : null,
-                payment != null ? payment.getUserId() : null,
-                payment != null ? payment.getPaymentProvider() : null,
-                payment != null ? payment.getAmount() : null
-        );
+    public Payment processPayment(UUID paymentId) {
+        logger.info(PAY_PROCESS, "Process payment requested");
 
-        validatePaymentForProcess(payment);
+        Payment existingOpt = paymentsRepository.findById(paymentId)
+                .orElseThrow(() -> {
+                    logger.warn(PAY_GET, "Payment not found (id={})", paymentId);
+                    return new PaymentNotFoundException("Payment not found");
+                });
 
-        var existingOpt = paymentsRepository.findByOrderId(payment.getOrderId());
+        validatePaymentForProcess(existingOpt);
 
-        if (existingOpt.isPresent()) {
-            Payment existing = existingOpt.get();
 
-            logger.info(PAY_PROCESS, "Existing payment found for orderId={} (paymentId={}, status={}, providerRef={})",
-                    existing.getOrderId(), existing.getId(), existing.getStatus(), existing.getProviderRef());
+        logger.info(PAY_PROCESS, "Existing payment found for orderId={} (paymentId={}, status={}, providerRef={})",
+                    existingOpt.getOrderId(), existingOpt.getId(), existingOpt.getStatus(), existingOpt.getProviderRef());
 
-            if (existing.getStatus() == PaymentStatus.PENDING && existing.getProviderRef() != null) {
-                return existing;
-            }
-
-            if (existing.getStatus() == PaymentStatus.CAPTURED ||
-                    existing.getStatus() == PaymentStatus.REFUNDED ||
-                    existing.getStatus() == PaymentStatus.CANCELED) {
-                throw new InvalidPaymentException("This order already has a finalized payment: " + existing.getStatus());
-            }
-
-            OrderDTO order;
-
-            try {
-                order = ordersClient.getOrder(existingOpt.get().getOrderId()).getBody();
-            } catch (FeignException e) {
-                String errorBody = e.contentUTF8();
-                logger.error(PAY_PROVIDER, "(PaymentsService): Orders service error: {}", errorBody);
-                throw new ExternalServiceException("(PaymentsService): Orders service error");
-            }
-
-            if (order == null) {
-                if (order.getTotal() != payment.getAmount()) {
-                    throw new InvalidPaymentException("Payment amount is different from order total amount");
-                }
-            }
-
-            existing.setUserId(payment.getUserId());
-            existing.setAmount(payment.getAmount());
-            existing.setPaymentProvider(payment.getPaymentProvider());
-            existing.setStatus(PaymentStatus.PENDING);
-
-            try {
-                logger.info(PAY_PROVIDER, "Creating PayPal order for existing payment (paymentId={}, orderId={})",
-                        existing.getId(), existing.getOrderId());
-
-                paymentProviderClient.createPaymentOrder(existing); // vai setProviderRef(...)
-                Payment updated = paymentsRepository.save(existing);
-
-                createEvent(updated, PaymentEventType.PENDING, null);
-                publishEvent(PaymentEventType.PENDING, updated);
-
-                return updated;
-
-            } catch (PaymentRefusedException e) {
-                existing.setStatus(PaymentStatus.FAILED);
-                Payment failed = paymentsRepository.save(existing);
-
-                createEvent(failed, PaymentEventType.FAILED, 402);
-                publishEvent(PaymentEventType.FAILED, failed);
-
-                throw e;
-            }
+        if (existingOpt.getStatus() == PaymentStatus.PENDING && existingOpt.getProviderRef() != null) {
+            return existingOpt;
         }
 
-        payment.setStatus(PaymentStatus.PENDING);
-        Payment saved = paymentsRepository.save(payment);
+        if (existingOpt.getStatus() == PaymentStatus.CAPTURED ||
+            existingOpt.getStatus() == PaymentStatus.REFUNDED ||
+            existingOpt.getStatus() == PaymentStatus.CANCELED) {
+            throw new InvalidPaymentException("This order already has a finalized payment: " + existingOpt.getStatus());
+        }
+
+        existingOpt.setStatus(PaymentStatus.PENDING);
+        Payment saved = paymentsRepository.save(existingOpt);
 
         logger.info(PAY_PROCESS, "Payment saved as PENDING (paymentId={}, orderId={})",
                 saved.getId(), saved.getOrderId());

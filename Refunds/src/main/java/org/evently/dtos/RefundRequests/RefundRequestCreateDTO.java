@@ -12,8 +12,6 @@ public class RefundRequestCreateDTO {
 
     private UUID payment;
 
-    private UUID user;
-
     private String title;
 
     private String description;

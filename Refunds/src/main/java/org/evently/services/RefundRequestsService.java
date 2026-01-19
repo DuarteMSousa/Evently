@@ -78,24 +78,11 @@ public class RefundRequestsService {
      */
     @Transactional
     public RefundRequest createRefundRequest(RefundRequest refundRequest) {
-        logger.info(REFUND_CREATE, "Creating refund request (user={}, payment={})",
-                refundRequest.getUserId(), refundRequest.getPaymentId());
+        logger.info(REFUND_CREATE, "Creating refund request (payment={})", refundRequest.getPaymentId());
 
         validateRefundRequest(refundRequest);
         validateNoActiveRefund(refundRequest.getPaymentId());
         refundRequest.setStatus(RefundRequestStatus.PENDING);
-
-        try {
-            usersClient.getUser(refundRequest.getUserId());
-        } catch (FeignException.NotFound e) {
-            logger.warn(REFUND_CREATE, "(RefundRequestsService): User not found in Users service");
-            throw new UserNotFoundException(
-                    "(RefundRequestsService): User not found in Users service");
-        } catch (FeignException e) {
-            logger.error(REFUND_CREATE, "(RefundRequestsService): Users service error", e);
-            throw new ExternalServiceException(
-                    "(RefundRequestsService): Users service error");
-        }
 
         PaymentDTO paymentDTO = null;
 
@@ -113,10 +100,7 @@ public class RefundRequestsService {
 
         if (paymentDTO != null){
             refundRequest.setOrderId(paymentDTO.getOrderId());
-
-            if (paymentDTO.getUserId() != refundRequest.getUserId()) {
-                throw new InvalidRefundRequestException("The user requesting the refound is not the one who made the payment");
-            }
+            refundRequest.setUserId(paymentDTO.getUserId());
 
             if (paymentDTO.getStatus() != PaymentStatus.CAPTURED) {
                 throw new InvalidRefundRequestException("Payment is not processed yet");
@@ -189,10 +173,6 @@ public class RefundRequestsService {
         if (request.getPaymentId() == null) {
             logger.warn(REFUND_VALIDATION, "Missing paymentId");
             throw new InvalidRefundRequestException("Payment ID is required");
-        }
-        if (request.getUserId() == null) {
-            logger.warn(REFUND_VALIDATION, "Missing userId");
-            throw new InvalidRefundRequestException("User ID is required");
         }
         if (request.getTitle() == null || request.getTitle().trim().isEmpty()) {
             logger.warn(REFUND_VALIDATION, "Title is empty");

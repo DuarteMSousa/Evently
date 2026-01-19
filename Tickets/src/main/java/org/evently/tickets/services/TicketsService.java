@@ -19,6 +19,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -37,6 +38,16 @@ public class TicketsService {
 
     @Autowired
     private TicketsEventsPublisher ticketsEventsPublisher;
+
+    /**
+     * Retrieves the tickets from a certain order
+     *
+     * @param orderId order identifier
+     * @return the list of the tickets from a certain order
+     */
+    public List<Ticket> findAllByOrderId(UUID orderId) {
+        return ticketsRepository.findAllByOrderId(orderId);
+    }
 
     /**
      * Retrieves a ticket by its unique identifier.

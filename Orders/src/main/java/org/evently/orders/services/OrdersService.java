@@ -240,7 +240,6 @@ public class OrdersService {
         }
 
         order.setStatus(OrderStatus.CANCELLED);
-        order.setPaidAt(new Date());
 
         Order cancelledOrder = ordersRepository.save(order);
 
