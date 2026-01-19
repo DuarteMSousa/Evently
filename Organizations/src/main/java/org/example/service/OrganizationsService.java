@@ -1,6 +1,8 @@
 package org.example.service;
 
+import feign.FeignException;
 import jakarta.transaction.Transactional;
+import org.example.clients.UsersClient;
 import org.example.exceptions.*;
 import org.example.models.Member;
 import org.example.models.MemberId;
@@ -12,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -37,6 +40,9 @@ public class OrganizationsService {
 
     @Autowired
     private OrganizationsRepository organizationsRepository;
+
+    @Autowired
+    private UsersClient usersClient;
 
     @Autowired
     private MembersRepository membersRepository;
@@ -77,6 +83,19 @@ public class OrganizationsService {
         if (!isCreate && org.getUpdatedBy() == null) {
             logger.warn(ORG_VALIDATE, "Missing updatedBy on update");
             throw new InvalidOrganizationException("UpdatedBy is required");
+        }
+    }
+
+    private void assertUserExists(UUID userId) {
+        try {
+            ResponseEntity<?> res = usersClient.getUser(userId);
+            if (!res.getStatusCode().is2xxSuccessful() || res.getBody() == null) {
+                throw new UserNotFoundException("User not found: " + userId);
+            }
+        } catch (FeignException.NotFound e) {
+            throw new UserNotFoundException("User not found: " + userId);
+        } catch (FeignException e) {
+            throw new ExternalServiceException("Users service unavailable");
         }
     }
 
@@ -121,6 +140,8 @@ public class OrganizationsService {
         );
 
         validateOrganization(org, true);
+
+        assertUserExists(org.getCreatedBy());
 
         if (organizationsRepository.existsByNipc(org.getNipc())) {
             logger.warn(ORG_CREATE, "Organization already exists with NIPC {}", org.getNipc());
