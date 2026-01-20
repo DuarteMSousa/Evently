@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.example.dtos.externalServices.orderLines.OrderLineDTO;
-import org.example.enums.externalServices.OrderStatus;
+import org.example.enums.externalServices.orders.OrderStatus;
 
 
 import java.util.List;

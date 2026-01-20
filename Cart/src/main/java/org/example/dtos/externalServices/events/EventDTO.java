@@ -1,6 +1,5 @@
 package org.example.dtos.externalServices.events;
 
-
 import lombok.Getter;
 import lombok.Setter;
 import org.example.dtos.externalServices.categories.CategoryDTO;
@@ -34,4 +33,5 @@ public class EventDTO {
     private List<EventSessionDTO> sessions;
 
     private List<CategoryDTO> categories;
+
 }

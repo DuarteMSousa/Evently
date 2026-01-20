@@ -20,4 +20,5 @@ public interface EventsRepository extends JpaRepository<Event, UUID> {
     Page<Event> findAllByStatus(EventStatus status, PageRequest pageable);
 
     List<Event> findDistinctByCategoriesContaining(Category category);
+
 }

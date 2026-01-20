@@ -35,4 +35,5 @@ public class TicketReservationDTO {
     private OffsetDateTime confirmedAt;
 
     private Date createdAt;
+
 }

@@ -188,4 +188,5 @@ class RefundDecisionsControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("boom"));
     }
+
 }

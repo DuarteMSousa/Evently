@@ -5,9 +5,9 @@ import feign.Request;
 import feign.Response;
 import org.evently.clients.PaymentsClient;
 import org.evently.clients.UsersClient;
-import org.evently.dtos.externalServices.PaymentStatusDTO;
+import org.evently.dtos.externalServices.payments.PaymentStatusDTO;
 import org.evently.enums.RefundRequestStatus;
-import org.evently.enums.externalServices.PaymentStatus;
+import org.evently.enums.externalServices.payments.PaymentStatus;
 import org.evently.exceptions.ExternalServiceException;
 import org.evently.exceptions.InvalidRefundRequestException;
 import org.evently.exceptions.RefundRequestNotFoundException;
@@ -288,4 +288,5 @@ class RefundRequestsServiceTest {
         Response resp = Response.builder().status(status).reason("err").request(req).headers(Collections.emptyMap()).build();
         return FeignException.errorStatus("Client#call", resp);
     }
+
 }

@@ -1,6 +1,5 @@
 package org.example.dtos.externalServices.eventSessions;
 
-
 import lombok.Getter;
 import lombok.Setter;
 import org.example.dtos.externalServices.sessionTiers.SessionTierDTO;
@@ -33,4 +32,5 @@ public class EventSessionDTO {
     private Date updatedAt;
 
     private List<SessionTierDTO> tiers;
+
 }

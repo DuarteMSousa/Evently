@@ -138,4 +138,5 @@ class TicketReservationsServiceTest {
         assertEquals(TicketReservationStatus.CONFIRMED, r1.getStatus());
         assertNotNull(r1.getConfirmedAt());
     }
+
 }

@@ -17,4 +17,5 @@ public interface UsersRepository extends JpaRepository<User, UUID> {
     boolean existsByNif(String nif);
 
     boolean existsByPhoneNumber(String phoneNumber);
+
 }

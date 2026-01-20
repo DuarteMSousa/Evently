@@ -13,5 +13,4 @@ public interface ReviewsRepository extends JpaRepository<Review, UUID> {
 
     Page<Review> findAllByEntityId(UUID entityId, PageRequest pageRequest);
 
-    boolean getReviewById(UUID id);
 }

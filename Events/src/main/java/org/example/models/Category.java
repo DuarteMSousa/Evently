@@ -39,4 +39,5 @@ public class Category {
 
     @ManyToMany(fetch = FetchType.LAZY)
     private List<Event> events;
+
 }

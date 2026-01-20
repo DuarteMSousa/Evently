@@ -10,9 +10,13 @@ import java.util.UUID;
 public class OrganizationCreateDTO {
 
     private String name;
+
     private String description;
+
     private String nipc;
+
     private String siteUrl;
 
     private UUID createdBy;
+
 }

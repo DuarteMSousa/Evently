@@ -10,7 +10,11 @@ import java.util.UUID;
 public class VenueZoneCreateDTO {
 
     private UUID venueId;
+
     private String name;
+
     private Integer capacity;
+
     private UUID createdBy;
+
 }

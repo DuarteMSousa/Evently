@@ -22,7 +22,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -217,4 +216,5 @@ class RefundRequestMessagesServiceTest {
         Response resp = Response.builder().status(status).reason("err").request(req).headers(Collections.emptyMap()).build();
         return FeignException.errorStatus("UsersClient#getUser", resp);
     }
+
 }

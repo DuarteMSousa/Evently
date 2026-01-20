@@ -1,7 +1,6 @@
 package org.example.clients;
 
 import org.example.dtos.externalServices.organizations.OrganizationDTO;
-import org.example.dtos.externalServices.venues.VenueDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,5 +16,6 @@ public interface OrganizationsClient {
     ResponseEntity<OrganizationDTO> getOrganization(@PathVariable("id") UUID id);
 
     @GetMapping("/by-user/{userId}")
-    public ResponseEntity<List<OrganizationDTO>> getOrganizationsByUser(@PathVariable("userId") UUID userId) ;
+    ResponseEntity<List<OrganizationDTO>> getOrganizationsByUser(@PathVariable("userId") UUID userId) ;
+
 }

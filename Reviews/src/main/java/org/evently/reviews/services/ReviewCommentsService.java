@@ -26,7 +26,6 @@ public class ReviewCommentsService {
     private static final Logger logger = LoggerFactory.getLogger(ReviewCommentsService.class);
 
     private static final Marker COMMENT_CREATE = MarkerFactory.getMarker("COMMENT_CREATE");
-    private static final Marker COMMENT_UPDATE = MarkerFactory.getMarker("COMMENT_UPDATE");
     private static final Marker COMMENT_DELETE = MarkerFactory.getMarker("COMMENT_DELETE");
     private static final Marker COMMENT_GET = MarkerFactory.getMarker("COMMENT_GET");
     private static final Marker COMMENT_VALIDATION = MarkerFactory.getMarker("COMMENT_VALIDATION");
@@ -39,8 +38,6 @@ public class ReviewCommentsService {
 
     @Autowired
     private UsersClient usersClient;
-
-    private final ModelMapper modelMapper = new ModelMapper();
 
     /**
      * Retrieves a review comment by its unique identifier.
@@ -95,38 +92,6 @@ public class ReviewCommentsService {
         ReviewComment saved = reviewCommentsRepository.save(reviewComment);
         logger.info(COMMENT_CREATE, "Comment registered successfully (id={})", saved.getId());
         return saved;
-    }
-
-    /**
-     * Updates an existing review comment after validating its data and checking the identifier.
-     *
-     * @param id review comment identifier to update
-     * @param reviewComment review comment data to update
-     * @return updated review comment
-     * @throws InvalidReviewCommentException if the comment data is invalid or ID mismatch occurs
-     * @throws ReviewCommentNotFoundException if the comment does not exist
-     */
-    @Transactional
-    public ReviewComment updateReviewComment(UUID id, ReviewComment reviewComment) {
-        logger.info(COMMENT_UPDATE, "Update comment requested (id={})", id);
-
-        if (reviewComment.getId() != null && !id.equals(reviewComment.getId())) {
-            logger.error(COMMENT_UPDATE, "ID mismatch: path={}, body={}", id, reviewComment.getId());
-            throw new InvalidReviewCommentException("Parameter id and body id do not correspond");
-        }
-
-        ReviewComment existingComment = reviewCommentsRepository.findById(id)
-                .orElseThrow(() -> {
-                    logger.warn(COMMENT_UPDATE, "Comment not found for update (id={})", id);
-                    return new ReviewCommentNotFoundException("Review Comment not found");
-                });
-
-        validateComment(reviewComment);
-        modelMapper.map(reviewComment, existingComment);
-
-        ReviewComment updated = reviewCommentsRepository.save(existingComment);
-        logger.info(COMMENT_UPDATE, "Comment updated successfully (id={})", updated.getId());
-        return updated;
     }
 
     /**
@@ -194,4 +159,5 @@ public class ReviewCommentsService {
             throw new InvalidReviewCommentException("A valid Review ID must be associated");
         }
     }
+
 }

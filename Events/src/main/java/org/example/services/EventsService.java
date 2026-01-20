@@ -4,25 +4,17 @@ import feign.FeignException;
 import jakarta.transaction.Transactional;
 import org.example.clients.OrganizationsClient;
 import org.example.clients.TicketManagementClient;
-import org.example.clients.VenuesClient;
 import org.example.dtos.externalServices.organizations.OrganizationDTO;
-import org.example.dtos.externalServices.ticketStocks.TicketStockCreateDTO;
-import org.example.dtos.externalServices.ticketStocks.TicketStockIdDTO;
-import org.example.dtos.externalServices.venueszone.VenueZoneDTO;
 import org.example.enums.EventStatus;
 import org.example.exceptions.*;
 import org.example.models.Event;
-import org.example.models.EventSession;
-import org.example.models.SessionTier;
 import org.example.publishers.EventMessagesPublisher;
 import org.example.repositories.EventSessionsRepository;
 import org.example.repositories.EventsRepository;
-import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -47,12 +39,7 @@ public class EventsService {
     private TicketManagementClient ticketManagementClient;
 
     @Autowired
-    private VenuesClient venuesClient;
-
-    @Autowired
     private EventMessagesPublisher  eventMessagesPublisher;
-
-    private ModelMapper modelMapper = new ModelMapper();
 
     private Logger logger = LoggerFactory.getLogger(EventsService.class);
 
@@ -362,4 +349,5 @@ public class EventsService {
             throw new InvalidEventException("Organization not found or the user does not belong to this organization");
         }
     }
+
 }

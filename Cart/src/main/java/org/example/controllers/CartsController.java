@@ -1,9 +1,6 @@
 package org.example.controllers;
 
 import org.example.dtos.cart.CartDTO;
-import org.example.dtos.cartItems.CartItemDTO;
-import org.example.exceptions.CartItemAlreadyExistsException;
-import org.example.exceptions.CartItemNotFoundException;
 import org.example.exceptions.CartNotFoundException;
 import org.example.exceptions.EmptyCartException;
 import org.example.services.CartsService;

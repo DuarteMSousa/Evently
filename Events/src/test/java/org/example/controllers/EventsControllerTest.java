@@ -1,6 +1,5 @@
 package org.example.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.exceptions.EventNotFoundException;
 import org.example.models.Event;
 import org.example.services.EventsService;
@@ -14,7 +13,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.Mockito.*;
@@ -26,7 +24,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class EventsControllerTest {
 
     @Autowired private MockMvc mockMvc;
-    @Autowired private ObjectMapper objectMapper;
 
     @MockBean private EventsService eventsService;
 
@@ -48,7 +45,7 @@ class EventsControllerTest {
                 .andExpect(content().string(""));
     }
 
-    // create/update/cancel/publish -> assumem @RequestBody no controller para DTOs
+    // create/update/cancel/publish
     @Test
     void createEvent_success_returns200() throws Exception {
         UUID orgId = UUID.randomUUID();
@@ -113,4 +110,5 @@ class EventsControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
+
 }

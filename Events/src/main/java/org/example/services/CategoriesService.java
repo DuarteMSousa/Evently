@@ -5,7 +5,6 @@ import org.example.exceptions.*;
 import org.example.models.Category;
 import org.example.repositories.CategoriesRepository;
 import org.example.repositories.EventsRepository;
-import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -24,8 +23,6 @@ public class CategoriesService {
 
     @Autowired
     private EventsRepository eventsRepository;
-
-    private ModelMapper modelMapper = new ModelMapper();
 
     private Logger logger = LoggerFactory.getLogger(CategoriesService.class);
 
@@ -158,4 +155,5 @@ public class CategoriesService {
         logger.info(CATEGORIES_GET, "Method getCategories entered");
         return categoriesRepository.findAll();
     }
+
 }

@@ -1,13 +1,12 @@
 package org.example.listeners;
 
 import org.example.config.MQConfig;
-import org.example.enums.externalServices.DecisionType;
+import org.example.enums.externalServices.refunds.DecisionType;
 import org.example.messages.received.OrderCanceledMessage;
 import org.example.messages.received.OrderPaidMessage;
 import org.example.messages.received.RefundRequestDecisionRegisteredMessage;
 import org.example.services.TicketReservationsService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -16,9 +15,6 @@ public class MessagesListener {
 
     @Autowired
     private TicketReservationsService ticketReservationsService;
-
-    @Autowired
-    private RabbitTemplate template;
 
     @RabbitListener(queues = MQConfig.ORDERS_PAID_QUEUE)
     public void listener(OrderPaidMessage message) {
@@ -36,4 +32,5 @@ public class MessagesListener {
             ticketReservationsService.handleRefundRequestDecision(message);
         }
     }
+
 }

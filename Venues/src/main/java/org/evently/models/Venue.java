@@ -12,7 +12,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
@@ -60,4 +59,5 @@ public class Venue {
 
     @OneToMany(mappedBy = "venue", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<VenueZone> zones;
+
 }

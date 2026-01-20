@@ -6,9 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
 
 import java.util.Date;
 import java.util.UUID;
@@ -20,6 +18,7 @@ import java.util.UUID;
 @Table(name = "refund_request_message")
 @EntityListeners(AuditingEntityListener.class)
 public class RefundRequestMessage {
+
     @Id
     @GeneratedValue
     private UUID id;
@@ -37,4 +36,5 @@ public class RefundRequestMessage {
     @JoinColumn(name = "refundRequestId", nullable = false)
     @JsonIgnore
     private RefundRequest refundRequest;
+
 }

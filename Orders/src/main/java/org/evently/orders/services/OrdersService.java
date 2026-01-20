@@ -4,10 +4,9 @@ import feign.FeignException;
 import jakarta.transaction.Transactional;
 import org.evently.orders.clients.EventsClient;
 import org.evently.orders.clients.TicketManagementClient;
-import org.evently.orders.config.MQConfig;
-import org.evently.orders.dtos.externalServices.EventSessionDTO;
-import org.evently.orders.dtos.externalServices.SessionTierDTO;
-import org.evently.orders.dtos.externalServices.TicketReservationCreateDTO;
+import org.evently.orders.dtos.externalServices.events.EventSessionDTO;
+import org.evently.orders.dtos.externalServices.events.SessionTierDTO;
+import org.evently.orders.dtos.externalServices.ticketManagement.TicketReservationCreateDTO;
 import org.evently.orders.enums.OrderStatus;
 import org.evently.orders.exceptions.ExternalServiceException;
 import org.evently.orders.exceptions.InvalidOrderException;
@@ -17,7 +16,6 @@ import org.evently.orders.models.Order;
 import org.evently.orders.models.OrderLine;
 import org.evently.orders.publishers.OrdersEventsPublisher;
 import org.evently.orders.repositories.OrdersRepository;
-import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -51,8 +49,6 @@ public class OrdersService {
 
     @Autowired
     private OrdersEventsPublisher  ordersEventsPublisher;
-
-    private ModelMapper modelMapper = new ModelMapper();
 
     /**
      * Retrieves an order by its unique identifier.
@@ -307,4 +303,5 @@ public class OrdersService {
             }
         });
     }
+
 }

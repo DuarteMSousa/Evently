@@ -16,7 +16,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.*;
@@ -148,4 +147,5 @@ class OrganizationsControllerTest {
                 .andExpect(status().isForbidden())
                 .andExpect(content().string("User is not the creator of the organization"));
     }
+
 }

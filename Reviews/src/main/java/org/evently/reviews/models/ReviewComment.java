@@ -40,4 +40,5 @@ public class ReviewComment {
     @JoinColumn(name = "reviewId", nullable = false)
     @JsonIgnore
     private Review review;
+
 }

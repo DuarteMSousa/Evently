@@ -15,4 +15,5 @@ public interface TicketReservationsRepository extends JpaRepository<TicketReserv
     boolean existsByTierId(UUID tierId);
 
     List<TicketReservation> findByOrderId(UUID orderId);
+
 }

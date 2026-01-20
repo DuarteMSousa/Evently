@@ -45,4 +45,5 @@ public class CartItem {
 
     @LastModifiedDate
     private Date updatedAt;
+
 }

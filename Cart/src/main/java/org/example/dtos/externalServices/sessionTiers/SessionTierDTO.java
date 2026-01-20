@@ -1,6 +1,5 @@
 package org.example.dtos.externalServices.sessionTiers;
 
-
 import lombok.Getter;
 
 import java.util.Date;

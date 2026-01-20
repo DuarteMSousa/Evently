@@ -216,4 +216,5 @@ class EventSessionsServiceTest {
 
         verify(eventSessionsRepository).delete(s);
     }
+
 }

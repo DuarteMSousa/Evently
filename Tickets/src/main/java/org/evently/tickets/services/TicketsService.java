@@ -1,11 +1,9 @@
 package org.evently.tickets.services;
 
 import jakarta.transaction.Transactional;
-import org.evently.tickets.config.MQConfig;
 import org.evently.tickets.enums.TicketStatus;
 import org.evently.tickets.exceptions.InvalidTicketUpdateException;
 import org.evently.tickets.exceptions.TicketNotFoundException;
-import org.evently.tickets.messages.TicketIssuedMessage;
 import org.evently.tickets.models.Ticket;
 import org.evently.tickets.publishers.TicketsEventsPublisher;
 import org.evently.tickets.repositories.TicketsRepository;
@@ -215,4 +213,5 @@ public class TicketsService {
             throw new InvalidTicketUpdateException("Ticket status is required");
         }
     }
+
 }

@@ -8,4 +8,5 @@ public class TicketStockCreateDTO {
     private TicketStockIdDTO id;
 
     private Integer availableQuantity;
+
 }

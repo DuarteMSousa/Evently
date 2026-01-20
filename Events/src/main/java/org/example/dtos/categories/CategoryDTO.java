@@ -25,4 +25,5 @@ public class CategoryDTO {
     private Date updatedAt;
 
     private List<EventDTO> events;
+
 }

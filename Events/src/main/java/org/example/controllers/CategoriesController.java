@@ -35,8 +35,6 @@ public class CategoriesController {
 
     private Logger logger = LoggerFactory.getLogger(CategoriesController.class);
 
-    private Marker marker = MarkerFactory.getMarker("CategoriesController");
-
     private static final Marker CATEGORIES_GET = MarkerFactory.getMarker("CATEGORIES_GET");
     private static final Marker CATEGORY_GET = MarkerFactory.getMarker("CATEGORY_GET");
     private static final Marker CATEGORY_DELETE = MarkerFactory.getMarker("CATEGORY_DELETE");

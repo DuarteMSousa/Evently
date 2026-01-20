@@ -25,8 +25,8 @@ public class JwtUtils {
 
     public String generateToken(UUID userId, String username) {
         return Jwts.builder()
-                .setSubject(userId.toString())          // id do user
-                .claim("username", username)            // extra claim
+                .setSubject(userId.toString())
+                .claim("username", username)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -52,7 +52,6 @@ public class JwtUtils {
     }
 
     private Claims parseClaims(String token) {
-        // aceita "Bearer xxx" ou só "xxx"
         String clean = token.startsWith("Bearer ") ? token.substring(7) : token;
 
         return Jwts.parserBuilder()

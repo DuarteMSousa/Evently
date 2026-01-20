@@ -1,6 +1,5 @@
 package org.example.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.exceptions.CategoryNotFoundException;
 import org.example.models.Category;
 import org.example.services.CategoriesService;
@@ -24,7 +23,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class CategoriesControllerTest {
 
     @Autowired private MockMvc mockMvc;
-    @Autowired private ObjectMapper objectMapper;
 
     @MockBean private CategoriesService categoriesService;
 
@@ -60,7 +58,7 @@ class CategoriesControllerTest {
         verify(categoriesService).deleteCategory(id);
     }
 
-    // create/update -> assumem @RequestBody no controller
+    // create/update
     @Test
     void createCategory_success_returns200() throws Exception {
         String body = "{\"name\":\"Music\"}";
@@ -97,4 +95,5 @@ class CategoriesControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("New"));
     }
+
 }

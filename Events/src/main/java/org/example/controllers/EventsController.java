@@ -23,7 +23,6 @@ import java.util.UUID;
 @RequestMapping("/events")
 public class EventsController {
 
-
     @Autowired
     private EventsService eventsService;
 

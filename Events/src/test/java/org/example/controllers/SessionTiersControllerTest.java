@@ -33,7 +33,7 @@ class SessionTiersControllerTest {
                 .andExpect(status().isOk());
     }
 
-    // create/update -> assumem @RequestBody
+    // create/update
     @Test
     void createSessionTier_success_returns200() throws Exception {
         String body = "{}";
@@ -70,4 +70,5 @@ class SessionTiersControllerTest {
 
         verify(sessionTiersService).deleteSessionTier(id);
     }
+
 }

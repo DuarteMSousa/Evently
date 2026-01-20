@@ -5,11 +5,11 @@ import jakarta.transaction.Transactional;
 import org.evently.clients.OrdersClient;
 import org.evently.clients.PaymentsClient;
 import org.evently.clients.UsersClient;
-import org.evently.dtos.externalServices.OrderDTO;
-import org.evently.dtos.externalServices.PaymentDTO;
+import org.evently.dtos.externalServices.orders.OrderDTO;
+import org.evently.dtos.externalServices.payments.PaymentDTO;
 import org.evently.enums.RefundRequestStatus;
-import org.evently.enums.externalServices.OrderStatus;
-import org.evently.enums.externalServices.PaymentStatus;
+import org.evently.enums.externalServices.orders.OrderStatus;
+import org.evently.enums.externalServices.payments.PaymentStatus;
 import org.evently.exceptions.ExternalServiceException;
 import org.evently.exceptions.InvalidRefundRequestException;
 import org.evently.exceptions.RefundRequestNotFoundException;
@@ -28,7 +28,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -45,15 +44,10 @@ public class RefundRequestsService {
     private RefundRequestsRepository refundRequestsRepository;
 
     @Autowired
-    private UsersClient usersClient;
-
-    @Autowired
     private PaymentsClient paymentsClient;
 
     @Autowired
     private OrdersClient ordersClient;
-
-    private final ModelMapper modelMapper = new ModelMapper();
 
     /**
      * Retrieves a refund request by its unique identifier.

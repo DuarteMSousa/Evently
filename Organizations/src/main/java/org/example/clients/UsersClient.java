@@ -13,4 +13,5 @@ public interface UsersClient {
 
     @GetMapping("/get-user/{id}")
     ResponseEntity<UserDTO> getUser(@PathVariable("id") UUID id);
+
 }

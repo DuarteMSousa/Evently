@@ -1,8 +1,8 @@
 package org.evently.listeners;
 
 import org.evently.config.MQConfig;
-import org.evently.enums.externalServices.PaymentEventType;
-import org.evently.enums.externalServices.PaymentStatus;
+import org.evently.enums.externalServices.payments.PaymentEventType;
+import org.evently.enums.externalServices.payments.PaymentStatus;
 import org.evently.exceptions.RefundRequestNotFoundException;
 import org.evently.messages.received.PaymentEventMessage;
 import org.evently.models.RefundRequest;
@@ -38,4 +38,5 @@ public class PaymentsListener {
             }
         }
     }
+
 }

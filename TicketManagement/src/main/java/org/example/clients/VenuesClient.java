@@ -1,7 +1,7 @@
 package org.example.clients;
 
 import org.example.dtos.externalServices.venues.VenueDTO;
-import org.example.dtos.externalServices.venueszone.VenueZoneDTO;
+import org.example.dtos.externalServices.venues.venueszone.VenueZoneDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,5 +17,6 @@ public interface VenuesClient {
 
 
     @GetMapping("/zones/get-zone/{id}")
-     ResponseEntity<VenueZoneDTO> getZone(@PathVariable("id") UUID id);
+    ResponseEntity<VenueZoneDTO> getZone(@PathVariable("id") UUID id);
+
 }

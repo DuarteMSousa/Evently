@@ -8,4 +8,5 @@ import java.util.UUID;
 public interface OrganizationsRepository extends JpaRepository<Organization, UUID> {
 
     boolean existsByNipc(String nipc);
+
 }

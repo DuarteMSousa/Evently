@@ -26,4 +26,5 @@ public class EventCanceledMessage {
     private List<EventSessionDTO> sessions;
 
     private List<CategoryDTO> categories;
+
 }

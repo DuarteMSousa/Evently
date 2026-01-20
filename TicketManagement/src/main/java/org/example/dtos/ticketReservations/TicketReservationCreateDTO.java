@@ -20,4 +20,5 @@ public class TicketReservationCreateDTO {
     private UUID eventId;
 
     private Integer quantity;
+
 }

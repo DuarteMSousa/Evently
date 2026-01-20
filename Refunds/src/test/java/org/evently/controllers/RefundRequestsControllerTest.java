@@ -19,7 +19,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.*;
@@ -95,12 +94,11 @@ class RefundRequestsControllerTest {
 
     @Test
     void registerRefund_success_returns201() throws Exception {
-        UUID paymentId = UUID.randomUUID();
+        UUID orderId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
 
         RefundRequestCreateDTO dto = new RefundRequestCreateDTO();
-        dto.setPayment(paymentId);
-        dto.setUser(userId);
+        dto.setOrder(orderId);
         dto.setTitle("t");
         dto.setDescription("d");
 
@@ -155,4 +153,5 @@ class RefundRequestsControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("boom"));
     }
+
 }

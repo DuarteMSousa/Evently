@@ -17,4 +17,5 @@ public class OrderLineId implements Serializable {
     private UUID orderId;
 
     private UUID productId;
+
 }

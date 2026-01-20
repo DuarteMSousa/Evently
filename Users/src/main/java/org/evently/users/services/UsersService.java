@@ -28,8 +28,6 @@ public class UsersService {
     @Autowired
     private JwtUtils jwtUtils;
 
-    private ModelMapper modelMapper = new ModelMapper();
-
     private Logger logger = LoggerFactory.getLogger(UsersService.class);
 
     private static final Marker USER_LOGIN = MarkerFactory.getMarker("USER_LOGIN");
@@ -218,4 +216,5 @@ public class UsersService {
         PageRequest pageable = PageRequest.of(pageNumber, pageSize);
         return usersRepository.findAll(pageable);
     }
+
 }

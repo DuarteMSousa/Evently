@@ -1,6 +1,6 @@
 package org.evently.reviews.clients;
 
-import org.evently.reviews.dtos.externalServices.VenueDTO;
+import org.evently.reviews.dtos.externalServices.venues.VenueDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,4 +13,5 @@ public interface VenuesClient {
 
     @GetMapping("/get-venue/{id}")
     ResponseEntity<VenueDTO> getVenue(@PathVariable("id") UUID id);
+
 }

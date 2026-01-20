@@ -29,7 +29,6 @@ public class VenuesService {
     private static final Marker VENUE_SEARCH = MarkerFactory.getMarker("VENUE_SEARCH");
     private static final Marker VENUE_VALIDATION = MarkerFactory.getMarker("VENUE_VALIDATION");
 
-
     @Autowired
     private VenuesRepository venuesRepository;
 
@@ -204,4 +203,5 @@ public class VenuesService {
         logger.debug(VENUE_SEARCH, "Search venues completed (results={})", results.size());
         return results;
     }
+
 }

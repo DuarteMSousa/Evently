@@ -1,6 +1,6 @@
 package org.evently.reviews.clients;
 
-import org.evently.reviews.dtos.externalServices.UserDTO;
+import org.evently.reviews.dtos.externalServices.users.UserDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,4 +13,5 @@ public interface UsersClient {
 
     @GetMapping("/get-user/{id}")
     ResponseEntity<UserDTO> getUser(@PathVariable("id") UUID id);
+
 }

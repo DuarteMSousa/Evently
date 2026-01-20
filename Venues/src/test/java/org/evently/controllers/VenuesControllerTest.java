@@ -9,7 +9,6 @@ import org.evently.exceptions.VenueNotFoundException;
 import org.evently.models.Venue;
 import org.evently.service.VenuesService;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -172,4 +171,5 @@ class VenuesControllerTest {
                 .andExpect(status().isConflict())
                 .andExpect(content().string("Venue already deactivated"));
     }
+
 }

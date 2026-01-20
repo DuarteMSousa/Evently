@@ -43,9 +43,7 @@ class VenuesServiceTest {
         validVenue.setCreatedBy(UUID.randomUUID());
     }
 
-    // -----------------------
-    // createVenue (VCS001-011)
-    // -----------------------
+    // createVenue
 
     @Test
     void createVenue_capacityNull_throwsInvalidVenueException() {
@@ -192,9 +190,7 @@ class VenuesServiceTest {
         assertTrue(result.isActive());
     }
 
-    // -----------------------
-    // deactivateVenue (VDS001-003)
-    // -----------------------
+    // deactivateVenue
 
     @Test
     void deactivateVenue_notFound_throwsVenueNotFoundException() {
@@ -240,9 +236,7 @@ class VenuesServiceTest {
         verify(venuesRepository).save(venue);
     }
 
-    // -----------------------
-    // getVenue (VGS001-002)
-    // -----------------------
+    // getVenue
 
     @Test
     void getVenue_notFound_throwsVenueNotFoundException() {
@@ -268,9 +262,7 @@ class VenuesServiceTest {
         assertEquals(id, result.getId());
     }
 
-    // -----------------------
-    // searchVenues (VSS001-009)
-    // -----------------------
+    // searchVenues
 
     @Test
     void searchVenues_minCapacityNegative_throwsInvalidVenueException() {
@@ -307,4 +299,5 @@ class VenuesServiceTest {
 
         assertEquals(1, res.size());
     }
+
 }

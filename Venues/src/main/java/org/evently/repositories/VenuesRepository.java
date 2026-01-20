@@ -9,4 +9,5 @@ import java.util.UUID;
 public interface VenuesRepository extends JpaRepository<Venue, UUID>, JpaSpecificationExecutor<Venue> {
 
     boolean existsByName(String name);
+
 }

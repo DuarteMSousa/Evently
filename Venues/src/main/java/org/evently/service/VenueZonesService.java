@@ -37,7 +37,6 @@ public class VenueZonesService {
 
     /**
      * Validates all required fields of a venue zone, including business rules relative to the venue.
-     *
      * Validation rules:
      * - name is mandatory
      * - capacity must be greater than 0
@@ -152,7 +151,6 @@ public class VenueZonesService {
 
     /**
      * Updates an existing venue zone.
-     *
      * Update rules:
      * - if body id is provided, it must match path id
      * - updatedBy is mandatory
@@ -212,4 +210,5 @@ public class VenueZonesService {
 
         return saved;
     }
+
 }

@@ -1,6 +1,5 @@
 package org.evently.models;
 
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,6 +19,7 @@ import java.util.UUID;
 @Table(name = "refund_decisions")
 @EntityListeners(AuditingEntityListener.class)
 public class RefundDecision {
+
     @Id
     @GeneratedValue
     private UUID id;
@@ -40,4 +40,5 @@ public class RefundDecision {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "refundRequestId", nullable = false)
     private RefundRequest refundRequest;
+
 }

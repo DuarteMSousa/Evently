@@ -5,8 +5,6 @@ import lombok.Setter;
 import org.example.dtos.categories.CategoryDTO;
 import org.example.dtos.eventSessions.EventSessionDTO;
 import org.example.enums.EventStatus;
-import org.example.models.Category;
-import org.example.models.EventSession;
 
 import java.util.Date;
 import java.util.List;
@@ -37,4 +35,5 @@ public class EventDTO {
     private List<EventSessionDTO> sessions;
 
     private List<CategoryDTO> categories;
+
 }

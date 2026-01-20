@@ -196,4 +196,5 @@ class CategoriesServiceTest {
         assertEquals(2, res.size());
         verify(categoriesRepository).findAll();
     }
+
 }

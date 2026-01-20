@@ -5,9 +5,9 @@ import feign.Request;
 import feign.Response;
 import org.evently.orders.clients.EventsClient;
 import org.evently.orders.clients.TicketManagementClient;
-import org.evently.orders.dtos.externalServices.EventSessionDTO;
-import org.evently.orders.dtos.externalServices.SessionTierDTO;
-import org.evently.orders.dtos.externalServices.TicketReservationCreateDTO;
+import org.evently.orders.dtos.externalServices.events.EventSessionDTO;
+import org.evently.orders.dtos.externalServices.events.SessionTierDTO;
+import org.evently.orders.dtos.externalServices.ticketManagement.TicketReservationCreateDTO;
 import org.evently.orders.enums.OrderStatus;
 import org.evently.orders.exceptions.ExternalServiceException;
 import org.evently.orders.exceptions.InvalidOrderException;
@@ -109,8 +109,6 @@ class OrdersServiceTest {
                 new HashMap<>()
         );
     }
-
-
 
     private FeignException feignGeneric500() {
         Request req = Request.create(Request.HttpMethod.GET, "/x", new HashMap<>(), null, StandardCharsets.UTF_8, null);
@@ -246,7 +244,6 @@ class OrdersServiceTest {
     void createOrder_invalidQuantity_throwsInvalidOrderException() {
         Order input = baseOrderWithOneLine(0);
 
-        // mesmo que o tier exista, a validação falha
         when(eventsClient.getSessionTier(productId)).thenReturn(ResponseEntity.ok(tier(productId, 10.0f)));
 
         assertThrows(InvalidOrderException.class, () -> ordersService.createOrder(input));
@@ -360,9 +357,7 @@ class OrdersServiceTest {
         Order res = ordersService.cancelOrder(orderId);
 
         assertEquals(OrderStatus.CANCELED, res.getStatus());
-        // Nota: no teu código estás a fazer order.setPaidAt(new Date()) ao cancelar (provável bug),
-        // então validamos o comportamento atual:
-        assertNotNull(res.getPaidAt());
+        assertNotNull(res.getCanceledAt());
     }
 
     @Test
@@ -387,7 +382,6 @@ class OrdersServiceTest {
         assertThrows(InvalidOrderException.class, () -> ordersService.cancelOrder(orderId));
     }
 
-    // -------- tiny helper for paging without pulling Spring Data impls too much --------
     static class PageFake {
         static org.springframework.data.domain.Page<Order> onePage() {
             return new org.springframework.data.domain.PageImpl<>(Collections.singletonList(new Order()));

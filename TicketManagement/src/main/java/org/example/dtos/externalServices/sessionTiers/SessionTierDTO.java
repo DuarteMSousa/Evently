@@ -1,6 +1,5 @@
 package org.example.dtos.externalServices.sessionTiers;
 
-
 import lombok.Getter;
 
 import java.util.Date;
@@ -24,4 +23,5 @@ public class SessionTierDTO {
     private UUID updatedBy;
 
     private Date updatedAt;
+
 }

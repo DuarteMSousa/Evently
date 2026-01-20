@@ -10,5 +10,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Data
 public class OrderCanceledMessage {
+
     private UUID id;
+
 }

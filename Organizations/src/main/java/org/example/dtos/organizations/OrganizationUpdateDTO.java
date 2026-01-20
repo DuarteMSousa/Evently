@@ -12,10 +12,15 @@ public class OrganizationUpdateDTO {
     private UUID id;
 
     private String name;
+
     private String description;
+
     private String nipc;
+
     private String siteUrl;
+
     private Boolean active;
 
     private UUID updatedBy;
+
 }

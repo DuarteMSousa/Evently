@@ -19,6 +19,7 @@ import java.util.UUID;
 @Table(name = "refund_requests")
 @EntityListeners(AuditingEntityListener.class)
 public class RefundRequest {
+
     @Id
     @GeneratedValue
     private UUID id;
@@ -56,4 +57,5 @@ public class RefundRequest {
 
     @OneToOne(mappedBy = "refundRequest", cascade = CascadeType.ALL)
     private RefundDecision refundDecision;
+
 }

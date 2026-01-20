@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.example.enums.StockMovementType;
 
-
 import java.util.UUID;
 
 @NoArgsConstructor

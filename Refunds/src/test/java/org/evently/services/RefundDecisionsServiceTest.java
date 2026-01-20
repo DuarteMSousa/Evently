@@ -232,4 +232,5 @@ class RefundDecisionsServiceTest {
         Response resp = Response.builder().status(status).reason("err").request(req).headers(Collections.emptyMap()).build();
         return FeignException.errorStatus("UsersClient#getUser", resp);
     }
+
 }

@@ -12,8 +12,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class MQConfig {
 
-    public static final String QUEUE = "events_queue";
-
     public static final String EVENTS_EXCHANGE = "events_exchange";
 
     public static final String EVENTS_ROUTING_KEY = "events";
@@ -28,6 +26,7 @@ public class MQConfig {
     public TopicExchange ticketManagementExchange() {
         return new TopicExchange(TICKET_MANAGEMENT_EXCHANGE);
     }
+
     //stock generated
     @Bean
     public Queue eventsTicketManagementStockGeneratedQueue() {

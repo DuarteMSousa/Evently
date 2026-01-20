@@ -20,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -123,19 +122,19 @@ public class RefundDecisionsService {
         logger.info(DECISION_REGISTER, "Decision registered successfully (id={}, type={})",
                 saved.getId(), saved.getDecisionType());
 
-        /// Changing refund request status based on the decision
+        /// changing refund request status based on the decision
         if (decision.getDecisionType() == DecisionType.APPROVE) {
             saved.getRefundRequest().setStatus(RefundRequestStatus.APPROVED);
         } else {
             saved.getRefundRequest().setStatus(RefundRequestStatus.REJECTED);
         }
 
-        /// Setting the decision date
+        /// setting the decision date
         saved.getRefundRequest().setDecisionAt(new Date());
 
         refundRequestsRepository.save(saved.getRefundRequest());
 
-        /// Sending a message with the decision
+        /// sending a message with the decision
         refundsEventsPublisher.publishRefundRequestDecisionRegisteredEvent(saved);
 
         return saved;
@@ -165,4 +164,5 @@ public class RefundDecisionsService {
             throw new InvalidRefundRequestDecisionException("Only PENDING refund requests can be decided");
         }
     }
+
 }

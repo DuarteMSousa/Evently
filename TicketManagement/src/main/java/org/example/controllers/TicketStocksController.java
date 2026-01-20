@@ -46,7 +46,6 @@ public class TicketStocksController {
         }
     }
 
-
     @DeleteMapping("/delete-event-stock/{eventId}")
     public ResponseEntity<?> deleteEventTicketStock(@PathVariable("eventId") UUID eventId) {
         logger.info(EVENT_TICKET_STOCK_DELETE, "deleteEventTicketStock method entered for eventId {}", eventId);
@@ -61,7 +60,6 @@ public class TicketStocksController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
-
 
     @DeleteMapping("/delete-session-stock/{sessionId}")
     public ResponseEntity<?> deleteSessionTicketStock(@PathVariable("sessionId") UUID sessionId) {
@@ -92,4 +90,5 @@ public class TicketStocksController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+
 }

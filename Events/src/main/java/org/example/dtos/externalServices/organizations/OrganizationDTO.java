@@ -21,4 +21,5 @@ public class OrganizationDTO {
     private Date createdAt;
     private UUID updatedBy;
     private Date updatedAt;
+
 }

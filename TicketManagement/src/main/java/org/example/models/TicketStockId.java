@@ -13,7 +13,11 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TicketStockId implements Serializable {
+
     private UUID eventId;
+
     private UUID sessionId;
+
     private UUID tierId;
+
 }

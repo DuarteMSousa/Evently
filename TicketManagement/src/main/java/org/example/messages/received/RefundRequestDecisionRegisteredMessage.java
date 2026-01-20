@@ -3,7 +3,7 @@ package org.example.messages.received;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.example.enums.externalServices.DecisionType;
+import org.example.enums.externalServices.refunds.DecisionType;
 
 import java.util.UUID;
 

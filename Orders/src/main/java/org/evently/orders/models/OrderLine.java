@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
@@ -30,4 +29,5 @@ public class OrderLine {
     @JoinColumn(name = "order_id", nullable = false)
     @JsonIgnore
     private Order order;
+
 }

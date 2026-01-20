@@ -1,6 +1,5 @@
 package org.example.controllers;
 
-import org.example.dtos.eventSessions.EventSessionDTO;
 import org.example.dtos.sessionTiers.SessionTierCreateDTO;
 import org.example.dtos.sessionTiers.SessionTierDTO;
 import org.example.dtos.sessionTiers.SessionTierUpdateDTO;
@@ -117,7 +116,6 @@ public class SessionTiersController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-
     @GetMapping("/get-session-tier/{id}")
     public ResponseEntity<?> getSessionTier(@PathVariable("id") UUID id) {
         /* HttpStatus(produces)
@@ -141,4 +139,5 @@ public class SessionTiersController {
         logger.info(TIER_GET, "200 OK returned, session tier found");
         return ResponseEntity.status(HttpStatus.OK).body(sessionTier);
     }
+
 }

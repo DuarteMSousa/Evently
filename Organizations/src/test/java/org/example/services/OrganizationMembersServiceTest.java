@@ -63,9 +63,7 @@ class OrganizationMembersServiceTest {
         return FeignException.errorStatus("UsersClient#getUser", resp);
     }
 
-    // -----------------------
     // getMembers
-    // -----------------------
 
     @Test
     void getMembers_orgNotExists_throwsOrganizationNotFoundException() {
@@ -88,9 +86,7 @@ class OrganizationMembersServiceTest {
         assertEquals(2, res.size());
     }
 
-    // -----------------------
     // addMember
-    // -----------------------
 
     @Test
     void addMember_orgNotFound_throwsOrganizationNotFoundException() {
@@ -207,9 +203,7 @@ class OrganizationMembersServiceTest {
         verify(membersRepository).save(any(Member.class));
     }
 
-    // -----------------------
     // removeMember
-    // -----------------------
 
     @Test
     void removeMember_orgNotFound_throwsOrganizationNotFoundException() {
@@ -261,4 +255,5 @@ class OrganizationMembersServiceTest {
 
         verify(membersRepository).delete(member);
     }
+
 }

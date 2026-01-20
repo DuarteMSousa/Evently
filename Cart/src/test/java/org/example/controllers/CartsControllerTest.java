@@ -1,6 +1,5 @@
 package org.example.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.exceptions.CartNotFoundException;
 import org.example.exceptions.EmptyCartException;
 import org.example.models.Cart;
@@ -24,7 +23,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class CartsControllerTest {
 
     @Autowired private MockMvc mockMvc;
-    @Autowired private ObjectMapper objectMapper;
 
     @MockBean private CartsService cartsService;
 

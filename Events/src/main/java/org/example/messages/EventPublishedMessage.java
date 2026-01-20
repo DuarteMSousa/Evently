@@ -26,4 +26,5 @@ public class EventPublishedMessage {
     private List<EventSessionDTO> sessions;
 
     private List<CategoryDTO> categories;
+
 }

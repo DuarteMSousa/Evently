@@ -1,7 +1,6 @@
 package org.evently.clients;
 
-import org.evently.dtos.externalServices.PaymentDTO;
-import org.evently.dtos.externalServices.PaymentStatusDTO;
+import org.evently.dtos.externalServices.payments.PaymentDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,4 +13,5 @@ public interface PaymentsClient {
 
     @GetMapping("/order-payment/{orderId}")
     ResponseEntity<PaymentDTO> getPaymentByOrder(@PathVariable("orderId") UUID orderId);
+
 }

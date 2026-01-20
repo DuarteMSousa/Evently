@@ -50,9 +50,7 @@ class VenueZonesServiceTest {
         validZone.setCreatedBy(UUID.randomUUID());
     }
 
-    // -----------------------
-    // createVenueZone (ZCS001-009)
-    // -----------------------
+    // createVenueZone
 
     @Test
     void createVenueZone_venueNotFound_throwsVenueNotFoundException() {
@@ -165,9 +163,7 @@ class VenueZonesServiceTest {
         assertEquals(100, saved.getCapacity());
     }
 
-    // -----------------------
-    // getVenueZone (ZGS001-002)
-    // -----------------------
+    // getVenueZone
 
     @Test
     void getVenueZone_notFound_throwsVenueZoneNotFoundException() {
@@ -192,9 +188,7 @@ class VenueZonesServiceTest {
         assertEquals(zoneId, result.getId());
     }
 
-    // -----------------------
     // getVenueZonesByVenue (ZLS001-003)
-    // -----------------------
 
     @Test
     void getVenueZonesByVenue_venueNotExists_throwsVenueNotFoundException() {
@@ -228,9 +222,7 @@ class VenueZonesServiceTest {
         assertEquals(2, res.size());
     }
 
-    // -----------------------
-    // updateVenueZone (ZUS001-009)
-    // -----------------------
+    // updateVenueZone
 
     @Test
     void updateVenueZone_pathIdNotEqualBodyId_throwsInvalidVenueZoneException() {
@@ -432,4 +424,5 @@ class VenueZonesServiceTest {
 
         assertEquals(100, res.getCapacity());
     }
+
 }

@@ -26,6 +26,7 @@ import java.util.UUID;
 public class RefundRequestMessagesController {
 
     private static final Logger logger = LoggerFactory.getLogger(RefundRequestMessagesController.class);
+
     private static final Marker MESSAGE_GET = MarkerFactory.getMarker("MESSAGE_GET");
     private static final Marker MESSAGE_SEND = MarkerFactory.getMarker("MESSAGE_SEND");
 
@@ -118,4 +119,5 @@ public class RefundRequestMessagesController {
         }
         return dto;
     }
+
 }

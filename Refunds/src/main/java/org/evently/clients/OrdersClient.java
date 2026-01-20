@@ -1,6 +1,6 @@
 package org.evently.clients;
 
-import org.evently.dtos.externalServices.OrderDTO;
+import org.evently.dtos.externalServices.orders.OrderDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +12,6 @@ import java.util.UUID;
 public interface OrdersClient {
 
     @GetMapping("/get-order/{id}")
-    public ResponseEntity<OrderDTO> getOrder(@PathVariable("id") UUID id);
+    ResponseEntity<OrderDTO> getOrder(@PathVariable("id") UUID id);
 
 }

@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import java.util.Collections;
 import java.util.List;
@@ -28,7 +27,6 @@ import static org.mockito.Mockito.*;
 class TicketStocksServiceTest {
 
     @Mock private TicketStocksRepository ticketStocksRepository;
-    @Mock private RabbitTemplate template;
 
     @InjectMocks private TicketStocksService ticketStocksService;
 
@@ -109,7 +107,6 @@ class TicketStocksServiceTest {
         InvalidStockMovementException ex = assertThrows(InvalidStockMovementException.class,
                 () -> ticketStocksService.addStockMovement(mv));
 
-        // mensagem no código atual
         assertEquals("Ticket stock not found", ex.getMessage());
     }
 
@@ -135,4 +132,5 @@ class TicketStocksServiceTest {
         assertEquals(1, deleted.size());
         verify(ticketStocksRepository).deleteAll(list);
     }
+
 }

@@ -128,7 +128,6 @@ public class OrganizationMembersService {
             throw new ExternalServiceException("Users service unavailable");
         }
 
-
         MemberId memberId = new MemberId(orgId, userId);
 
         if (membersRepository.existsById(memberId)) {
@@ -184,4 +183,5 @@ public class OrganizationMembersService {
 
         logger.info(MEMBER_REMOVE, "Member removed successfully (orgId={}, userId={})", orgId, userId);
     }
+
 }

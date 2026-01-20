@@ -3,7 +3,6 @@ package org.evently.users.services;
 import org.evently.users.exceptions.*;
 import org.evently.users.models.User;
 import org.evently.users.repositories.UsersRepository;
-import org.evently.users.Utils.JwtUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,7 +20,6 @@ import static org.mockito.Mockito.*;
 class UsersServiceTest {
 
     @Mock private UsersRepository usersRepository;
-    @Mock private JwtUtils jwtUtils;
     @InjectMocks private UsersService usersService;
 
     private User validUser;
@@ -81,4 +79,5 @@ class UsersServiceTest {
         usersService.getUsersPage(1, 100);
         verify(usersRepository).findAll(PageRequest.of(1, 50));
     }
+
 }

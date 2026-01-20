@@ -14,4 +14,5 @@ public class RefundRequestMessageCreateDTO {
     private UUID refundRequestId;
 
     private String content;
+
 }

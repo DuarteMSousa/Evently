@@ -44,9 +44,7 @@ class TicketsServiceTest {
         baseTicket.setIssuedAt(new Date());
     }
 
-    // -------------------------
     // getTicket
-    // -------------------------
 
     @Test
     void getTicket_exists_returnsTicket() {
@@ -68,9 +66,7 @@ class TicketsServiceTest {
         verify(ticketsRepository).findById(id);
     }
 
-    // -------------------------
     // issueTicket validations
-    // -------------------------
 
     @Test
     void issueTicket_reservationIdNull_throwsInvalidTicketUpdate() {
@@ -159,9 +155,7 @@ class TicketsServiceTest {
         verify(ticketsEventsPublisher).publishTicketIssuedEvent(saved);
     }
 
-    // -------------------------
     // cancelTicket
-    // -------------------------
 
     @Test
     void cancelTicket_notFound_throwsTicketNotFound() {
@@ -211,9 +205,7 @@ class TicketsServiceTest {
         verify(ticketsRepository).save(t);
     }
 
-    // -------------------------
     // useTicket
-    // -------------------------
 
     @Test
     void useTicket_notFound_throwsTicketNotFound() {
@@ -265,9 +257,7 @@ class TicketsServiceTest {
         verify(ticketsRepository).save(t);
     }
 
-    // -------------------------
     // getTicketsByUser
-    // -------------------------
 
     @Test
     void getTicketsByUser_pageSizeTooBig_clampsTo50() {
@@ -341,4 +331,5 @@ class TicketsServiceTest {
         c.setValidatedAt(t.getValidatedAt());
         return c;
     }
+
 }

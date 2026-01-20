@@ -1,6 +1,5 @@
 package org.evently.repositories;
 
-import org.evently.models.RefundDecision;
 import org.evently.models.RefundRequest;
 import org.evently.models.RefundRequestMessage;
 import org.springframework.data.domain.Page;

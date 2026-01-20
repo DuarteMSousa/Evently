@@ -20,7 +20,6 @@ public class EventTicketManagementMessagesPublisher {
 
     private ModelMapper modelMapper = new ModelMapper();
 
-
     public void publishTicketReservationConfirmedMessage(TicketReservation reservation) {
         TicketReservationConfirmedMessage message = modelMapper.map(reservation, TicketReservationConfirmedMessage.class) ;
 
@@ -40,4 +39,5 @@ public class EventTicketManagementMessagesPublisher {
 
         rabbitTemplate.convertAndSend(MQConfig.EXCHANGE, MQConfig.ROUTING_KEY+".stock.generation.failed", message);
     }
+
 }

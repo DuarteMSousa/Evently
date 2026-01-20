@@ -20,7 +20,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.*;
@@ -175,4 +174,5 @@ class RefundRequestMessagesControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("boom"));
     }
+
 }

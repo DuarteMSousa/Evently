@@ -33,5 +33,6 @@ public class TicketStock {
 
     @OneToMany(mappedBy = "ticketStock", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<StockMovement> stockMovementList;
+
 }
 

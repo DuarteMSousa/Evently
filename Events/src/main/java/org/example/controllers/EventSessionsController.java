@@ -3,21 +3,16 @@ package org.example.controllers;
 import org.example.dtos.eventSessions.EventSessionCreateDTO;
 import org.example.dtos.eventSessions.EventSessionDTO;
 import org.example.dtos.eventSessions.EventSessionUpdateDTO;
-import org.example.dtos.events.EventCreateDTO;
-import org.example.dtos.events.EventDTO;
-import org.example.dtos.events.EventUpdateDTO;
 import org.example.exceptions.*;
 import org.example.models.Event;
 import org.example.models.EventSession;
 import org.example.services.EventSessionsService;
-import org.example.services.EventsService;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -137,7 +132,6 @@ public class EventSessionsController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-
     @GetMapping("/get-event-session/{id}")
     public ResponseEntity<?> getEventSession(@PathVariable("id") UUID id) {
         /* HttpStatus(produces)
@@ -160,4 +154,5 @@ public class EventSessionsController {
         logger.info(SESSION_GET, "200 OK returned, event session found");
         return ResponseEntity.status(HttpStatus.OK).body(eventSession);
     }
+
 }

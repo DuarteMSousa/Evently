@@ -49,9 +49,7 @@ class ReviewCommentsServiceTest {
         validComment.setReview(r);
     }
 
-    // -----------------------
-    // registerReviewComment (CCS...)
-    // -----------------------
+    // registerReviewComment
 
     @Test
     void registerReviewComment_authorIdNull_throwsInvalidReviewCommentException() {
@@ -139,9 +137,7 @@ class ReviewCommentsServiceTest {
         verify(reviewCommentsRepository).save(any(ReviewComment.class));
     }
 
-    // -----------------------
     // getReviewCommentsByReview (CLS...)
-    // -----------------------
 
     @Test
     void getReviewCommentsByReview_pageSizeGreaterThan50_adjustsTo50() {
@@ -209,4 +205,5 @@ class ReviewCommentsServiceTest {
         );
         return new FeignException.InternalServerError("err", req, null, null);
     }
+
 }

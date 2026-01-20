@@ -1,6 +1,5 @@
 package org.example.clients;
 
-
 import org.example.dtos.externalServices.ticketStocks.TicketStockCreateDTO;
 import org.example.dtos.externalServices.ticketStocks.TicketStockDTO;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -13,25 +12,22 @@ import java.util.UUID;
 public interface TicketManagementClient {
 
     @GetMapping("/ticketReservations/event-has-reservations/{eventId}")
-    public ResponseEntity<Boolean> checkEventReservations(@PathVariable("eventId") UUID eventId);
+    ResponseEntity<Boolean> checkEventReservations(@PathVariable("eventId") UUID eventId);
 
     @GetMapping("/ticketReservations/session-has-reservations/{sessionId}")
-    public ResponseEntity<Boolean> checkSessionReservations(@PathVariable("sessionId") UUID sessionId);
+    ResponseEntity<Boolean> checkSessionReservations(@PathVariable("sessionId") UUID sessionId);
 
     @GetMapping("/ticketReservations/tier-has-reservations/{tierId}")
-    public ResponseEntity<Boolean> checkTierReservations(@PathVariable("tierId") UUID tierId);
+    ResponseEntity<Boolean> checkTierReservations(@PathVariable("tierId") UUID tierId);
 
     @PostMapping("/ticketStocks/create-stock")
     ResponseEntity<TicketStockDTO> createTicketStock(@RequestBody TicketStockCreateDTO ticketStock);
 
-
     @DeleteMapping("/ticketStocks/delete-event-stock/{eventId}")
     ResponseEntity<?> deleteEventTicketStock(@PathVariable("eventId") UUID eventId);
 
-
     @DeleteMapping("/ticketStocks/delete-session-stock/{sessionId}")
     ResponseEntity<?> deleteSessionTicketStock(@PathVariable("sessionId") UUID sessionId);
-
 
     @DeleteMapping("/ticketStocks/delete-tier-stock/{tierId}")
     ResponseEntity<?> deleteTierTicketStock(@PathVariable("tierId") UUID tierId);

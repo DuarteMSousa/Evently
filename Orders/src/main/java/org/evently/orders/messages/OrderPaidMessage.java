@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 import org.evently.orders.dtos.orderLines.OrderLineDTO;
 import org.evently.orders.enums.OrderStatus;
 
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 

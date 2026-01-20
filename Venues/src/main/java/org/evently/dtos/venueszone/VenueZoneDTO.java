@@ -13,9 +13,11 @@ public class VenueZoneDTO {
     private UUID id;
 
     private UUID venueId;
+
     private String venueName;
 
     private String name;
+
     private Integer capacity;
 
     private UUID createdBy;

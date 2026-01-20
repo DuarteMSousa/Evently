@@ -25,6 +25,7 @@ import java.util.UUID;
 public class RefundRequestsController {
 
     private static final Logger logger = LoggerFactory.getLogger(RefundRequestsController.class);
+
     private static final Marker REFUND_GET = MarkerFactory.getMarker("REFUND_GET");
     private static final Marker REFUND_CREATE = MarkerFactory.getMarker("REFUND_CREATE");
 
@@ -109,4 +110,5 @@ public class RefundRequestsController {
         dto.setProcessedAt(refund.getProcessedAt());
         return dto;
     }
+
 }

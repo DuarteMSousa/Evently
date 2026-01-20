@@ -9,6 +9,7 @@ import java.util.UUID;
 @Getter
 @Setter
 public class CartItemDTO {
+
     private UUID id;
 
     private UUID productId;

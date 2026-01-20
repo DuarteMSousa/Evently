@@ -16,13 +16,12 @@ public class TicketManagementMessagesListener {
 
     @RabbitListener(queues = MQConfig.TICKET_MANAGEMENT_STOCK_GENERATED_QUEUE)
     public void listener(EventTicketStockGeneratedMessage message) {
-
         eventsService.handleEventStockGeneratedMessage(message.getEventId());
-
     }
 
     @RabbitListener(queues = MQConfig.TICKET_MANAGEMENT_STOCK_FAILED_QUEUE)
     public void listener(EventTicketStockGenerationFailedMessage message) {
         eventsService.handleEventStockGenerationFailedMessage(message.getEventId());
     }
+
 }

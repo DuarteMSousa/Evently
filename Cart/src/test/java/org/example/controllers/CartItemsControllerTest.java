@@ -1,7 +1,5 @@
 package org.example.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.example.dtos.cartItems.CartItemDTO;
 import org.example.exceptions.CartItemAlreadyExistsException;
 import org.example.exceptions.CartItemNotFoundException;
 import org.example.exceptions.CartNotFoundException;
@@ -28,7 +26,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class CartItemsControllerTest {
 
     @Autowired private MockMvc mockMvc;
-    @Autowired private ObjectMapper objectMapper;
 
     @MockBean private CartItemsService cartItemsService;
 

@@ -54,4 +54,5 @@ public class OrdersEventsPublisher {
 
         rabbitTemplate.convertAndSend(MQConfig.EXCHANGE, MQConfig.ROUTING_KEY + ".canceled", orderCanceledMessage);
     }
+
 }

@@ -5,7 +5,7 @@ import jakarta.transaction.Transactional;
 import org.example.clients.VenuesClient;
 import org.example.dtos.externalServices.eventSessions.EventSessionDTO;
 import org.example.dtos.externalServices.sessionTiers.SessionTierDTO;
-import org.example.dtos.externalServices.venueszone.VenueZoneDTO;
+import org.example.dtos.externalServices.venues.venueszone.VenueZoneDTO;
 import org.example.enums.StockMovementType;
 import org.example.exceptions.*;
 import org.example.models.StockMovement;
@@ -13,8 +13,7 @@ import org.example.models.TicketStock;
 import org.example.models.TicketStockId;
 import org.example.publishers.EventTicketManagementMessagesPublisher;
 import org.example.repositories.TicketStocksRepository;
-import org.example.services.received.EventPublishedMessage;
-import org.modelmapper.ModelMapper;
+import org.example.messages.received.EventPublishedMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -27,7 +26,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-
 @Service
 public class TicketStocksService {
 
@@ -36,8 +34,6 @@ public class TicketStocksService {
 
     @Autowired
     private EventTicketManagementMessagesPublisher ticketManagementMessagesPublisher;
-
-    private ModelMapper modelMapper = new ModelMapper();
 
     private static final Logger logger = LoggerFactory.getLogger(TicketStocksService.class);
 
@@ -130,7 +126,6 @@ public class TicketStocksService {
         }
 
         return stock;
-
     }
 
     /**
@@ -156,7 +151,6 @@ public class TicketStocksService {
         return stocks;
     }
 
-
     /**
      * Deletes all ticket stock entries associated with a given session.
      *
@@ -179,7 +173,6 @@ public class TicketStocksService {
 
         return stocks;
     }
-
 
     /**
      * Deletes all ticket stock entries associated with a given tier.
@@ -256,6 +249,5 @@ public class TicketStocksService {
 
 
     }
-
 
 }

@@ -26,4 +26,5 @@ public class TicketsEventsPublisher {
 
         rabbitTemplate.convertAndSend(MQConfig.EXCHANGE, MQConfig.ROUTING_KEY+".generated", ticketIssuedMessage);
     }
+
 }

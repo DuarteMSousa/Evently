@@ -12,11 +12,17 @@ public class VenueUpdateDTO {
     private UUID id;
 
     private String name;
+
     private Integer capacity;
+
     private String address;
+
     private String city;
+
     private String country;
+
     private String postalCode;
 
     private UUID updatedBy;
+
 }

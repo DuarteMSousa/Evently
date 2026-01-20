@@ -34,9 +34,6 @@ public class OrganizationsService {
     private static final Marker ORG_UPDATE = MarkerFactory.getMarker("ORG_UPDATE");
     private static final Marker ORG_GET = MarkerFactory.getMarker("ORG_GET");
     private static final Marker ORG_LIST = MarkerFactory.getMarker("ORG_LIST");
-    private static final Marker ORG_MEMBERS_GET = MarkerFactory.getMarker("ORG_MEMBERS_GET");
-    private static final Marker ORG_MEMBER_ADD = MarkerFactory.getMarker("ORG_MEMBER_ADD");
-    private static final Marker ORG_MEMBER_REMOVE = MarkerFactory.getMarker("ORG_MEMBER_REMOVE");
 
     @Autowired
     private OrganizationsRepository organizationsRepository;
@@ -300,4 +297,5 @@ public class OrganizationsService {
 
         return orgs;
     }
+
 }

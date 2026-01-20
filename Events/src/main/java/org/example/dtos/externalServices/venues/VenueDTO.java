@@ -25,4 +25,5 @@ public class VenueDTO {
     private Date createdAt;
     private UUID updatedBy;
     private Date updatedAt;
+
 }

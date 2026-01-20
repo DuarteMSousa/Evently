@@ -33,7 +33,6 @@ public class ReviewsService {
     private static final Logger logger = LoggerFactory.getLogger(ReviewsService.class);
 
     private static final Marker REVIEW_CREATE = MarkerFactory.getMarker("REVIEW_CREATE");
-    private static final Marker REVIEW_UPDATE = MarkerFactory.getMarker("REVIEW_UPDATE");
     private static final Marker REVIEW_DELETE = MarkerFactory.getMarker("REVIEW_DELETE");
     private static final Marker REVIEW_GET = MarkerFactory.getMarker("REVIEW_GET");
     private static final Marker REVIEW_VALIDATION = MarkerFactory.getMarker("REVIEW_VALIDATION");
@@ -151,38 +150,6 @@ public class ReviewsService {
     }
 
     /**
-     * Updates an existing review with new data.
-     *
-     * @param id review identifier
-     * @param review updated review data
-     * @return updated review
-     * @throws InvalidReviewException if the request data is invalid or IDs do not match
-     * @throws ReviewNotFoundException if the review does not exist
-     */
-    @Transactional
-    public Review updateReview(UUID id, Review review) {
-        logger.info(REVIEW_UPDATE, "Update review requested (id={})", id);
-
-        if (review.getId() != null && !id.equals(review.getId())) {
-            logger.error(REVIEW_UPDATE, "ID mismatch: path={}, body={}", id, review.getId());
-            throw new InvalidReviewException("Parameter id and body id do not correspond");
-        }
-
-        Review existingReview = reviewsRepository.findById(id)
-                .orElseThrow(() -> {
-                    logger.warn(REVIEW_UPDATE, "Review not found for update (id={})", id);
-                    return new ReviewNotFoundException("Review not found");
-                });
-
-        validateReview(review);
-        modelMapper.map(review, existingReview);
-
-        Review updated = reviewsRepository.save(existingReview);
-        logger.info(REVIEW_UPDATE, "Review updated successfully (id={})", updated.getId());
-        return updated;
-    }
-
-    /**
      * Deletes a review by its unique identifier.
      *
      * @param id review identifier
@@ -279,4 +246,5 @@ public class ReviewsService {
             throw new InvalidReviewException("Comment cannot be empty");
         }
     }
+
 }

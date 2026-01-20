@@ -33,7 +33,7 @@ class EventSessionsControllerTest {
                 .andExpect(status().isOk());
     }
 
-    // create/update -> assumem @RequestBody
+    // create/update
     @Test
     void createEventSession_success_returns200() throws Exception {
         String body = "{\"eventId\":null,\"venueId\":null}";
@@ -72,4 +72,5 @@ class EventSessionsControllerTest {
 
         verify(eventSessionsService).deleteEventSession(id);
     }
+
 }

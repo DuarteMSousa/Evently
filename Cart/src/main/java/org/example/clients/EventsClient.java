@@ -1,6 +1,5 @@
 package org.example.clients;
 
-
 import org.example.dtos.externalServices.eventSessions.EventSessionDTO;
 import org.example.dtos.externalServices.events.EventDTO;
 import org.example.dtos.externalServices.sessionTiers.SessionTierDTO;

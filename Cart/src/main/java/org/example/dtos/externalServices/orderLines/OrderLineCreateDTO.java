@@ -12,4 +12,5 @@ public class OrderLineCreateDTO {
     private UUID productId;
 
     private Integer quantity;
+
 }

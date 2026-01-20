@@ -32,7 +32,6 @@ public class EventSessionsService {
     @Autowired
     private TicketManagementClient ticketManagementClient;
 
-
     private Logger logger = LoggerFactory.getLogger(CategoriesService.class);
 
     private static final Marker SESSION_GET = MarkerFactory.getMarker("SESSION_GET");
@@ -220,4 +219,5 @@ public class EventSessionsService {
             throw new InvalidEventSessionException("Venue not found");
         }
     }
+
 }

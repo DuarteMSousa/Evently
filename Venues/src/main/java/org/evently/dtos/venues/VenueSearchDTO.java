@@ -8,8 +8,13 @@ import lombok.Setter;
 public class VenueSearchDTO {
 
     private String name;
+
     private String city;
+
     private String country;
+
     private Integer minCapacity;
+
     private Boolean onlyActive;
+
 }

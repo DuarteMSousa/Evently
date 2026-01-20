@@ -4,9 +4,7 @@ import feign.FeignException;
 import feign.Request;
 import feign.RequestTemplate;
 import org.evently.reviews.clients.EventsClient;
-import org.evently.reviews.clients.OrganizationsClient;
 import org.evently.reviews.clients.UsersClient;
-import org.evently.reviews.clients.VenuesClient;
 import org.evently.reviews.enums.EntityType;
 import org.evently.reviews.exceptions.InvalidReviewException;
 import org.evently.reviews.exceptions.ReviewNotFoundException;
@@ -36,8 +34,6 @@ class ReviewsServiceTest {
 
     @Mock private EventsClient eventsClient;
     @Mock private UsersClient usersClient;
-    @Mock private VenuesClient venuesClient;
-    @Mock private OrganizationsClient organizationsClient;
 
     @InjectMocks private ReviewsService reviewsService;
 
@@ -54,9 +50,7 @@ class ReviewsServiceTest {
         validReview.setComment("Top");
     }
 
-    // -----------------------
-    // getReview (RGS001-002)
-    // -----------------------
+    // getReview
 
     @Test
     void getReview_notFound_throwsReviewNotFoundException() {
@@ -81,9 +75,7 @@ class ReviewsServiceTest {
         assertEquals(id, result.getId());
     }
 
-    // -----------------------
-    // deleteReview (RDS001-002)
-    // -----------------------
+    // deleteReview
 
     @Test
     void deleteReview_notFound_throwsReviewNotFoundException() {
@@ -107,9 +99,7 @@ class ReviewsServiceTest {
         verify(reviewsRepository).deleteById(id);
     }
 
-    // -----------------------
     // getReviewsByAuthor (RAS001-004)
-    // -----------------------
 
     @Test
     void getReviewsByAuthor_pageSizeGreaterThan50_adjustsTo50() {
@@ -199,10 +189,7 @@ class ReviewsServiceTest {
         assertEquals(2, used.getPageNumber());
     }
 
-    // -----------------------
-    // registerReview (RCS...)
-    // (principais: validação + event/user + sucesso)
-    // -----------------------
+    // registerReview
 
     @Test
     void registerReview_invalidRating_throwsInvalidReviewException() {
@@ -265,7 +252,6 @@ class ReviewsServiceTest {
         verify(reviewsRepository).save(any(Review.class));
     }
 
-    // ---- helpers para FeignException ----
     private FeignException.NotFound feignNotFound() {
         Request req = Request.create(
                 Request.HttpMethod.GET,
@@ -277,4 +263,5 @@ class ReviewsServiceTest {
         );
         return new FeignException.NotFound("not found", req, null, null);
     }
+
 }

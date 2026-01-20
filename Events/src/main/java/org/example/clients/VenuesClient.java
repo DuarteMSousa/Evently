@@ -15,7 +15,7 @@ public interface VenuesClient {
     @GetMapping("/get-venue/{id}")
     ResponseEntity<VenueDTO> getVenue(@PathVariable("id") UUID id);
 
-
     @GetMapping("/zones/get-zone/{id}")
      ResponseEntity<VenueZoneDTO> getZone(@PathVariable("id") UUID id);
+
 }

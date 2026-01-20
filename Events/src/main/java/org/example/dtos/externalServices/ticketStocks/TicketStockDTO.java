@@ -14,4 +14,5 @@ public class TicketStockDTO {
     private Date createdAt;
 
     private Date updatedAt;
+
 }

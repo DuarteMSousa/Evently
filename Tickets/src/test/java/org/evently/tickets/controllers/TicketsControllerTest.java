@@ -1,6 +1,5 @@
 package org.evently.tickets.controllers;
 
-import org.evently.tickets.dtos.TicketCreateDTO;
 import org.evently.tickets.enums.TicketStatus;
 import org.evently.tickets.exceptions.InvalidTicketUpdateException;
 import org.evently.tickets.exceptions.TicketNotFoundException;
@@ -29,9 +28,7 @@ class TicketsControllerTest {
 
     @MockBean TicketsService ticketsService;
 
-    // -------------------------
     // GET /tickets/get-ticket/{id}
-    // -------------------------
 
     @Test
     void getTicket_exists_returns200AndBody() throws Exception {
@@ -76,9 +73,7 @@ class TicketsControllerTest {
                 .andExpect(content().string("boom"));
     }
 
-    // -------------------------
     // POST /tickets/issue-ticket
-    // -------------------------
 
     @Test
     void issueTicket_valid_returns201AndDto() throws Exception {
@@ -120,7 +115,6 @@ class TicketsControllerTest {
         when(ticketsService.issueTicket(any(Ticket.class)))
                 .thenThrow(new InvalidTicketUpdateException("Reservation ID is required"));
 
-        // payload “incompleto” só para bater no controller
         String body = "{ \"reservationId\": null }";
 
         mockMvc.perform(post("/tickets/issue-ticket")
@@ -130,9 +124,7 @@ class TicketsControllerTest {
                 .andExpect(content().string("Reservation ID is required"));
     }
 
-    // -------------------------
     // PUT /tickets/use-ticket/{id}
-    // -------------------------
 
     @Test
     void useTicket_valid_returns200() throws Exception {
@@ -171,9 +163,7 @@ class TicketsControllerTest {
                 .andExpect(content().string("Ticket is already used"));
     }
 
-    // -------------------------
     // PUT /tickets/cancel-ticket/{id}
-    // -------------------------
 
     @Test
     void cancelTicket_valid_returns200() throws Exception {
@@ -210,4 +200,5 @@ class TicketsControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Ticket is already canceled"));
     }
+
 }

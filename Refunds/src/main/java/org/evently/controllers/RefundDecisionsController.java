@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +25,7 @@ import java.util.UUID;
 public class RefundDecisionsController {
 
     private static final Logger logger = LoggerFactory.getLogger(RefundDecisionsController.class);
+
     private static final Marker DECISION_GET = MarkerFactory.getMarker("DECISION_GET");
     private static final Marker DECISION_REGISTER = MarkerFactory.getMarker("DECISION_REGISTER");
 
@@ -123,4 +123,5 @@ public class RefundDecisionsController {
         }
         return dto;
     }
+
 }

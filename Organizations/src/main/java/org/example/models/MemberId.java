@@ -15,5 +15,7 @@ import java.util.UUID;
 public class MemberId implements Serializable {
 
     private UUID organizationId;
+
     private UUID userId;
+
 }

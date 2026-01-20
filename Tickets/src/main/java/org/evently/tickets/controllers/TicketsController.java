@@ -160,4 +160,5 @@ public class TicketsController {
         dto.setValidatedAt(ticket.getValidatedAt());
         return dto;
     }
+
 }

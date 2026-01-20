@@ -21,10 +21,13 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class OrganizationsServiceTest {
 
-    @Mock private OrganizationsRepository organizationsRepository;
-    @Mock private MembersRepository membersRepository;
+    @Mock
+    private OrganizationsRepository organizationsRepository;
+    @Mock
+    private MembersRepository membersRepository;
 
-    @InjectMocks private OrganizationsService organizationsService;
+    @InjectMocks
+    private OrganizationsService organizationsService;
 
     private Organization validOrg;
 
@@ -38,9 +41,7 @@ class OrganizationsServiceTest {
         validOrg.setActive(true);
     }
 
-    // -----------------------
     // createOrganization
-    // -----------------------
 
     @Test
     void createOrganization_nameNull_throwsInvalidOrganizationException() {
@@ -142,9 +143,7 @@ class OrganizationsServiceTest {
         verify(membersRepository, never()).save(any(Member.class));
     }
 
-    // -----------------------
     // updateOrganization
-    // -----------------------
 
     @Test
     void updateOrganization_notFound_throwsOrganizationNotFoundException() {
@@ -252,7 +251,7 @@ class OrganizationsServiceTest {
 
         Organization updates = new Organization();
         updates.setName("Org Nova");
-        updates.setNipc("123456789"); // igual ao existente (não deve validar duplicado)
+        updates.setNipc("123456789");
         updates.setDescription("desc");
         updates.setSiteUrl("https://site");
         updates.setActive(false);
@@ -268,9 +267,7 @@ class OrganizationsServiceTest {
         verify(organizationsRepository).save(existing);
     }
 
-    // -----------------------
     // getOrganizations / getOrganization / getOrganizationsByUser
-    // -----------------------
 
     @Test
     void getOrganization_notFound_throwsOrganizationNotFoundException() {
@@ -296,11 +293,15 @@ class OrganizationsServiceTest {
     void getOrganizationsByUser_withMemberships_returnsOrganizations() {
         UUID userId = UUID.randomUUID();
 
-        Organization o1 = new Organization(); o1.setId(UUID.randomUUID());
-        Organization o2 = new Organization(); o2.setId(UUID.randomUUID());
+        Organization o1 = new Organization();
+        o1.setId(UUID.randomUUID());
+        Organization o2 = new Organization();
+        o2.setId(UUID.randomUUID());
 
-        Member m1 = new Member(); m1.setOrganization(o1);
-        Member m2 = new Member(); m2.setOrganization(o2);
+        Member m1 = new Member();
+        m1.setOrganization(o1);
+        Member m2 = new Member();
+        m2.setOrganization(o2);
 
         when(membersRepository.findById_UserId(userId)).thenReturn(Arrays.asList(m1, m2));
 

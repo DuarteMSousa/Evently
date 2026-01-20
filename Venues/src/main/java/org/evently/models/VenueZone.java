@@ -44,4 +44,5 @@ public class VenueZone {
     private Date updatedAt;
 
     private UUID updatedBy;
+
 }

@@ -11,14 +11,21 @@ import java.util.UUID;
 public class OrganizationDTO {
 
     private UUID id;
+
     private String name;
+
     private String description;
+
     private boolean active;
+
     private String nipc;
+
     private String siteUrl;
+
 
     private UUID createdBy;
     private Date createdAt;
     private UUID updatedBy;
     private Date updatedAt;
+
 }
