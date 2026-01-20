@@ -288,7 +288,7 @@ public class NotificationsService {
     }
 
     @Transactional
-    public Notification notifyRefundDecision(UUID userId, UUID paymentId, DecisionType decisionType, String description) {
+    public Notification notifyRefundDecision(UUID userId, UUID orderId, DecisionType decisionType, String description) {
         Notification n = new Notification();
         n.setUserId(userId);
         n.setType(NotificationType.REFUND);
@@ -305,7 +305,7 @@ public class NotificationsService {
             body += " Motivo: " + description;
         }
 
-        body += " (Pagamento: " + paymentId + ")";
+        body += " (Encomenda: " + orderId + ")";
         n.setBody(body);
 
         return sendInAppAndMaybeEmail(n, true);

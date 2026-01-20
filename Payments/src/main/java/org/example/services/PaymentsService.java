@@ -297,6 +297,27 @@ public class PaymentsService {
     }
 
     /**
+     * Retrieves a payment associated with a given order.
+     *
+     *
+     * @param orderId order identifier
+     * @return the payments for the order
+     * @throws PaymentNotFoundException if no payment is found for the given orderId
+     */
+    public Payment getPaymentByOrder(UUID orderId) {
+        logger.debug(PAY_GET, "Get payment by order requested (orderId={})", orderId);
+
+        Payment payment = paymentsRepository.findByOrderId(orderId).orElseThrow(() -> {
+            logger.warn(PAY_GET, "Payment not found");
+            return new PaymentNotFoundException("Payment not found");
+        });
+
+        logger.debug(PAY_GET, "Get payment by order completed (orderId={})", orderId);
+
+        return payment;
+    }
+
+    /**
      * Cancels a payment.
      *
      *

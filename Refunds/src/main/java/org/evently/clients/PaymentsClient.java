@@ -12,6 +12,6 @@ import java.util.UUID;
 @FeignClient(name = "payments", path = "/payments")
 public interface PaymentsClient {
 
-    @GetMapping("/get-payment/{paymentId}")
-    ResponseEntity<PaymentDTO> getPayment(@PathVariable("paymentId") UUID paymentId);
+    @GetMapping("/order-payment/{orderId}")
+    ResponseEntity<PaymentDTO> getPaymentByOrder(@PathVariable("orderId") UUID orderId);
 }

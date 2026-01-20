@@ -14,10 +14,10 @@ public interface RefundRequestsRepository extends JpaRepository<RefundRequest, U
 
     Page<RefundRequest> findAllByUserId(UUID userId, PageRequest pageRequest);
 
-    RefundRequest findOneByPaymentIdAndStatus(UUID paymentId, RefundRequestStatus status);
+    RefundRequest findOneByOrderIdAndStatus(UUID orderId, RefundRequestStatus status);
 
-    boolean existsByPaymentIdAndStatusIn(
-            UUID paymentId,
+    boolean existsByOrderIdAndStatusIn(
+            UUID orderId,
             RefundRequestStatus[] statuses
     );
 

@@ -28,9 +28,9 @@ public class PaymentsListener {
             RefundRequest refundRequest = null;
 
             try{
-                refundRequest = refundRequestsService.getActiveRefundRequestByPayment(payment.getPaymentId());
+                refundRequest = refundRequestsService.getActiveRefundRequestByOrder(payment.getOrderId());
             } catch(RefundRequestNotFoundException e){
-                logger.warn("Active refund request not found (paymentId={})", payment.getPaymentId());
+                logger.warn("Active refund request not found (orderId={})", payment.getOrderId());
             }
 
             if (refundRequest != null){

@@ -111,6 +111,36 @@ public class PaymentsController {
         }
     }
 
+    @GetMapping("/order-payment/{orderId}")
+    public ResponseEntity<?> getPaymentByOrder(@PathVariable("orderId") UUID orderId) {
+        /* HttpStatus(produces)
+         * 200 OK - Payments for the specified order retrieved successfully.
+         * 404 NOT_FOUND - Payment does not exist.
+         * 400 BAD_REQUEST - Generic error.
+         */
+
+        logger.info(PAYMENT_GET, "Method getPaymentByOrder requested for Order ID: {}", orderId);
+
+        try {
+            Payment payment = paymentsService.getPaymentByOrder(orderId);
+            PaymentDTO dto = toPaymentDTO(payment);
+
+            logger.info(PAYMENT_GET,
+                    "200 OK returned, payment retrieved (paymentId={}, status={})",
+                    payment.getId(), payment.getStatus());
+
+            return ResponseEntity.ok(dto);
+        } catch (PaymentNotFoundException e) {
+            logger.warn(PAYMENT_GET, "404 NOT_FOUND: Payment not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            logger.error(PAYMENT_GET,
+                    "400 BAD_REQUEST: Exception caught while getting payment: {}",
+                    e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
     @GetMapping("/user-payments/{userId}")
     public ResponseEntity<?> getUserPayments(@PathVariable("userId") UUID userId) {
         /* HttpStatus(produces)

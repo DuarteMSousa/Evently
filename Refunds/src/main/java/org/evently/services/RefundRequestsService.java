@@ -2,10 +2,13 @@ package org.evently.services;
 
 import feign.FeignException;
 import jakarta.transaction.Transactional;
+import org.evently.clients.OrdersClient;
 import org.evently.clients.PaymentsClient;
 import org.evently.clients.UsersClient;
+import org.evently.dtos.externalServices.OrderDTO;
 import org.evently.dtos.externalServices.PaymentDTO;
 import org.evently.enums.RefundRequestStatus;
+import org.evently.enums.externalServices.OrderStatus;
 import org.evently.enums.externalServices.PaymentStatus;
 import org.evently.exceptions.ExternalServiceException;
 import org.evently.exceptions.InvalidRefundRequestException;
@@ -47,6 +50,9 @@ public class RefundRequestsService {
     @Autowired
     private PaymentsClient paymentsClient;
 
+    @Autowired
+    private OrdersClient ordersClient;
+
     private final ModelMapper modelMapper = new ModelMapper();
 
     /**
@@ -78,16 +84,36 @@ public class RefundRequestsService {
      */
     @Transactional
     public RefundRequest createRefundRequest(RefundRequest refundRequest) {
-        logger.info(REFUND_CREATE, "Creating refund request (payment={})", refundRequest.getPaymentId());
+        logger.info(REFUND_CREATE, "Creating refund request (order={})", refundRequest.getOrderId());
 
         validateRefundRequest(refundRequest);
-        validateNoActiveRefund(refundRequest.getPaymentId());
+        validateNoActiveRefund(refundRequest.getOrderId());
         refundRequest.setStatus(RefundRequestStatus.PENDING);
 
-        PaymentDTO paymentDTO = null;
+        OrderDTO orderDTO;
+
+        try{
+            orderDTO = ordersClient.getOrder(refundRequest.getId()).getBody();
+        } catch (FeignException.NotFound e) {
+            logger.warn(REFUND_CREATE, "(RefundRequestsService): Order not found in Orders service");
+            throw new PaymentNotFoundException(
+                    "(RefundRequestsService): Order not found in Orders service");
+        } catch (FeignException e) {
+            logger.error(REFUND_CREATE, "(RefundRequestsService): Orders service error", e);
+            throw new ExternalServiceException(
+                    "(RefundRequestsService): Orders service error");
+        }
+
+        if (orderDTO != null){
+            if (orderDTO.getStatus() != OrderStatus.PAYMENT_SUCCESS){
+                throw new InvalidRefundRequestException("A refund request cannot be created for an order that is not paid yet");
+            }
+        }
+
+        PaymentDTO paymentDTO;
 
         try {
-            paymentDTO = paymentsClient.getPayment(refundRequest.getPaymentId()).getBody();
+            paymentDTO = paymentsClient.getPaymentByOrder(refundRequest.getOrderId()).getBody();
         } catch (FeignException.NotFound e) {
             logger.warn(REFUND_CREATE, "(RefundRequestsService): Payment not found in Payments service");
             throw new PaymentNotFoundException(
@@ -99,7 +125,7 @@ public class RefundRequestsService {
         }
 
         if (paymentDTO != null){
-            refundRequest.setOrderId(paymentDTO.getOrderId());
+            refundRequest.setPaymentId(paymentDTO.getId());
             refundRequest.setUserId(paymentDTO.getUserId());
 
             if (paymentDTO.getStatus() != PaymentStatus.CAPTURED) {
@@ -170,9 +196,9 @@ public class RefundRequestsService {
     private void validateRefundRequest(RefundRequest request) {
         logger.debug(REFUND_VALIDATION, "Validating refund request payload");
 
-        if (request.getPaymentId() == null) {
-            logger.warn(REFUND_VALIDATION, "Missing paymentId");
-            throw new InvalidRefundRequestException("Payment ID is required");
+        if (request.getOrderId() == null) {
+            logger.warn(REFUND_VALIDATION, "Missing orderId");
+            throw new InvalidRefundRequestException("Order ID is required");
         }
         if (request.getTitle() == null || request.getTitle().trim().isEmpty()) {
             logger.warn(REFUND_VALIDATION, "Title is empty");
@@ -185,24 +211,24 @@ public class RefundRequestsService {
     }
 
     /**
-     * Retrieves the active (PENDING) refund request for a given payment.
+     * Retrieves the active (PENDING) refund request for a given order.
      *
-     * @param paymentId payment identifier
+     * @param orderId order identifier
      * @return active refund request
      * @throws RefundRequestNotFoundException if no active refund request exists
      */
-    public RefundRequest getActiveRefundRequestByPayment(UUID paymentId) {
-        logger.debug(REFUND_GET, "Get active refund request requested (paymentId={})", paymentId);
+    public RefundRequest getActiveRefundRequestByOrder(UUID orderId) {
+        logger.debug(REFUND_GET, "Get active refund request requested (orderId={})", orderId);
 
         RefundRequest activeRefundRequest =
-                refundRequestsRepository.findOneByPaymentIdAndStatus(
-                        paymentId,
+                refundRequestsRepository.findOneByOrderIdAndStatus(
+                        orderId,
                         RefundRequestStatus.APPROVED
                 );
 
         if (activeRefundRequest == null) {
             logger.warn(REFUND_GET,
-                    "Active refund request not found (paymentId={})", paymentId);
+                    "Active refund request not found (orderId={})", orderId);
             throw new RefundRequestNotFoundException(
                     "No active refund request found for this payment"
             );
@@ -212,23 +238,23 @@ public class RefundRequestsService {
     }
 
     /**
-     * Validates if there isn´t already an active or processed refund to the given payment.
+     * Validates if there isn´t already an active or processed refund to the given order.
      *
-     * @param paymentId payment to validate
+     * @param orderId order to validate
      * @throws InvalidRefundRequestException if any required field is missing or invalid
      */
-    private void validateNoActiveRefund(UUID paymentId) {
+    private void validateNoActiveRefund(UUID orderId) {
         RefundRequestStatus[]  statuses = { RefundRequestStatus.PENDING, RefundRequestStatus.APPROVED,
                 RefundRequestStatus.PROCESSED};
 
         boolean existsActive =
-                refundRequestsRepository.existsByPaymentIdAndStatusIn(paymentId, statuses);
+                refundRequestsRepository.existsByOrderIdAndStatusIn(orderId, statuses);
 
         if (existsActive) {
             logger.warn(REFUND_VALIDATION,
-                    "Active or processed refund already exists for paymentId={}", paymentId);
+                    "Active or processed refund already exists for orderId={}", orderId);
             throw new InvalidRefundRequestException(
-                    "There is already an active or processed refund for this payment"
+                    "There is already an active or processed refund for this order"
             );
         }
     }

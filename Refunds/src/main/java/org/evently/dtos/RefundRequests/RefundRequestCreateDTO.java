@@ -10,7 +10,7 @@ import java.util.UUID;
 @Getter
 public class RefundRequestCreateDTO {
 
-    private UUID payment;
+    private UUID order;
 
     private String title;
 

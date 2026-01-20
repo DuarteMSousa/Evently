@@ -75,10 +75,10 @@ public class RefundRequestsController {
          * 201 CREATED - Refund request registered successfully.
          * 400 BAD_REQUEST - Invalid data or system error.
          */
-        logger.info(REFUND_CREATE, "Method registerRefund entered for payment: {}", refundDTO.getPayment());
+        logger.info(REFUND_CREATE, "Method registerRefund entered for order: {}", refundDTO.getOrder());
         try {
             RefundRequest refundRequest = new RefundRequest();
-            refundRequest.setPaymentId(refundDTO.getPayment());
+            refundRequest.setOrderId(refundDTO.getOrder());
             refundRequest.setTitle(refundDTO.getTitle());
             refundRequest.setDescription(refundDTO.getDescription());
             refundRequest.setStatus(RefundRequestStatus.PENDING);

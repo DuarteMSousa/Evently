@@ -35,7 +35,7 @@ public class RefundsEventsListener {
     public void handleRefundDecision(RefundRequestDecisionRegisteredMessage msg) {
         notificationsService.notifyRefundDecision(
                 msg.getUserToRefundId(),
-                msg.getPaymentId(),
+                msg.getOrderId(),
                 msg.getDecisionType(),
                 msg.getDescription()
         );

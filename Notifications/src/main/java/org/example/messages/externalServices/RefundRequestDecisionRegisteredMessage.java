@@ -10,10 +10,16 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class RefundRequestDecisionRegisteredMessage  {
+public class RefundRequestDecisionRegisteredMessage {
 
     private UUID userToRefundId;
+
     private UUID paymentId;
+
+    private UUID orderId;
+
     private DecisionType decisionType;
+
     private String description;
+
 }
