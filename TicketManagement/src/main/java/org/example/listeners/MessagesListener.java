@@ -2,12 +2,12 @@ package org.example.listeners;
 
 import org.example.config.MQConfig;
 import org.example.enums.externalServices.refunds.DecisionType;
+import org.example.messages.received.EventPublishedMessage;
 import org.example.messages.received.OrderCanceledMessage;
 import org.example.messages.received.OrderPaidMessage;
 import org.example.messages.received.RefundRequestDecisionRegisteredMessage;
 import org.example.services.TicketReservationsService;
 import org.example.services.TicketStocksService;
-import org.example.services.received.EventPublishedMessage;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -20,9 +20,6 @@ public class MessagesListener {
 
     @Autowired
     private TicketStocksService ticketStocksService;
-
-    @Autowired
-    private RabbitTemplate template;
 
     @RabbitListener(queues = MQConfig.ORDERS_PAID_QUEUE)
     public void listener(OrderPaidMessage message) {

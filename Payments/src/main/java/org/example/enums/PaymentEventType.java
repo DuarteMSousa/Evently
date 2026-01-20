@@ -5,7 +5,5 @@ public enum PaymentEventType {
     CAPTURED,
     CANCEL,
     REFUND,
-    REFUND_FAILED,
-    FAILED,
-    ERROR
+    FAILED
 }
