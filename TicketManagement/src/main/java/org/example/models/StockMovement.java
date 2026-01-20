@@ -5,7 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.example.enums.StockMovementType;
+import org.springframework.data.annotation.CreatedDate;
 
+import java.util.Date;
 import java.util.UUID;
 
 @NoArgsConstructor
@@ -33,4 +35,6 @@ public class StockMovement {
     @Column(nullable = false)
     private StockMovementType type;
 
+    @CreatedDate
+    private Date createdAt;
 }

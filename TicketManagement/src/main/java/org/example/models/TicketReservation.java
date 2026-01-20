@@ -46,8 +46,6 @@ public class TicketReservation {
     @Column(nullable = false)
     private TicketReservationStatus status;
 
-    private OffsetDateTime expiresAt;
-
     private OffsetDateTime releasedAt;
 
     private OffsetDateTime confirmedAt;

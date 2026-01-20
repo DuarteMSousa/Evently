@@ -66,7 +66,6 @@ public class TicketReservationsService {
         logger.info(TICKET_RESERVATION_CREATE, "createTicketReservation method entered");
 
         ticketReservation.setStatus(TicketReservationStatus.HELD);
-        ticketReservation.setExpiresAt(null);
         ticketReservation.setReleasedAt(null);
         ticketReservation.setConfirmedAt(null);
 
