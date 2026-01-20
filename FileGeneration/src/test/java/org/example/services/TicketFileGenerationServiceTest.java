@@ -14,7 +14,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -31,8 +30,6 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class TicketFileGenerationServiceTest {
 
-    @Mock
-    RabbitTemplate template;
     @Mock FileGenerationMessagesPublisher fileGenerationMessagesPublisher;
     @Mock EventsClient eventsClient;
     @Mock VenuesClient venuesClient;
@@ -105,9 +102,8 @@ class TicketFileGenerationServiceTest {
         return z;
     }
 
-    // --------------------
-    // TFG_GEN001 (QR error)
-    // --------------------
+    // TFG_GEN001
+
     @Test
     void saveTicketFile_qrGenerationThrowsWriterException_throwsQrCodeGenerationException() throws Exception {
         TicketGeneratedMessage msg = baseTicketMessage();
@@ -122,15 +118,12 @@ class TicketFileGenerationServiceTest {
         }
     }
 
-    // -----------------------
     // TFG_GEN004 (PDF error)
-    // -----------------------
+
     @Test
     void saveTicketFile_generateTicketPdfThrows_throwsFileGenerationException() {
         TicketGeneratedMessage msg = baseTicketMessage();
 
-        // Precisa passar a fase de QR + calls externas + resources (logo/template).
-        // QR ok + generateTicketPdf falha
         try (MockedStatic<FileGenerationUtils> mocked = Mockito.mockStatic(FileGenerationUtils.class)) {
             mocked.when(() -> FileGenerationUtils.generateQRCodeImage(anyString(), anyInt(), anyInt()))
                     .thenReturn(new java.awt.image.BufferedImage(150, 150, java.awt.image.BufferedImage.TYPE_INT_RGB));
@@ -148,9 +141,8 @@ class TicketFileGenerationServiceTest {
         }
     }
 
-    // --------------------
     // TFG_SAVE001 success
-    // --------------------
+
     @Test
     void saveTicketFile_success_createsFileAndPublishesMessage() {
         TicketGeneratedMessage msg = baseTicketMessage();
@@ -177,15 +169,12 @@ class TicketFileGenerationServiceTest {
 
             verify(fileGenerationMessagesPublisher).publishTicketFileGeneratedMessage(msg);
 
-            // limpeza opcional
             expected.delete();
         }
     }
 
-
-    // ----------------------------
     // TFG_SAVE002 (IOException write)
-    // ----------------------------
+
     @Test
     void saveTicketFile_whenFileOutputStreamThrowsIOException_throwsFileSaveException() throws IOException {
         TicketGeneratedMessage msg = baseTicketMessage();
@@ -211,17 +200,15 @@ class TicketFileGenerationServiceTest {
         }
     }
 
-    // --------------------
     // TFG_GET001 not found
-    // --------------------
+
     @Test
     void getTicketPdf_fileDoesNotExist_throwsTicketFileNotFoundException() {
         assertThrows(TicketFileNotFoundException.class, () -> service.getTicketPdf(UUID.randomUUID()));
     }
 
-    // --------------------
     // TFG_GET003 success
-    // --------------------
+
     @Test
     void getTicketPdf_success_returnsBytes() throws Exception {
         UUID id = UUID.randomUUID();
@@ -237,9 +224,7 @@ class TicketFileGenerationServiceTest {
         assertArrayEquals("HELLO".getBytes(), res);
     }
 
-    // --------------------
     // Extra: external errors
-    // --------------------
     @Test
     void saveTicketFile_eventsClientFeign_throwsExternalServiceException() throws Exception {
         TicketGeneratedMessage msg = baseTicketMessage();
@@ -253,4 +238,5 @@ class TicketFileGenerationServiceTest {
             assertThrows(ExternalServiceException.class, () -> service.saveTicketFile(msg));
         }
     }
+
 }

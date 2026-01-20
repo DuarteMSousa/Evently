@@ -23,4 +23,5 @@ public class SessionTierDTO {
     private UUID updatedBy;
 
     private Date updatedAt;
+
 }

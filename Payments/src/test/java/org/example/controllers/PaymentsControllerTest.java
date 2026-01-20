@@ -15,7 +15,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.Mockito.*;
@@ -43,9 +42,7 @@ class PaymentsControllerTest {
         return p;
     }
 
-    // -------------------------
     // GET /check-payment-status/{id}
-    // -------------------------
 
     @Test
     void checkPaymentStatus_200() throws Exception {
@@ -78,9 +75,7 @@ class PaymentsControllerTest {
                 .andExpect(content().string("boom"));
     }
 
-    // -------------------------
     // GET /user-payments/{userId}
-    // -------------------------
 
     @Test
     void getUserPayments_200() throws Exception {
@@ -102,9 +97,7 @@ class PaymentsControllerTest {
                 .andExpect(content().string("User not found"));
     }
 
-    // -------------------------
     // POST /process-payment
-    // -------------------------
 
     @Test
     void processPayment_201() throws Exception {
@@ -171,9 +164,7 @@ class PaymentsControllerTest {
                 .andExpect(content().string("refused"));
     }
 
-    // -------------------------
     // GET /paypal-callback?token=
-    // -------------------------
 
     @Test
     void paypalCallback_200() throws Exception {
@@ -208,9 +199,7 @@ class PaymentsControllerTest {
                 .andExpect(content().string("invalid"));
     }
 
-    // -------------------------
     // GET /paypal-cancel
-    // -------------------------
 
     @Test
     void paypalCancel_200() throws Exception {
@@ -219,9 +208,7 @@ class PaymentsControllerTest {
                 .andExpect(content().string("Pagamento cancelado pelo utilizador no PayPal."));
     }
 
-    // -------------------------
     // POST /cancel-payment/{paymentId}
-    // -------------------------
 
     @Test
     void cancelPayment_200() throws Exception {
@@ -256,9 +243,7 @@ class PaymentsControllerTest {
                 .andExpect(content().string("already"));
     }
 
-    // -------------------------
     // POST /process-refund/{paymentId}
-    // -------------------------
 
     @Test
     void processRefund_201() throws Exception {
@@ -292,4 +277,5 @@ class PaymentsControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("invalid"));
     }
+
 }

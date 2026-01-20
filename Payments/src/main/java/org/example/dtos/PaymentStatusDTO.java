@@ -11,5 +11,7 @@ import java.util.UUID;
 public class PaymentStatusDTO {
 
     private UUID paymentId;
+
     private PaymentStatus status;
+
 }

@@ -32,4 +32,5 @@ public class EventDTO {
     private List<EventSessionDTO> sessions;
 
     private List<CategoryDTO> category;
+
 }

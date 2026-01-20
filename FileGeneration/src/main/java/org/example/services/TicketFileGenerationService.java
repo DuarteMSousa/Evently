@@ -4,9 +4,7 @@ import com.google.zxing.WriterException;
 import feign.FeignException;
 import org.example.clients.EventsClient;
 import org.example.clients.VenuesClient;
-import org.example.config.MQConfig;
 import org.example.dtos.*;
-import org.example.messages.TicketFileGeneratedMessage;
 import org.example.messages.TicketGeneratedMessage;
 import org.example.exceptions.*;
 import org.example.models.TicketInformation;
@@ -38,20 +36,16 @@ public class TicketFileGenerationService {
 
     private Logger logger = LoggerFactory.getLogger(TicketFileGenerationService.class);
 
-    private ModelMapper modelMapper = new ModelMapper();
-
     private static final Marker TICKET_FILE_GENERATION = MarkerFactory.getMarker("TICKET_FILE_GENERATION");
     private static final Marker TICKET_FILE_SAVE = MarkerFactory.getMarker("TICKET_FILE_SAVE");
     private static final Marker TICKET_FILE_GET = MarkerFactory.getMarker("TICKET_FILE_GET");
-
-    @Autowired
-    RabbitTemplate template;
 
     @Autowired
     FileGenerationMessagesPublisher fileGenerationMessagesPublisher;
 
     @Autowired
     EventsClient eventsClient;
+
     @Autowired
     private VenuesClient venuesClient;
 
@@ -125,7 +119,6 @@ public class TicketFileGenerationService {
                 .format(formatter);
 
         information.setEventDate(formattedDate);
-
 
         BufferedImage logo;
         try (InputStream logoStream = getClass().getResourceAsStream("/" + IMAGES_PATH + "/evently.jpg")) {
@@ -219,4 +212,5 @@ public class TicketFileGenerationService {
             throw new TicketFileNotFoundException("Error loading pdf");
         }
     }
+
 }

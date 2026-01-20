@@ -23,4 +23,5 @@ public class TicketGeneratedMessage {
     private UUID sessionId;
 
     private UUID tierId;
+
 }

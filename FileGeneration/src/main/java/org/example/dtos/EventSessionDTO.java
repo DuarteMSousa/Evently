@@ -32,4 +32,5 @@ public class EventSessionDTO {
     private Date updatedAt;
 
     private List<SessionTierDTO> tiers;
+
 }

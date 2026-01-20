@@ -13,7 +13,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.junit.jupiter.api.Assertions.*;
 
-
 import java.util.UUID;
 
 import static junit.framework.Assert.assertEquals;
@@ -50,7 +49,6 @@ class TicketFilesControllerTest {
                         .content(body))
                 .andExpect(status().isOk());
     }
-
 
     @Test
     void post_generateTicketFile_serviceThrows_exceptionBubblesUp() {

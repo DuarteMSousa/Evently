@@ -9,12 +9,6 @@ import org.example.enums.PaymentStatus;
 
 import java.util.UUID;
 
-/**
- * Mensagem publicada no broker.
- *
- * Nota: NÃO usar Serializable para microserviços.
- * Com Jackson2JsonMessageConverter, isto vai em JSON.
- */
 @Getter
 @Setter
 @AllArgsConstructor
@@ -22,10 +16,15 @@ import java.util.UUID;
 public class PaymentEventMessage {
 
     private UUID paymentId;
+
     private UUID orderId;
+
     private UUID userId;
+
     private float amount;
+
     private PaymentStatus status;
+
     private PaymentEventType eventType;
 
 }

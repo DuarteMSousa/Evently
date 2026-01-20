@@ -16,7 +16,6 @@ public class FileGenerationMessagesPublisher {
 
     private ModelMapper modelMapper = new ModelMapper();
 
-
     public void publishTicketFileGeneratedMessage(TicketGeneratedMessage ticket) {
         TicketFileGeneratedMessage message = modelMapper.map(ticket, TicketFileGeneratedMessage.class);
 

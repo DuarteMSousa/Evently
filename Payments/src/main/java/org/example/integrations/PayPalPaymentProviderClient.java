@@ -68,7 +68,7 @@ public class PayPalPaymentProviderClient implements PaymentProviderClient {
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(accessToken);
 
-        // body da ordem PayPal
+        // PayPal order body
         Map<String, Object> body = new HashMap<>();
         body.put("intent", "CAPTURE");
 

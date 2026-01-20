@@ -5,14 +5,13 @@ import org.example.models.Payment;
 public interface PaymentProviderClient {
 
     /**
-     * Cria uma ordem de pagamento no provider (ex.: PayPal)
-     * Deve atualizar o Payment (providerRef, etc.)
-     * e devolver o URL para o utilizador aprovar o pagamento.
+     * Creates a payment order int the provider
+     * Should update the payment and retrieve the url for the user approve the payment
      */
     String createPaymentOrder(Payment payment);
 
     /**
-     * Captura/finaliza o pagamento depois do utilizador aprovar.
+     * Captures the payment after user approval
      */
     void capturePayment(String providerRef);
 }

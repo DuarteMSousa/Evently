@@ -35,5 +35,4 @@ public class PaymentEventsPublisher {
         rabbitTemplate.convertAndSend(paymentsExchangeName, paymentsRoutingKey+".event", message);
     }
 
-
 }
