@@ -42,14 +42,14 @@ public class MQConfig {
     }
 
     @Bean
-    public Binding ticketManagementTicketsBinding(
+    public Binding ticketManagementEventsBinding(
             @Qualifier("ticketManagementEventsQueue") Queue queue,
             @Qualifier("eventsExchange") TopicExchange exchange) {
 
         return BindingBuilder
                 .bind(queue)
                 .to(exchange)
-                .with("events");
+                .with("events.*");
     }
 
     //orders

@@ -43,6 +43,7 @@ public class TicketStocksService {
     private static final Marker EVENT_TICKET_STOCK_DELETE = MarkerFactory.getMarker("EVENT_TICKET_STOCK_DELETE");
     private static final Marker SESSION_TICKET_STOCK_DELETE = MarkerFactory.getMarker("SESSION_TICKET_STOCK_DELETE");
     private static final Marker TIER_TICKET_STOCK_DELETE = MarkerFactory.getMarker("TIER_TICKET_STOCK_DELETE");
+    private static final Marker HANDLE_EVENT_PUBLISHED = MarkerFactory.getMarker("HANDLE_EVENT_PUBLISHED");
 
     @Autowired
     private VenuesClient venuesClient;
@@ -202,7 +203,7 @@ public class TicketStocksService {
 
         try {
 
-            List<VenueZoneDTO> venueZoneCache= new ArrayList<VenueZoneDTO>();
+            List<VenueZoneDTO> venueZoneCache = new ArrayList<VenueZoneDTO>();
             for (EventSessionDTO eventSession : message.getSessions()) {
                 for (SessionTierDTO tier : eventSession.getTiers()) {
                     Optional<VenueZoneDTO> optionalZone = venueZoneCache.stream()
@@ -218,7 +219,7 @@ public class TicketStocksService {
                             venueZoneDTO = venuesClient.getZone(tier.getZoneId()).getBody();
                             venueZoneCache.add(venueZoneDTO);
                         } catch (FeignException e) {
-                            logger.error("Cannot get venue zone", e);
+                            logger.error(HANDLE_EVENT_PUBLISHED, "Cannot get venue zone", e);
                             throw new ExternalServiceException("Cannot get venue zone");
                         }
                     }
@@ -244,9 +245,9 @@ public class TicketStocksService {
             ticketManagementMessagesPublisher.publishEventTicketStockGeneratedMessage(message.getId());
 
         } catch (Exception e) {
+            logger.error(HANDLE_EVENT_PUBLISHED, "Error publishing event ticket stock", e);
             ticketManagementMessagesPublisher.publishEventTicketStockGenerationFailedMessage(message.getId());
         }
-
 
     }
 

@@ -6,6 +6,8 @@ import org.example.messages.received.OrderCanceledMessage;
 import org.example.messages.received.OrderPaidMessage;
 import org.example.messages.received.RefundRequestDecisionRegisteredMessage;
 import org.example.services.TicketReservationsService;
+import org.example.services.TicketStocksService;
+import org.example.services.received.EventPublishedMessage;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -15,6 +17,12 @@ public class MessagesListener {
 
     @Autowired
     private TicketReservationsService ticketReservationsService;
+
+    @Autowired
+    private TicketStocksService ticketStocksService;
+
+    @Autowired
+    private RabbitTemplate template;
 
     @RabbitListener(queues = MQConfig.ORDERS_PAID_QUEUE)
     public void listener(OrderPaidMessage message) {
@@ -33,4 +41,8 @@ public class MessagesListener {
         }
     }
 
+    @RabbitListener(queues = MQConfig.EVENTS_QUEUE)
+    public void listener(EventPublishedMessage message) {
+            ticketStocksService.handleEventPublishedMessage(message);
+    }
 }
