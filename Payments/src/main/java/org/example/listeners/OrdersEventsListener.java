@@ -23,4 +23,5 @@ public class OrdersEventsListener {
     public void handleOrderCreated(OrderCreatedMessage message) {
         paymentsService.onOrderCreated(message.getId(), message.getUserId(), message.getTotal());
     }
+
 }

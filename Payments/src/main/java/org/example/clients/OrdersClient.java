@@ -12,6 +12,6 @@ import java.util.UUID;
 public interface OrdersClient {
 
     @GetMapping("/get-order/{id}")
-    public ResponseEntity<OrderDTO> getOrder(@PathVariable("id") UUID id);
+    ResponseEntity<OrderDTO> getOrder(@PathVariable("id") UUID id);
 
 }

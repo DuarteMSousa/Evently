@@ -64,9 +64,7 @@ class PaymentsServiceTest {
         });
     }
 
-    // -------------------------
-    // validatePaymentForProcess indiretamente via processPayment
-    // -------------------------
+    // validatePaymentForProcess
 
     @Test
     void processPayment_orderIdNull_throwsInvalidPaymentException() {
@@ -107,26 +105,19 @@ class PaymentsServiceTest {
     @Test
     void processPayment_providerNotPaypal_throwsInvalidPaymentException() {
         Payment p = basePayment();
-        // se o teu enum tiver outro provider
-        p.setPaymentProvider(PaymentProvider.valueOf("PAYPAL")); // mantém se só tens PAYPAL
-        // Se tiveres MBWAY/CARD etc, mete aqui.
-
-        // Se só tens PAYPAL, ignora este teste.
+        p.setPaymentProvider(PaymentProvider.valueOf("PAYPAL"));
     }
 
-    // -------------------------
     // processPayment - new payment (no existing)
-    // -------------------------
 
     @Test
     void processPayment_success_newPayment_setsPending_publishesEvent() {
         Payment request = basePayment();
-        request.setId(null); // simula request "nova"
+        request.setId(null);
         request.setProviderRef(null);
 
         when(paymentsRepository.findByOrderId(request.getOrderId())).thenReturn(Optional.empty());
 
-        // provider vai preencher providerRef no Payment
         doAnswer(inv -> {
             Payment p = inv.getArgument(0);
             p.setProviderRef("PROV-123");
@@ -156,7 +147,6 @@ class PaymentsServiceTest {
 
         assertThrows(PaymentRefusedException.class, () -> paymentsService.processPayment(request));
 
-        // depois da recusa: status FAILED + event FAILED + publish FAILED
         verify(paymentEventsPublisher).publishPaymentEvent(eq(PaymentEventType.FAILED), any(Payment.class));
         verify(paymentsRepository, atLeast(2)).save(any(Payment.class)); // salva PENDING e depois FAILED
     }
@@ -174,9 +164,7 @@ class PaymentsServiceTest {
         assertThrows(RuntimeException.class, () -> paymentsService.processPayment(request));
     }
 
-    // -------------------------
     // processPayment - existing payment branches (FALTAVA no doc)
-    // -------------------------
 
     @Test
     void processPayment_existingPendingWithProviderRef_returnsExistingWithoutCallingProvider() {
@@ -240,9 +228,7 @@ class PaymentsServiceTest {
         verify(paymentEventsPublisher).publishPaymentEvent(eq(PaymentEventType.PENDING), any(Payment.class));
     }
 
-    // -------------------------
     // capturePaypalPayment
-    // -------------------------
 
     @Test
     void capturePaypalPayment_providerRefNotFound_throwsPaymentNotFound() {
@@ -282,9 +268,7 @@ class PaymentsServiceTest {
         verify(paymentEventsPublisher).publishPaymentEvent(eq(PaymentEventType.CAPTURED), any(Payment.class));
     }
 
-    // -------------------------
     // cancelPayment
-    // -------------------------
 
     @Test
     void cancelPayment_notFound_throwsPaymentNotFound() {
@@ -321,9 +305,7 @@ class PaymentsServiceTest {
         verify(paymentEventsPublisher).publishPaymentEvent(eq(PaymentEventType.CANCEL), any(Payment.class));
     }
 
-    // -------------------------
     // processRefund
-    // -------------------------
 
     @Test
     void processRefund_notFound_throwsPaymentNotFound() {
@@ -352,9 +334,7 @@ class PaymentsServiceTest {
         verify(paymentEventsPublisher).publishPaymentEvent(eq(PaymentEventType.REFUND), any(Payment.class));
     }
 
-    // -------------------------
     // getPayment / getPaymentsByUser
-    // -------------------------
 
     @Test
     void getPayment_exists_returnsPayment() {
@@ -384,9 +364,7 @@ class PaymentsServiceTest {
         assertEquals(1, paymentsService.getPaymentsByUser(userId).size());
     }
 
-    // -------------------------
-    // onRefundApproved / onOrderCreated (FALTAVA no doc)
-    // -------------------------
+    // onRefundApproved / onOrderCreated
 
     @Test
     void onRefundApproved_notFound_throwsPaymentNotFound() {
@@ -434,4 +412,5 @@ class PaymentsServiceTest {
         ));
         verify(paymentEventsPublisher).publishPaymentEvent(eq(PaymentEventType.PENDING), any(Payment.class));
     }
+
 }

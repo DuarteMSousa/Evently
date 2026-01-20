@@ -1,7 +1,6 @@
 package org.example.controllers;
 
 import org.example.dtos.PaymentCreatedResponseDTO;
-import org.example.dtos.PaymentCreateDTO;
 import org.example.dtos.PaymentDTO;
 import org.example.dtos.PaymentStatusDTO;
 import org.example.exceptions.*;
@@ -331,4 +330,5 @@ public class PaymentsController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
 }

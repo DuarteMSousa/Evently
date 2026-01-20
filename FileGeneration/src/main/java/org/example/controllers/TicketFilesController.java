@@ -20,7 +20,6 @@ public class TicketFilesController {
 
     /**
      * Generates and saves a ticket PDF file on the server file system.
-     *
      * HTTP Status:
      * - 200 OK: ticket file generated and saved successfully
      * - 400 BAD_REQUEST: generic error while generating or saving file (depending on exception handling)
@@ -36,7 +35,6 @@ public class TicketFilesController {
 
     /**
      * Retrieves the ticket PDF file for download.
-     *
      * HTTP Status:
      * - 200 OK: ticket PDF found and returned
      * - 404 NOT_FOUND: file does not exist (depending on exception handling)
@@ -54,4 +52,5 @@ public class TicketFilesController {
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(pdf);
     }
+
 }

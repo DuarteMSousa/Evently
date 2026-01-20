@@ -1,10 +1,7 @@
 package org.example.services;
 
-import feign.FeignException;
 import jakarta.transaction.Transactional;
-import lombok.var;
 import org.example.clients.OrdersClient;
-import org.example.dtos.externalServices.OrderDTO;
 import org.example.enums.PaymentEventType;
 import org.example.enums.PaymentProvider;
 import org.example.enums.PaymentStatus;
@@ -51,9 +48,6 @@ public class PaymentsService {
 
     @Autowired
     private PaymentProviderClient paymentProviderClient;
-
-    @Autowired
-    private OrdersClient  ordersClient;
 
     /**
      * Validates a payment payload before starting the payment process.
@@ -433,4 +427,5 @@ public class PaymentsService {
         logger.info(PAY_EVENT, "Payment created from OrderCreated (paymentId={}, orderId={}, status={})",
                 saved.getId(), saved.getOrderId(), saved.getStatus());
     }
+
 }

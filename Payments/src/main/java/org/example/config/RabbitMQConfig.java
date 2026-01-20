@@ -30,7 +30,6 @@ public class RabbitMQConfig {
     @Value("${app.payments.routing-key}")
     private String paymentsRoutingKey;
 
-    // --- topologia (ok) ---
     @Bean
     public TopicExchange paymentsExchange() {
         return new TopicExchange(paymentsExchangeName);
@@ -104,6 +103,5 @@ public class RabbitMQConfig {
         factory.setMessageConverter(converter);
         return factory;
     }
-
 
 }

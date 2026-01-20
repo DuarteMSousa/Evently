@@ -9,4 +9,5 @@ import java.util.UUID;
 public interface PaymentEventsRepository extends JpaRepository<PaymentEvent, UUID> {
 
     List<PaymentEvent> findByPayment_Id(UUID paymentId);
+
 }

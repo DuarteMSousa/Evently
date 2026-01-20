@@ -30,4 +30,5 @@ public class TicketsMessagesListener {
             logger.info(TICKET_GENERATED_HANDLE, "Exception caught while saving ticket file: {}", e.getMessage());
         }
     }
+
 }

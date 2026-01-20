@@ -13,7 +13,11 @@ import java.util.UUID;
 public class RefundRequestDecisionRegisteredMessage {
 
     private UUID userToRefundId;
+
     private UUID paymentId;
+
     private DecisionType decisionType;
+
     private String description;
+
 }
