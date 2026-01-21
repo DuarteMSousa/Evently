@@ -17,7 +17,7 @@ public class RefundsListener {
     @RabbitListener(queues = MQConfig.REFUNDS_QUEUE)
     public void listener(RefundRequestDecisionRegisteredMessage refundRequestDecision) {
         if (refundRequestDecision.getDecisionType() == DecisionType.APPROVE) {
-            ordersService.cancelOrder(refundRequestDecision.getOrderId());
+            ordersService.cancelOrder(refundRequestDecision.getOrderId(), true);
         }
     }
 

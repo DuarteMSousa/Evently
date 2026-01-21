@@ -158,10 +158,10 @@ class CartItemsServiceTest {
 
     @Test
     void removeItemFromCart_itemNotFound_throwsCartItemNotFoundException() {
-        when(cartsService.getCart(userId)).thenReturn(cart);
-
-        CartItemNotFoundException ex = assertThrows(CartItemNotFoundException.class,
-                () -> cartItemsService.removeItemFromCart(userId, productId));
+        CartItemNotFoundException ex = assertThrows(
+                CartItemNotFoundException.class,
+                () -> cartItemsService.removeItemFromCart(userId, productId)
+        );
 
         assertEquals("Item not found in cart", ex.getMessage());
         verify(cartItemsRepository, never()).delete(any());

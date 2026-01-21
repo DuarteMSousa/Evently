@@ -162,24 +162,23 @@ class OrganizationMembersServiceTest {
     }
 
     @Test
-    void addMember_alreadyMember_returnsExisting() {
-        when(organizationsRepository.findById(orgId)).thenReturn(Optional.of(org));
-
-        when(usersClient.getUser(userId)).thenReturn(null);
+    void addMember_alreadyMember_throwsMemberAlreadyExistsException() {
+        when(organizationsRepository.findById(orgId))
+                .thenReturn(Optional.of(org));
 
         MemberId mid = new MemberId(orgId, userId);
-        Member existing = new Member();
-        existing.setId(mid);
-
         when(membersRepository.existsById(mid)).thenReturn(true);
-        when(membersRepository.findById(mid)).thenReturn(Optional.of(existing));
 
-        Member res = organizationMembersService.addMember(orgId, userId, creatorId);
+        MemberAlreadyExistsException ex = assertThrows(
+                MemberAlreadyExistsException.class,
+                () -> organizationMembersService.addMember(orgId, userId, creatorId)
+        );
 
-        assertEquals(mid, res.getId());
+        assertEquals("User is already a member of this organization", ex.getMessage());
+
+        verify(usersClient).getUser(userId);
         verify(membersRepository, never()).save(any());
     }
-
 
     @Test
     void addMember_success_savesMember() {

@@ -1,5 +1,7 @@
 package org.example.services;
 
+import org.example.clients.UsersClient;
+import org.example.dtos.externalServices.UserDTO;
 import org.example.exceptions.*;
 import org.example.models.Member;
 import org.example.models.MemberId;
@@ -12,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
 
 import java.util.*;
 
@@ -23,8 +26,12 @@ class OrganizationsServiceTest {
 
     @Mock
     private OrganizationsRepository organizationsRepository;
+
     @Mock
     private MembersRepository membersRepository;
+
+    @Mock
+    private UsersClient usersClient;
 
     @InjectMocks
     private OrganizationsService organizationsService;
@@ -91,6 +98,9 @@ class OrganizationsServiceTest {
     void createOrganization_duplicateNipc_throwsInvalidOrganizationException() {
         when(organizationsRepository.existsByNipc(validOrg.getNipc())).thenReturn(true);
 
+        when(usersClient.getUser(validOrg.getCreatedBy()))
+                .thenReturn(ResponseEntity.ok(new UserDTO()));
+
         InvalidOrganizationException ex = assertThrows(InvalidOrganizationException.class,
                 () -> organizationsService.createOrganization(validOrg));
 
@@ -111,6 +121,8 @@ class OrganizationsServiceTest {
         saved.setCreatedBy(validOrg.getCreatedBy());
         saved.setActive(true);
 
+        when(usersClient.getUser(validOrg.getCreatedBy()))
+                .thenReturn(ResponseEntity.ok(new UserDTO()));
         when(organizationsRepository.save(any(Organization.class))).thenReturn(saved);
         when(membersRepository.existsById(any(MemberId.class))).thenReturn(false);
         when(membersRepository.save(any(Member.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -134,6 +146,8 @@ class OrganizationsServiceTest {
         saved.setCreatedBy(validOrg.getCreatedBy());
         saved.setActive(true);
 
+        when(usersClient.getUser(validOrg.getCreatedBy()))
+                .thenReturn(ResponseEntity.ok(new UserDTO()));
         when(organizationsRepository.save(any(Organization.class))).thenReturn(saved);
         when(membersRepository.existsById(any(MemberId.class))).thenReturn(true);
 

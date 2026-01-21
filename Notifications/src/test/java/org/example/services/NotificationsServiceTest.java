@@ -43,7 +43,6 @@ class NotificationsServiceTest {
     private UUID userId;
     private UUID orderId;
 
-
     @BeforeEach
     void setup() {
         userId = UUID.randomUUID();
@@ -63,9 +62,7 @@ class NotificationsServiceTest {
         });
     }
 
-    // -----------------------
-    // NOT_VAL06b (blank emailTo for EMAIL)
-    // -----------------------
+    // blank emailTo for EMAIL
     @Test
     void sendNotification_emailChannel_blankEmailTo_throwsInvalidNotificationException() {
         Notification n = new Notification();
@@ -83,9 +80,7 @@ class NotificationsServiceTest {
         verifyNoInteractions(emailService);
     }
 
-    // -----------------------
     // resolveUserEmail (indirect): ensure EMAIL is skipped when cannot resolve email
-    // -----------------------
 
     @Test
     void notifyPaymentCaptured_usersClientBodyNull_skipsEmail() {
@@ -147,9 +142,7 @@ class NotificationsServiceTest {
         verify(emailService, never()).sendNotificationEmail(anyString(), anyString(), anyString());
     }
 
-    // -----------------------
-    // Domain notify tests (NOT_DOM*)
-    // -----------------------
+    // Domain notify tests
 
     @Test
     void notifyPaymentCaptured_emailResolved_sendsInAppAndEmail() {
@@ -162,7 +155,6 @@ class NotificationsServiceTest {
         // IN_APP notification saved + EMAIL notification saved => 2 saves
         verify(notificationsRepository, times(2)).save(any(Notification.class));
         // outbox created twice (IN_APP + EMAIL) and updated once for EMAIL SENT/FAILED
-        // Note: sendNotification updates outbox status after EMAIL attempt, doing another save.
         verify(outBoxMessagesRepository, atLeast(2)).save(any(OutBoxMessage.class));
         verify(emailService, times(1)).sendNotificationEmail(eq("a@b.com"), eq("Pagamento confirmado"), contains(orderId.toString()));
     }
@@ -222,9 +214,7 @@ class NotificationsServiceTest {
         assertTrue(first.getBody().contains("Link: " + url));
     }
 
-    // -----------------------
-    // notifyPdfGeneratedWithAttachment (NOT_ATT*)
-    // -----------------------
+    // notifyPdfGeneratedWithAttachment
 
     @Test
     void notifyPdfGeneratedWithAttachment_emailResolved_sendsAttachmentEmail() {
@@ -262,9 +252,8 @@ class NotificationsServiceTest {
         verify(emailService, never()).sendNotificationEmailWithAttachment(anyString(), anyString(), anyString(), any(), anyString());
     }
 
-    // -----------------------
     // Helpers for Feign exceptions
-    // -----------------------
+
     private FeignException.NotFound feignNotFound() {
         Request req = Request.create(Request.HttpMethod.GET, "/users/" + userId,
                 Collections.emptyMap(), null, StandardCharsets.UTF_8, null);
@@ -288,4 +277,5 @@ class NotificationsServiceTest {
                 .build();
         return FeignException.errorStatus("UsersClient#getUser", resp);
     }
+
 }

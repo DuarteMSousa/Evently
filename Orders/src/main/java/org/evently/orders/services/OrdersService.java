@@ -222,13 +222,17 @@ public class OrdersService {
      * @throws InvalidOrderException if the order is already paid or canceled
      */
     @Transactional
-    public Order cancelOrder(UUID id) {
+    public Order cancelOrder(UUID id, boolean isRefund) {
         logger.info(ORDER_CANCEL, "Cancelling order (id={})", id);
 
         Order order = getOrder(id);
 
         if (order.getStatus() == OrderStatus.CANCELED) {
             throw new InvalidOrderException("Order is already canceled");
+        }
+
+        if (!isRefund && order.getStatus() == OrderStatus.PAYMENT_SUCCESS) {
+            throw new InvalidOrderException("Cannot cancel an order that is already paid");
         }
 
         order.setStatus(OrderStatus.CANCELED);

@@ -178,7 +178,7 @@ class OrdersControllerTest {
         UUID id = UUID.randomUUID();
         Order o = new Order(); o.setId(id); o.setStatus(OrderStatus.CANCELED);
 
-        when(ordersService.cancelOrder(id)).thenReturn(o);
+        when(ordersService.cancelOrder(id, false)).thenReturn(o);
 
         mockMvc.perform(put("/orders/cancel-order/{id}", id))
                 .andExpect(status().isOk())
@@ -188,7 +188,7 @@ class OrdersControllerTest {
     @Test
     void cancelOrder_notFound_returns404() throws Exception {
         UUID id = UUID.randomUUID();
-        when(ordersService.cancelOrder(id)).thenThrow(new OrderNotFoundException("Order not found"));
+        when(ordersService.cancelOrder(id, false)).thenThrow(new OrderNotFoundException("Order not found"));
 
         mockMvc.perform(put("/orders/cancel-order/{id}", id))
                 .andExpect(status().isNotFound());
@@ -197,7 +197,7 @@ class OrdersControllerTest {
     @Test
     void cancelOrder_invalid_returns400() throws Exception {
         UUID id = UUID.randomUUID();
-        when(ordersService.cancelOrder(id)).thenThrow(new InvalidOrderException("Order already canceled"));
+        when(ordersService.cancelOrder(id, false)).thenThrow(new InvalidOrderException("Order already canceled"));
 
         mockMvc.perform(put("/orders/cancel-order/{id}", id))
                 .andExpect(status().isBadRequest());

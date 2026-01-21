@@ -178,7 +178,7 @@ public class OrdersController {
 
         logger.info(ORDER_CANCEL, "Method cancelOrder entered (id={})", id);
         try {
-            Order canceledOrder = ordersService.cancelOrder(id);
+            Order canceledOrder = ordersService.cancelOrder(id, false);
             logger.info(ORDER_CANCEL, "200 OK returned, order canceled");
             return ResponseEntity.ok(convertToDTO(canceledOrder));
         } catch (OrderNotFoundException e) {

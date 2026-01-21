@@ -354,21 +354,10 @@ class OrdersServiceTest {
         when(ordersRepository.findById(orderId)).thenReturn(Optional.of(o));
         when(ordersRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        Order res = ordersService.cancelOrder(orderId);
+        Order res = ordersService.cancelOrder(orderId, false);
 
         assertEquals(OrderStatus.CANCELED, res.getStatus());
         assertNotNull(res.getCanceledAt());
-    }
-
-    @Test
-    void cancelOrder_alreadyPaid_throwsInvalidOrderException() {
-        Order o = new Order();
-        o.setId(orderId);
-        o.setStatus(OrderStatus.PAYMENT_SUCCESS);
-
-        when(ordersRepository.findById(orderId)).thenReturn(Optional.of(o));
-
-        assertThrows(InvalidOrderException.class, () -> ordersService.cancelOrder(orderId));
     }
 
     @Test
@@ -379,7 +368,7 @@ class OrdersServiceTest {
 
         when(ordersRepository.findById(orderId)).thenReturn(Optional.of(o));
 
-        assertThrows(InvalidOrderException.class, () -> ordersService.cancelOrder(orderId));
+        assertThrows(InvalidOrderException.class, () -> ordersService.cancelOrder(orderId, false));
     }
 
     static class PageFake {

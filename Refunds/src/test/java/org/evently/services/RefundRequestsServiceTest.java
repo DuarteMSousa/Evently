@@ -3,9 +3,10 @@ package org.evently.services;
 import feign.FeignException;
 import feign.Request;
 import feign.Response;
+import org.evently.clients.OrdersClient;
 import org.evently.clients.PaymentsClient;
 import org.evently.clients.UsersClient;
-import org.evently.dtos.externalServices.payments.PaymentStatusDTO;
+import org.evently.dtos.externalServices.payments.PaymentDTO;
 import org.evently.enums.RefundRequestStatus;
 import org.evently.enums.externalServices.payments.PaymentStatus;
 import org.evently.exceptions.ExternalServiceException;
@@ -35,19 +36,20 @@ class RefundRequestsServiceTest {
     @Mock private RefundRequestsRepository refundRequestsRepository;
     @Mock private UsersClient usersClient;
     @Mock private PaymentsClient paymentsClient;
+    @Mock private OrdersClient ordersClient;
 
     @InjectMocks private RefundRequestsService refundRequestsService;
 
     private RefundRequest valid;
-    private UUID paymentId;
+    private UUID orderId;
     private UUID userId;
 
     @BeforeEach
     void setup() {
-        paymentId = UUID.randomUUID();
+        orderId = UUID.randomUUID();
         userId = UUID.randomUUID();
         valid = new RefundRequest();
-        valid.setPaymentId(paymentId);
+        valid.setOrderId(orderId);
         valid.setUserId(userId);
         valid.setTitle("t");
         valid.setDescription("d");
@@ -120,7 +122,7 @@ class RefundRequestsServiceTest {
 
     @Test
     void createRefundRequest_activeRefundExists_throwsInvalid() {
-        when(refundRequestsRepository.existsByPaymentIdAndStatusIn(eq(paymentId), any())).thenReturn(true);
+        when(refundRequestsRepository.existsByOrderIdAndStatusIn(eq(orderId), any())).thenReturn(true);
 
         InvalidRefundRequestException ex = assertThrows(InvalidRefundRequestException.class,
                 () -> refundRequestsService.createRefundRequest(valid));
@@ -131,7 +133,7 @@ class RefundRequestsServiceTest {
 
     @Test
     void createRefundRequest_userNotFound_throwsUserNotFound() {
-        when(refundRequestsRepository.existsByPaymentIdAndStatusIn(eq(paymentId), any())).thenReturn(false);
+        when(refundRequestsRepository.existsByOrderIdAndStatusIn(eq(orderId), any())).thenReturn(false);
         when(usersClient.getUser(userId)).thenThrow(feignNotFound());
 
         UserNotFoundException ex = assertThrows(UserNotFoundException.class,
@@ -143,7 +145,7 @@ class RefundRequestsServiceTest {
 
     @Test
     void createRefundRequest_usersServiceError_throwsExternal() {
-        when(refundRequestsRepository.existsByPaymentIdAndStatusIn(eq(paymentId), any())).thenReturn(false);
+        when(refundRequestsRepository.existsByOrderIdAndStatusIn(eq(orderId), any())).thenReturn(false);
         when(usersClient.getUser(userId)).thenThrow(feignGenericError(503));
 
         ExternalServiceException ex = assertThrows(ExternalServiceException.class,
@@ -155,9 +157,9 @@ class RefundRequestsServiceTest {
 
     @Test
     void createRefundRequest_paymentNotFound_throwsPaymentNotFound() {
-        when(refundRequestsRepository.existsByPaymentIdAndStatusIn(eq(paymentId), any())).thenReturn(false);
+        when(refundRequestsRepository.existsByOrderIdAndStatusIn(eq(orderId), any())).thenReturn(false);
         when(usersClient.getUser(userId)).thenReturn(null);
-        when(paymentsClient.checkPaymentStatus(paymentId)).thenThrow(feignNotFound());
+        when(paymentsClient.getPaymentByOrder(orderId)).thenThrow(feignNotFound());
 
         PaymentNotFoundException ex = assertThrows(PaymentNotFoundException.class,
                 () -> refundRequestsService.createRefundRequest(valid));
@@ -168,9 +170,9 @@ class RefundRequestsServiceTest {
 
     @Test
     void createRefundRequest_paymentsServiceError_throwsExternal() {
-        when(refundRequestsRepository.existsByPaymentIdAndStatusIn(eq(paymentId), any())).thenReturn(false);
+        when(refundRequestsRepository.existsByOrderIdAndStatusIn(eq(orderId), any())).thenReturn(false);
         when(usersClient.getUser(userId)).thenReturn(null);
-        when(paymentsClient.checkPaymentStatus(paymentId)).thenThrow(feignGenericError(500));
+        when(paymentsClient.getPaymentByOrder(orderId)).thenThrow(feignGenericError(500));
 
         ExternalServiceException ex = assertThrows(ExternalServiceException.class,
                 () -> refundRequestsService.createRefundRequest(valid));
@@ -181,10 +183,13 @@ class RefundRequestsServiceTest {
 
     @Test
     void createRefundRequest_paymentNotCaptured_throwsInvalid() {
-        when(refundRequestsRepository.existsByPaymentIdAndStatusIn(eq(paymentId), any())).thenReturn(false);
+        when(refundRequestsRepository.existsByOrderIdAndStatusIn(eq(orderId), any())).thenReturn(false);
         when(usersClient.getUser(userId)).thenReturn(null);
 
-        when(paymentsClient.checkPaymentStatus(paymentId)).thenReturn(mockPaymentStatus(PaymentStatus.PENDING));
+        PaymentDTO dto = new PaymentDTO();
+        dto.setStatus(PaymentStatus.PENDING);
+
+        when(paymentsClient.getPaymentByOrder(orderId)).thenReturn(mockPayment(dto));
 
         InvalidRefundRequestException ex = assertThrows(InvalidRefundRequestException.class,
                 () -> refundRequestsService.createRefundRequest(valid));
@@ -195,10 +200,13 @@ class RefundRequestsServiceTest {
 
     @Test
     void createRefundRequest_success_savesWithPending() {
-        when(refundRequestsRepository.existsByPaymentIdAndStatusIn(eq(paymentId), any())).thenReturn(false);
+        when(refundRequestsRepository.existsByOrderIdAndStatusIn(eq(orderId), any())).thenReturn(false);
         when(usersClient.getUser(userId)).thenReturn(null);
 
-        when(paymentsClient.checkPaymentStatus(paymentId)).thenReturn(mockPaymentStatus(PaymentStatus.CAPTURED));
+        PaymentDTO dto = new PaymentDTO();
+        dto.setStatus(PaymentStatus.CAPTURED);
+
+        when(paymentsClient.getPaymentByOrder(orderId)).thenReturn(mockPayment(dto));
 
         when(refundRequestsRepository.save(any(RefundRequest.class))).thenAnswer(inv -> {
             RefundRequest rr = inv.getArgument(0);
@@ -246,33 +254,32 @@ class RefundRequestsServiceTest {
 
     @Test
     void getActiveRefundRequestByPayment_notFound_throws() {
-        when(refundRequestsRepository.findOneByPaymentIdAndStatus(eq(paymentId), eq(RefundRequestStatus.APPROVED)))
+        when(refundRequestsRepository.findOneByOrderIdAndStatus(eq(orderId), eq(RefundRequestStatus.APPROVED)))
                 .thenReturn(null);
 
         RefundRequestNotFoundException ex = assertThrows(RefundRequestNotFoundException.class,
-                () -> refundRequestsService.getActiveRefundRequestByPayment(paymentId));
+                () -> refundRequestsService.getActiveRefundRequestByOrder(orderId));
 
         assertEquals("No active refund request found for this payment", ex.getMessage());
     }
 
     @Test
-    void getActiveRefundRequestByPayment_found_returns() {
+    void getActiveRefundRequestByOrder_found_returns() {
         RefundRequest rr = new RefundRequest();
         rr.setId(UUID.randomUUID());
-        rr.setPaymentId(paymentId);
+        rr.setOrderId(orderId);
         rr.setStatus(RefundRequestStatus.APPROVED);
 
-        when(refundRequestsRepository.findOneByPaymentIdAndStatus(eq(paymentId), eq(RefundRequestStatus.APPROVED)))
+        when(refundRequestsRepository.findOneByOrderIdAndStatus(eq(orderId), eq(RefundRequestStatus.APPROVED)))
                 .thenReturn(rr);
 
-        RefundRequest res = refundRequestsService.getActiveRefundRequestByPayment(paymentId);
+        RefundRequest res = refundRequestsService.getActiveRefundRequestByOrder(orderId);
         assertEquals(rr.getId(), res.getId());
     }
 
     // helpers
-    private ResponseEntity<PaymentStatusDTO> mockPaymentStatus(PaymentStatus status) {
-        PaymentStatusDTO dto = new PaymentStatusDTO();
-        dto.setStatus(status);
+    private ResponseEntity<PaymentDTO> mockPayment(PaymentDTO paymentDTO) {
+        PaymentDTO dto = new PaymentDTO();
         return ResponseEntity.ok(dto);
     }
 

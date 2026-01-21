@@ -7,6 +7,7 @@ import org.example.exceptions.CartNotFoundException;
 import org.example.exceptions.EmptyCartException;
 import org.example.models.Cart;
 import org.example.models.CartItem;
+import org.example.repositories.CartItemsRepository;
 import org.example.repositories.CartsRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,7 @@ import static org.mockito.Mockito.*;
 class CartsServiceTest {
 
     @Mock private CartsRepository cartsRepository;
+    @Mock private CartItemsRepository cartItemsRepository;
     @Mock private OrdersClient ordersClient;
 
     @InjectMocks private CartsService cartsService;

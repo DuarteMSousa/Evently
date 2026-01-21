@@ -1,6 +1,5 @@
 package org.example.services;
 
-
 import jakarta.mail.internet.MimeMessage;
 import org.example.service.EmailService;
 import org.junit.jupiter.api.Test;
@@ -62,4 +61,5 @@ class EmailServiceTest {
         assertEquals("Failed to send email with attachment", ex.getMessage());
         verify(mailSender).send(mimeMessage);
     }
+
 }

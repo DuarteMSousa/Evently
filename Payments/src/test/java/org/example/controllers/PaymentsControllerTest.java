@@ -103,19 +103,15 @@ class PaymentsControllerTest {
     void processPayment_201() throws Exception {
         PaymentCreateDTO dto = new PaymentCreateDTO();
         dto.setOrderId(UUID.randomUUID());
-        dto.setUserId(UUID.randomUUID());
-        dto.setAmount(10f);
         dto.setProvider(PaymentProvider.PAYPAL);
 
         Payment created = basePayment();
         created.setOrderId(dto.getOrderId());
-        created.setUserId(dto.getUserId());
-        created.setAmount(dto.getAmount());
         created.setPaymentProvider(dto.getProvider());
         created.setStatus(PaymentStatus.PENDING);
         created.setProviderRef("TOK-1");
 
-        when(paymentsService.processPayment(any(Payment.class))).thenReturn(created);
+        when(paymentsService.processPayment(created.getId())).thenReturn(created);
 
         mockMvc.perform(post("/payments/process-payment")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -129,32 +125,12 @@ class PaymentsControllerTest {
     }
 
     @Test
-    void processPayment_400_invalidPayment() throws Exception {
-        PaymentCreateDTO dto = new PaymentCreateDTO();
-        dto.setOrderId(UUID.randomUUID());
-        dto.setUserId(UUID.randomUUID());
-        dto.setAmount(0f);
-        dto.setProvider(PaymentProvider.PAYPAL);
-
-        when(paymentsService.processPayment(any(Payment.class)))
-                .thenThrow(new InvalidPaymentException("Amount must be greater than 0"));
-
-        mockMvc.perform(post("/payments/process-payment")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string("Amount must be greater than 0"));
-    }
-
-    @Test
     void processPayment_402_refused() throws Exception {
         PaymentCreateDTO dto = new PaymentCreateDTO();
         dto.setOrderId(UUID.randomUUID());
-        dto.setUserId(UUID.randomUUID());
-        dto.setAmount(10f);
         dto.setProvider(PaymentProvider.PAYPAL);
 
-        when(paymentsService.processPayment(any(Payment.class)))
+        when(paymentsService.processPayment(UUID.randomUUID()))
                 .thenThrow(new PaymentRefusedException("refused"));
 
         mockMvc.perform(post("/payments/process-payment")

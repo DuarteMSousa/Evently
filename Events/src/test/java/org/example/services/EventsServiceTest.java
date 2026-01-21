@@ -139,7 +139,7 @@ class EventsServiceTest {
         Event payload = baseEvent();
         payload.setId(id);
 
-        when(eventsRepository.findByIdWithSessionsAndTiers(id)).thenReturn(Optional.empty());
+        when(eventsRepository.findById(id)).thenReturn(Optional.empty());
 
         assertThrows(EventNotFoundException.class, () -> eventsService.updateEvent(id, payload));
     }
@@ -156,7 +156,7 @@ class EventsServiceTest {
         existing.setId(id);
         existing.setStatus(EventStatus.PUBLISHED);
 
-        when(eventsRepository.findByIdWithSessionsAndTiers(id)).thenReturn(Optional.of(existing));
+        when(eventsRepository.findById(id)).thenReturn(Optional.of(existing));
 
         OrganizationDTO org = mock(OrganizationDTO.class);
         when(org.getId()).thenReturn(payload.getOrganizationId());
@@ -183,7 +183,7 @@ class EventsServiceTest {
     void cancelEvent_reservationsTrue_throwsInvalidEventUpdateException() {
         UUID id = UUID.randomUUID();
 
-        when(eventsRepository.findByIdWithSessionsAndTiers(id)).thenReturn(Optional.of(baseEvent()));
+        when(eventsRepository.findById(id)).thenReturn(Optional.of(baseEvent()));
         when(ticketReservationsClient.checkEventReservations(id)).thenReturn(ResponseEntity.ok(true));
 
         assertThrows(InvalidEventUpdateException.class, () -> eventsService.cancelEvent(id));
@@ -194,7 +194,7 @@ class EventsServiceTest {
     void cancelEvent_feign_throwsExternalServiceException() {
         UUID id = UUID.randomUUID();
 
-        when(eventsRepository.findByIdWithSessionsAndTiers(id)).thenReturn(Optional.of(baseEvent()));
+        when(eventsRepository.findById(id)).thenReturn(Optional.of(baseEvent()));
         FeignException fe = mock(FeignException.class);
         when(fe.contentUTF8()).thenReturn("boom");
         when(ticketReservationsClient.checkEventReservations(id)).thenThrow(fe);
@@ -206,7 +206,7 @@ class EventsServiceTest {
     void cancelEvent_eventNotFound_throwsEventNotFoundException() {
         UUID id = UUID.randomUUID();
 
-        when(eventsRepository.findByIdWithSessionsAndTiers(id)).thenReturn(Optional.empty());
+        when(eventsRepository.findById(id)).thenReturn(Optional.empty());
         when(ticketReservationsClient.checkEventReservations(id)).thenReturn(ResponseEntity.ok(false));
 
         assertThrows(EventNotFoundException.class, () -> eventsService.cancelEvent(id));
@@ -218,7 +218,7 @@ class EventsServiceTest {
         Event e = baseEvent();
         e.setStatus(EventStatus.CANCELED);
 
-        when(eventsRepository.findByIdWithSessionsAndTiers(id)).thenReturn(Optional.of(e));
+        when(eventsRepository.findById(id)).thenReturn(Optional.of(e));
         when(ticketReservationsClient.checkEventReservations(id)).thenReturn(ResponseEntity.ok(false));
 
         assertThrows(EventNotPublishedException.class, () -> eventsService.cancelEvent(id));
@@ -231,7 +231,7 @@ class EventsServiceTest {
         e.setId(id);
         e.setStatus(EventStatus.PUBLISHED);
 
-        when(eventsRepository.findByIdWithSessionsAndTiers(id)).thenReturn(Optional.of(e));
+        when(eventsRepository.findById(id)).thenReturn(Optional.of(e));
         when(ticketReservationsClient.checkEventReservations(id)).thenReturn(ResponseEntity.ok(false));
         when(eventsRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -245,7 +245,7 @@ class EventsServiceTest {
     @Test
     void publishEvent_notFound_throwsEventNotFoundException() {
         UUID id = UUID.randomUUID();
-        when(eventsRepository.findByIdWithSessionsAndTiers(id)).thenReturn(Optional.empty());
+        when(eventsRepository.findById(id)).thenReturn(Optional.empty());
 
         assertThrows(EventNotFoundException.class, () -> eventsService.publishEvent(id));
     }
@@ -256,7 +256,7 @@ class EventsServiceTest {
         Event e = baseEvent();
         e.setStatus(EventStatus.PUBLISHED);
 
-        when(eventsRepository.findByIdWithSessionsAndTiers(id)).thenReturn(Optional.of(e));
+        when(eventsRepository.findById(id)).thenReturn(Optional.of(e));
 
         assertThrows(EventAlreadyPublishedException.class, () -> eventsService.publishEvent(id));
     }
@@ -268,7 +268,7 @@ class EventsServiceTest {
         e.setId(id);
         e.setStatus(EventStatus.DRAFT);
 
-        when(eventsRepository.findByIdWithSessionsAndTiers(id)).thenReturn(Optional.of(e));
+        when(eventsRepository.findById(id)).thenReturn(Optional.of(e));
         when(eventsRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
 
         Event res = eventsService.publishEvent(id);

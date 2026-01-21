@@ -71,7 +71,7 @@ class PaymentsServiceTest {
         Payment p = basePayment();
         p.setOrderId(null);
 
-        assertThrows(InvalidPaymentException.class, () -> paymentsService.processPayment(p));
+        assertThrows(InvalidPaymentException.class, () -> paymentsService.processPayment(p.getId()));
         verifyNoInteractions(paymentProviderClient);
     }
 
@@ -80,7 +80,7 @@ class PaymentsServiceTest {
         Payment p = basePayment();
         p.setUserId(null);
 
-        assertThrows(InvalidPaymentException.class, () -> paymentsService.processPayment(p));
+        assertThrows(InvalidPaymentException.class, () -> paymentsService.processPayment(p.getId()));
         verifyNoInteractions(paymentProviderClient);
     }
 
@@ -89,7 +89,7 @@ class PaymentsServiceTest {
         Payment p = basePayment();
         p.setAmount(0);
 
-        assertThrows(InvalidPaymentException.class, () -> paymentsService.processPayment(p));
+        assertThrows(InvalidPaymentException.class, () -> paymentsService.processPayment(p.getId()));
         verifyNoInteractions(paymentProviderClient);
     }
 
@@ -98,7 +98,7 @@ class PaymentsServiceTest {
         Payment p = basePayment();
         p.setPaymentProvider(null);
 
-        assertThrows(InvalidPaymentException.class, () -> paymentsService.processPayment(p));
+        assertThrows(InvalidPaymentException.class, () -> paymentsService.processPayment(p.getId()));
         verifyNoInteractions(paymentProviderClient);
     }
 
@@ -124,7 +124,7 @@ class PaymentsServiceTest {
             return null;
         }).when(paymentProviderClient).createPaymentOrder(any(Payment.class));
 
-        Payment res = paymentsService.processPayment(request);
+        Payment res = paymentsService.processPayment(request.getId());
 
         assertNotNull(res.getId());
         assertEquals(PaymentStatus.PENDING, res.getStatus());
@@ -145,7 +145,7 @@ class PaymentsServiceTest {
         doThrow(new PaymentRefusedException("refused"))
                 .when(paymentProviderClient).createPaymentOrder(any(Payment.class));
 
-        assertThrows(PaymentRefusedException.class, () -> paymentsService.processPayment(request));
+        assertThrows(PaymentRefusedException.class, () -> paymentsService.processPayment(request.getId()));
 
         verify(paymentEventsPublisher).publishPaymentEvent(eq(PaymentEventType.FAILED), any(Payment.class));
         verify(paymentsRepository, atLeast(2)).save(any(Payment.class)); // salva PENDING e depois FAILED
@@ -161,7 +161,7 @@ class PaymentsServiceTest {
         doThrow(new RuntimeException("boom"))
                 .when(paymentProviderClient).createPaymentOrder(any(Payment.class));
 
-        assertThrows(RuntimeException.class, () -> paymentsService.processPayment(request));
+        assertThrows(RuntimeException.class, () -> paymentsService.processPayment(request.getId()));
     }
 
     // processPayment - existing payment branches (FALTAVA no doc)
@@ -178,7 +178,7 @@ class PaymentsServiceTest {
 
         when(paymentsRepository.findByOrderId(existing.getOrderId())).thenReturn(Optional.of(existing));
 
-        Payment res = paymentsService.processPayment(request);
+        Payment res = paymentsService.processPayment(request.getId());
 
         assertSame(existing, res);
         verifyNoInteractions(paymentProviderClient);
@@ -195,7 +195,7 @@ class PaymentsServiceTest {
 
         when(paymentsRepository.findByOrderId(existing.getOrderId())).thenReturn(Optional.of(existing));
 
-        assertThrows(InvalidPaymentException.class, () -> paymentsService.processPayment(request));
+        assertThrows(InvalidPaymentException.class, () -> paymentsService.processPayment(request.getId()));
         verifyNoInteractions(paymentProviderClient);
     }
 
@@ -218,7 +218,7 @@ class PaymentsServiceTest {
             return null;
         }).when(paymentProviderClient).createPaymentOrder(any(Payment.class));
 
-        Payment res = paymentsService.processPayment(request);
+        Payment res = paymentsService.processPayment(request.getId());
 
         assertEquals(PaymentStatus.PENDING, res.getStatus());
         assertEquals(99f, res.getAmount());

@@ -104,7 +104,8 @@ class RefundRequestsControllerTest {
 
         RefundRequest saved = new RefundRequest();
         saved.setId(UUID.randomUUID());
-        saved.setPaymentId(paymentId);
+        saved.setPaymentId(UUID.randomUUID());
+        saved.setOrderId(orderId);
         saved.setUserId(userId);
         saved.setTitle("t");
         saved.setDescription("d");
@@ -124,23 +125,21 @@ class RefundRequestsControllerTest {
     @Test
     void registerRefund_invalidPayload_returns400() throws Exception {
         RefundRequestCreateDTO dto = new RefundRequestCreateDTO();
-        dto.setUser(UUID.randomUUID());
 
         when(refundRequestsService.createRefundRequest(any(RefundRequest.class)))
-                .thenThrow(new InvalidRefundRequestException("Payment ID is required"));
+                .thenThrow(new InvalidRefundRequestException("Order ID is required"));
 
         mockMvc.perform(post("/refunds/register-refund")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Payment ID is required"));
+                .andExpect(content().string("Order ID is required"));
     }
 
     @Test
     void registerRefund_genericError_returns400() throws Exception {
         RefundRequestCreateDTO dto = new RefundRequestCreateDTO();
-        dto.setPayment(UUID.randomUUID());
-        dto.setUser(UUID.randomUUID());
+        dto.setOrder(UUID.randomUUID());
         dto.setTitle("t");
         dto.setDescription("d");
 
