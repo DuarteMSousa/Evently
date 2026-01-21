@@ -172,12 +172,18 @@ class CartItemsServiceTest {
         CartItem existing = new CartItem();
         existing.setProductId(productId);
         existing.setQuantity(1);
-        cart.getItems().add(existing);
 
-        when(cartsService.getCart(userId)).thenReturn(cart);
+        Cart expectedCart = new Cart();
+        expectedCart.setUserId(userId);
+
+        when(cartItemsRepository.findByCartAndProductId(
+                argThat(cart -> cart.getUserId().equals(userId)),
+                eq(productId)
+        )).thenReturn(Optional.of(existing));
 
         cartItemsService.removeItemFromCart(userId, productId);
 
         verify(cartItemsRepository).delete(existing);
     }
+
 }
