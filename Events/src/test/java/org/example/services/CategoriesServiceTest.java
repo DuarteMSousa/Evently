@@ -3,6 +3,7 @@ package org.example.services;
 import org.example.exceptions.*;
 import org.example.models.Category;
 import org.example.repositories.CategoriesRepository;
+import org.example.repositories.EventsRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
@@ -21,6 +22,9 @@ class CategoriesServiceTest {
 
     @Mock
     private CategoriesRepository categoriesRepository;
+
+    @Mock
+    private EventsRepository eventsRepository;
 
     @InjectMocks
     private CategoriesService categoriesService;

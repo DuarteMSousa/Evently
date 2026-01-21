@@ -89,6 +89,8 @@ class PaymentsServiceTest {
         Payment p = basePayment();
         p.setAmount(0);
 
+        when(paymentsRepository.findById(p.getId())).thenReturn(Optional.of(p));
+
         assertThrows(InvalidPaymentException.class, () -> paymentsService.processPayment(p.getId()));
         verifyNoInteractions(paymentProviderClient);
     }
@@ -138,7 +140,7 @@ class PaymentsServiceTest {
     @Test
     void processPayment_providerRefused_newPayment_setsFailed_publishesFailed_andThrows() {
         Payment request = basePayment();
-        request.setId(null);
+        request.setId(UUID.randomUUID());
 
         when(paymentsRepository.findByOrderId(request.getOrderId())).thenReturn(Optional.empty());
 

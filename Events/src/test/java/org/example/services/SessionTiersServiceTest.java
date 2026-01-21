@@ -4,7 +4,9 @@ import feign.FeignException;
 import org.example.clients.TicketManagementClient;
 import org.example.clients.VenuesClient;
 import org.example.dtos.externalServices.venueszone.VenueZoneDTO;
+import org.example.enums.EventStatus;
 import org.example.exceptions.*;
+import org.example.models.Event;
 import org.example.models.EventSession;
 import org.example.models.SessionTier;
 import org.example.repositories.SessionTiersRepository;
@@ -25,6 +27,7 @@ class SessionTiersServiceTest {
 
     @Mock private SessionTiersRepository sessionTiersRepository;
     @Mock private EventSessionsService eventSessionsService;
+    @Mock private EventsService eventsService;
     @Mock private VenuesClient venuesClient;
     @Mock private TicketManagementClient ticketReservationsClient;
 
@@ -40,6 +43,12 @@ class SessionTiersServiceTest {
         s.setId(UUID.randomUUID());
         s.setVenueId(venueId);
         t.setEventSession(s);
+
+        Event e = new Event();
+        e.setId(UUID.randomUUID());
+        e.setStatus(EventStatus.PUBLISHED);
+
+        s.setEvent(e);
 
         return t;
     }
@@ -157,6 +166,13 @@ class SessionTiersServiceTest {
         session.setId(t.getEventSession().getId());
         session.setVenueId(venueId);
         when(eventSessionsService.getEventSession(t.getEventSession().getId())).thenReturn(session);
+
+        Event event = new Event();
+        event.setId(UUID.randomUUID());
+        event.setStatus(EventStatus.PUBLISHED);
+        when(eventsService.getEvent(event.getId())).thenReturn(event);
+
+        session.setEvent(event);
 
         VenueZoneDTO zone = mock(VenueZoneDTO.class);
         when(zone.getVenueId()).thenReturn(venueId);

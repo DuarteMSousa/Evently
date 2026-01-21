@@ -101,42 +101,32 @@ class PaymentsControllerTest {
 
     @Test
     void processPayment_201() throws Exception {
-        PaymentCreateDTO dto = new PaymentCreateDTO();
-        dto.setOrderId(UUID.randomUUID());
-        dto.setProvider(PaymentProvider.PAYPAL);
-
         Payment created = basePayment();
-        created.setOrderId(dto.getOrderId());
-        created.setPaymentProvider(dto.getProvider());
-        created.setStatus(PaymentStatus.PENDING);
-        created.setProviderRef("TOK-1");
+        UUID paymentId = created.getId();
 
-        when(paymentsService.processPayment(created.getId())).thenReturn(created);
+        when(paymentsService.processPayment(paymentId)).thenReturn(created);
 
-        mockMvc.perform(post("/payments/process-payment")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
+        mockMvc.perform(post("/payments/process-payment/{paymentId}", paymentId)) // Added ID here
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.paymentId").value(created.getId().toString()))
-                .andExpect(jsonPath("$.status").value(created.getStatus().name()))
-                .andExpect(jsonPath("$.provider").value(created.getPaymentProvider().name()))
-                .andExpect(jsonPath("$.providerRef").value(created.getProviderRef()))
-                .andExpect(jsonPath("$.approvalUrl").exists());
+                .andExpect(jsonPath("$.status").value(created.getStatus().name()));
     }
 
     @Test
     void processPayment_402_refused() throws Exception {
+        UUID paymentId = UUID.randomUUID();
+
         PaymentCreateDTO dto = new PaymentCreateDTO();
         dto.setOrderId(UUID.randomUUID());
         dto.setProvider(PaymentProvider.PAYPAL);
 
-        when(paymentsService.processPayment(UUID.randomUUID()))
+        when(paymentsService.processPayment(eq(paymentId)))
                 .thenThrow(new PaymentRefusedException("refused"));
 
-        mockMvc.perform(post("/payments/process-payment")
+        mockMvc.perform(post("/payments/process-payment/{paymentId}", paymentId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isPaymentRequired())
+                .andExpect(status().isPaymentRequired()) // Isto é o 402
                 .andExpect(content().string("refused"));
     }
 

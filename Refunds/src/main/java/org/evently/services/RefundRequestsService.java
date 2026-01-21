@@ -87,7 +87,7 @@ public class RefundRequestsService {
         OrderDTO orderDTO;
 
         try{
-            orderDTO = ordersClient.getOrder(refundRequest.getId()).getBody();
+            orderDTO = ordersClient.getOrder(refundRequest.getOrderId()).getBody();
         } catch (FeignException.NotFound e) {
             logger.warn(REFUND_CREATE, "(RefundRequestsService): Order not found in Orders service");
             throw new PaymentNotFoundException(

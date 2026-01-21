@@ -51,6 +51,7 @@ class RefundDecisionsServiceTest {
         decidedBy = UUID.randomUUID();
         pendingRequest = new RefundRequest();
         pendingRequest.setId(requestId);
+        pendingRequest.setUserId(UUID.randomUUID());
         pendingRequest.setStatus(RefundRequestStatus.PENDING);
     }
 
@@ -117,6 +118,7 @@ class RefundDecisionsServiceTest {
     void registerRefundDecision_requestNotPending_throwsInvalid() {
         RefundRequest approved = new RefundRequest();
         approved.setId(requestId);
+        approved.setUserId(UUID.randomUUID());
         approved.setStatus(RefundRequestStatus.APPROVED);
 
         RefundDecision d = baseDecision(DecisionType.APPROVE);

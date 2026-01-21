@@ -54,7 +54,7 @@ class SessionTiersControllerTest {
 
         when(sessionTiersService.updateSessionTier(eq(id), any(SessionTier.class))).thenReturn(new SessionTier());
 
-        mockMvc.perform(put("/events/sessions/tiers/update-event-session/{id}", id)
+        mockMvc.perform(put("/events/sessions/tiers/update-session-tier/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body)
                         .accept(MediaType.APPLICATION_JSON))
@@ -65,7 +65,7 @@ class SessionTiersControllerTest {
     void deleteSessionTier_success_returns200() throws Exception {
         UUID id = UUID.randomUUID();
 
-        mockMvc.perform(delete("/events/sessions/tiers/delete-event-session/{id}", id))
+        mockMvc.perform(delete("/events/sessions/tiers/delete-session-tier/{id}", id))
                 .andExpect(status().isOk());
 
         verify(sessionTiersService).deleteSessionTier(id);

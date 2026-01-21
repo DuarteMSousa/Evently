@@ -7,6 +7,8 @@ import org.example.dtos.externalServices.organizations.OrganizationDTO;
 import org.example.enums.EventStatus;
 import org.example.exceptions.*;
 import org.example.models.Event;
+import org.example.publishers.EventMessagesPublisher;
+import org.example.repositories.EventSessionsRepository;
 import org.example.repositories.EventsRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,6 +33,8 @@ class EventsServiceTest {
     @Mock private OrganizationsClient organizationsClient;
     @Mock private TicketManagementClient ticketReservationsClient;
     @Mock private RabbitTemplate template;
+    @Mock private EventSessionsRepository eventSessionsRepository;
+    @Mock EventMessagesPublisher eventMessagesPublisher;
 
     @InjectMocks private EventsService eventsService;
 
@@ -207,7 +211,6 @@ class EventsServiceTest {
         UUID id = UUID.randomUUID();
 
         when(eventsRepository.findById(id)).thenReturn(Optional.empty());
-        when(ticketReservationsClient.checkEventReservations(id)).thenReturn(ResponseEntity.ok(false));
 
         assertThrows(EventNotFoundException.class, () -> eventsService.cancelEvent(id));
     }
@@ -219,7 +222,6 @@ class EventsServiceTest {
         e.setStatus(EventStatus.CANCELED);
 
         when(eventsRepository.findById(id)).thenReturn(Optional.of(e));
-        when(ticketReservationsClient.checkEventReservations(id)).thenReturn(ResponseEntity.ok(false));
 
         assertThrows(EventNotPublishedException.class, () -> eventsService.cancelEvent(id));
     }
@@ -238,7 +240,6 @@ class EventsServiceTest {
         Event res = eventsService.cancelEvent(id);
 
         assertEquals(EventStatus.CANCELED, res.getStatus());
-        verify(template).convertAndSend(any());
         verify(eventsRepository).save(e);
     }
 

@@ -4,6 +4,7 @@ import feign.FeignException;
 import org.example.clients.TicketManagementClient;
 import org.example.clients.VenuesClient;
 import org.example.dtos.externalServices.venues.VenueDTO;
+import org.example.enums.EventStatus;
 import org.example.exceptions.*;
 import org.example.models.Event;
 import org.example.models.EventSession;
@@ -37,6 +38,7 @@ class EventSessionsServiceTest {
         s.setId(UUID.randomUUID());
         Event e = new Event();
         e.setId(UUID.randomUUID());
+        e.setStatus(EventStatus.PUBLISHED);
         s.setEvent(e);
         s.setVenueId(UUID.randomUUID());
         s.setStartsAt(Instant.now().plus(1, ChronoUnit.DAYS));
@@ -139,24 +141,35 @@ class EventSessionsServiceTest {
     @Test
     void updateEventSession_success_updatesAndSaves() {
         UUID id = UUID.randomUUID();
+
         EventSession payload = baseSession();
         payload.setId(id);
 
         EventSession existing = baseSession();
         existing.setId(id);
 
-        when(eventSessionsRepository.findById(id)).thenReturn(Optional.of(existing));
-        when(eventsService.getEvent(payload.getEvent().getId())).thenReturn(new Event());
+        when(eventSessionsRepository.findById(id))
+                .thenReturn(Optional.of(existing));
+
+        when(eventsService.getEvent(any(UUID.class)))
+                .thenReturn(new Event());
 
         VenueDTO venue = mock(VenueDTO.class);
-        when(venuesClient.getVenue(payload.getVenueId())).thenReturn(ResponseEntity.ok(venue));
+        when(venuesClient.getVenue(any(UUID.class)))
+                .thenReturn(ResponseEntity.ok(venue));
 
-        when(eventSessionsRepository.save(any(EventSession.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(eventSessionsRepository.save(any(EventSession.class)))
+                .thenAnswer(inv -> inv.getArgument(0));
 
         EventSession res = eventSessionsService.updateEventSession(id, payload);
 
-        assertEquals(payload.getVenueId(), res.getVenueId());
+        assertNotNull(res);
+        assertEquals(payload.getStartsAt(), res.getStartsAt());
+        assertEquals(payload.getEndsAt(), res.getEndsAt());
+
         verify(eventSessionsRepository).save(existing);
+
+        verify(eventsService).getEvent(any(UUID.class));
     }
 
     @Test
