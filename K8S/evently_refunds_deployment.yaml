@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: refunds-deployment
+  labels:
+    app: refunds
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: refunds
+  template:
+    metadata:
+      labels:
+        app: refunds
+    spec:
+      containers:
+        - name: refunds
+          image: duarte15sousa/evently_refunds
+          ports:
+            - containerPort: 8088

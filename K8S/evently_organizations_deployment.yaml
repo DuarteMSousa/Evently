@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: organizations-deployment
+  labels:
+    app: organizations
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: organizations
+  template:
+    metadata:
+      labels:
+        app: organizations
+    spec:
+      containers:
+        - name: organizations
+          image: duarte15sousa/evently_organizations
+          ports:
+            - containerPort: 8086

@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: venues-deployment
+  labels:
+    app: venues
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: venues
+  template:
+    metadata:
+      labels:
+        app: venues
+    spec:
+      containers:
+        - name: venues
+          image: duarte15sousa/evently_venues
+          ports:
+            - containerPort: 8093

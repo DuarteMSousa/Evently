@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ticket-management-deployment
+  labels:
+    app: ticket-management
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: ticket-management
+  template:
+    metadata:
+      labels:
+        app: ticket-management
+    spec:
+      containers:
+        - name: ticket-management
+          image: duarte15sousa/evently_ticket_management
+          ports:
+            - containerPort: 8090
