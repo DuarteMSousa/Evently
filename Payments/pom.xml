@@ -49,4 +49,8 @@
             <artifactId>spring-cloud-starter-openfeign</artifactId>
         </dependency>
     </dependencies>
+
+    <build>
+        <finalName>evently_payments</finalName>
+    </build>
 </project>

@@ -63,5 +63,8 @@
                 </configuration>
             </plugin>
         </plugins>
+
+
+        <finalName>evently_generation</finalName>
     </build>
 </project>

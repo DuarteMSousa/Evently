@@ -45,4 +45,8 @@
             <artifactId>spring-cloud-starter-openfeign</artifactId>
         </dependency>
     </dependencies>
+
+    <build>
+        <finalName>evently_cart</finalName>
+    </build>
 </project>

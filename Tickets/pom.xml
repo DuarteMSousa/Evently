@@ -42,4 +42,8 @@
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
     </dependencies>
+
+    <build>
+        <finalName>evently_tickets</finalName>
+    </build>
 </project>

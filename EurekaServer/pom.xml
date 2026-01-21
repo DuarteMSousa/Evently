@@ -29,4 +29,8 @@
             <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
         </dependency>
     </dependencies>
+
+    <build>
+        <finalName>evently_eureka_server</finalName>
+    </build>
 </project>

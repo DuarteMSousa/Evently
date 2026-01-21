@@ -33,4 +33,8 @@
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
         </dependency>
     </dependencies>
+
+    <build>
+        <finalName>evently_api_gateway</finalName>
+    </build>
 </project>

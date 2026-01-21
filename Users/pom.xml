@@ -58,4 +58,8 @@
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
     </dependencies>
+
+    <build>
+        <finalName>evently_users</finalName>
+    </build>
 </project>
