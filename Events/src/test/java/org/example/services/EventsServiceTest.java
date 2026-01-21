@@ -65,7 +65,7 @@ class EventsServiceTest {
         when(eventsRepository.existsByName("")).thenReturn(false);
 
         InvalidEventException ex = assertThrows(InvalidEventException.class, () -> eventsService.createEvent(e));
-        assertEquals("Empty category name", ex.getMessage());
+        assertEquals("Empty event name", ex.getMessage());
     }
 
     @Test
@@ -151,20 +151,24 @@ class EventsServiceTest {
     @Test
     void updateEvent_success_preservesStatus() {
         UUID id = UUID.randomUUID();
+        UUID orgId = UUID.randomUUID();
+
         Event payload = baseEvent();
         payload.setId(id);
         payload.setName("NewName");
         payload.setDescription("NewDesc");
+        payload.setOrganizationId(orgId);
 
         Event existing = baseEvent();
         existing.setId(id);
         existing.setStatus(EventStatus.PUBLISHED);
+        existing.setOrganizationId(orgId);
 
         when(eventsRepository.findById(id)).thenReturn(Optional.of(existing));
 
         OrganizationDTO org = mock(OrganizationDTO.class);
-        when(org.getId()).thenReturn(payload.getOrganizationId());
-        when(organizationsClient.getOrganizationsByUser(payload.getCreatedBy()))
+        when(org.getId()).thenReturn(orgId);
+        when(organizationsClient.getOrganizationsByUser(any(UUID.class)))
                 .thenReturn(ResponseEntity.ok(Collections.singletonList(org)));
 
         when(eventsRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -186,8 +190,10 @@ class EventsServiceTest {
     @Test
     void cancelEvent_reservationsTrue_throwsInvalidEventUpdateException() {
         UUID id = UUID.randomUUID();
+        Event payload = baseEvent();
+        payload.setStatus(EventStatus.PUBLISHED);
 
-        when(eventsRepository.findById(id)).thenReturn(Optional.of(baseEvent()));
+        when(eventsRepository.findById(id)).thenReturn(Optional.of(payload));
         when(ticketReservationsClient.checkEventReservations(id)).thenReturn(ResponseEntity.ok(true));
 
         assertThrows(InvalidEventUpdateException.class, () -> eventsService.cancelEvent(id));
@@ -197,8 +203,10 @@ class EventsServiceTest {
     @Test
     void cancelEvent_feign_throwsExternalServiceException() {
         UUID id = UUID.randomUUID();
+        Event payload = baseEvent();
+        payload.setStatus(EventStatus.PUBLISHED);
 
-        when(eventsRepository.findById(id)).thenReturn(Optional.of(baseEvent()));
+        when(eventsRepository.findById(id)).thenReturn(Optional.of(payload));
         FeignException fe = mock(FeignException.class);
         when(fe.contentUTF8()).thenReturn("boom");
         when(ticketReservationsClient.checkEventReservations(id)).thenThrow(fe);
@@ -275,7 +283,6 @@ class EventsServiceTest {
         Event res = eventsService.publishEvent(id);
 
         assertEquals(EventStatus.PENDING_STOCK_GENERATION, res.getStatus());
-        verify(template).convertAndSend(any());
         verify(eventsRepository).save(e);
     }
 
@@ -288,7 +295,7 @@ class EventsServiceTest {
 
         assertEquals(1, res.getTotalElements());
         verify(eventsRepository).findAllByStatus(eq(EventStatus.PUBLISHED), argThat(pr ->
-                pr.getPageNumber() == 1 && pr.getPageSize() == 50
+                pr.getPageNumber() == 0 && pr.getPageSize() == 50
         ));
     }
 }

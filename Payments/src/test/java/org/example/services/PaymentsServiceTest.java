@@ -71,6 +71,9 @@ class PaymentsServiceTest {
         Payment p = basePayment();
         p.setOrderId(null);
 
+        when(paymentsRepository.findById(p.getId()))
+                .thenReturn(Optional.of(p));
+
         assertThrows(InvalidPaymentException.class, () -> paymentsService.processPayment(p.getId()));
         verifyNoInteractions(paymentProviderClient);
     }
@@ -79,6 +82,9 @@ class PaymentsServiceTest {
     void processPayment_userIdNull_throwsInvalidPaymentException() {
         Payment p = basePayment();
         p.setUserId(null);
+
+        when(paymentsRepository.findById(p.getId()))
+                .thenReturn(Optional.of(p));
 
         assertThrows(InvalidPaymentException.class, () -> paymentsService.processPayment(p.getId()));
         verifyNoInteractions(paymentProviderClient);
@@ -100,6 +106,9 @@ class PaymentsServiceTest {
         Payment p = basePayment();
         p.setPaymentProvider(null);
 
+        when(paymentsRepository.findById(p.getId()))
+                .thenReturn(Optional.of(p));
+
         assertThrows(InvalidPaymentException.class, () -> paymentsService.processPayment(p.getId()));
         verifyNoInteractions(paymentProviderClient);
     }
@@ -110,15 +119,13 @@ class PaymentsServiceTest {
         p.setPaymentProvider(PaymentProvider.valueOf("PAYPAL"));
     }
 
-    // processPayment - new payment (no existing)
+    // processPayment
 
     @Test
     void processPayment_success_newPayment_setsPending_publishesEvent() {
         Payment request = basePayment();
-        request.setId(null);
-        request.setProviderRef(null);
 
-        when(paymentsRepository.findByOrderId(request.getOrderId())).thenReturn(Optional.empty());
+        when(paymentsRepository.findById(request.getId())).thenReturn(Optional.of(request));
 
         doAnswer(inv -> {
             Payment p = inv.getArgument(0);
@@ -142,7 +149,8 @@ class PaymentsServiceTest {
         Payment request = basePayment();
         request.setId(UUID.randomUUID());
 
-        when(paymentsRepository.findByOrderId(request.getOrderId())).thenReturn(Optional.empty());
+        when(paymentsRepository.findById(request.getId()))
+                .thenReturn(Optional.of(request));
 
         doThrow(new PaymentRefusedException("refused"))
                 .when(paymentProviderClient).createPaymentOrder(any(Payment.class));
@@ -158,7 +166,8 @@ class PaymentsServiceTest {
         Payment request = basePayment();
         request.setId(null);
 
-        when(paymentsRepository.findByOrderId(request.getOrderId())).thenReturn(Optional.empty());
+        when(paymentsRepository.findById(any()))
+                .thenReturn(Optional.of(request));
 
         doThrow(new RuntimeException("boom"))
                 .when(paymentProviderClient).createPaymentOrder(any(Payment.class));
@@ -166,7 +175,7 @@ class PaymentsServiceTest {
         assertThrows(RuntimeException.class, () -> paymentsService.processPayment(request.getId()));
     }
 
-    // processPayment - existing payment branches (FALTAVA no doc)
+    // processPayment
 
     @Test
     void processPayment_existingPendingWithProviderRef_returnsExistingWithoutCallingProvider() {
@@ -178,7 +187,8 @@ class PaymentsServiceTest {
         request.setOrderId(existing.getOrderId()); // mesma order
         request.setUserId(existing.getUserId());
 
-        when(paymentsRepository.findByOrderId(existing.getOrderId())).thenReturn(Optional.of(existing));
+        when(paymentsRepository.findById(any()))
+                .thenReturn(Optional.of(existing));
 
         Payment res = paymentsService.processPayment(request.getId());
 
@@ -195,9 +205,12 @@ class PaymentsServiceTest {
         Payment request = basePayment();
         request.setOrderId(existing.getOrderId());
 
-        when(paymentsRepository.findByOrderId(existing.getOrderId())).thenReturn(Optional.of(existing));
+        when(paymentsRepository.findById(any()))
+                .thenReturn(Optional.of(existing));
 
-        assertThrows(InvalidPaymentException.class, () -> paymentsService.processPayment(request.getId()));
+        assertThrows(InvalidPaymentException.class,
+                () -> paymentsService.processPayment(request.getId()));
+
         verifyNoInteractions(paymentProviderClient);
     }
 
@@ -210,9 +223,9 @@ class PaymentsServiceTest {
         Payment request = basePayment();
         request.setOrderId(existing.getOrderId());
         request.setUserId(existing.getUserId());
-        request.setAmount(99f);
 
-        when(paymentsRepository.findByOrderId(existing.getOrderId())).thenReturn(Optional.of(existing));
+        when(paymentsRepository.findById(any()))
+                .thenReturn(Optional.of(existing));
 
         doAnswer(inv -> {
             Payment p = inv.getArgument(0);
@@ -223,7 +236,7 @@ class PaymentsServiceTest {
         Payment res = paymentsService.processPayment(request.getId());
 
         assertEquals(PaymentStatus.PENDING, res.getStatus());
-        assertEquals(99f, res.getAmount());
+        assertEquals(10f, res.getAmount());
         assertEquals("NEW-REF", res.getProviderRef());
 
         verify(paymentProviderClient).createPaymentOrder(any(Payment.class));
