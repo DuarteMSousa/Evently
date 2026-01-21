@@ -65,6 +65,6 @@
         </plugins>
 
 
-        <finalName>evently_generation</finalName>
+        <finalName>evently_file_generation</finalName>
     </build>
 </project>
