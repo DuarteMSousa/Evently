@@ -71,7 +71,7 @@ public class MQConfig {
         return BindingBuilder
                 .bind(queue)
                 .to(exchange)
-                .with("orders.paid");
+                .with("orders.canceled");
     }
 
     @Bean
@@ -87,7 +87,7 @@ public class MQConfig {
         return BindingBuilder
                 .bind(queue)
                 .to(exchange)
-                .with("orders.canceled");
+                .with("orders.paid");
     }
 
     //refunds

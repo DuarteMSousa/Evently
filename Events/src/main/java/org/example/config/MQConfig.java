@@ -41,7 +41,7 @@ public class MQConfig {
         return BindingBuilder
                 .bind(queue)
                 .to(exchange)
-                .with("ticketManagement.stock.#");
+                .with("ticketManagement.stock.generated");
     }
 
     //stock failed
@@ -58,7 +58,7 @@ public class MQConfig {
         return BindingBuilder
                 .bind(queue)
                 .to(exchange)
-                .with("ticketManagement.stock.#");
+                .with("ticketManagement.stock.generation.failed");
     }
 
     @Bean
