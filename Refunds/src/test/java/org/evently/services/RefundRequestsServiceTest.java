@@ -6,8 +6,10 @@ import feign.Response;
 import org.evently.clients.OrdersClient;
 import org.evently.clients.PaymentsClient;
 import org.evently.clients.UsersClient;
+import org.evently.dtos.externalServices.orders.OrderDTO;
 import org.evently.dtos.externalServices.payments.PaymentDTO;
 import org.evently.enums.RefundRequestStatus;
+import org.evently.enums.externalServices.orders.OrderStatus;
 import org.evently.enums.externalServices.payments.PaymentStatus;
 import org.evently.exceptions.ExternalServiceException;
 import org.evently.exceptions.InvalidRefundRequestException;
@@ -77,28 +79,6 @@ class RefundRequestsServiceTest {
     }
 
     @Test
-    void createRefundRequest_paymentIdNull_throwsInvalid() {
-        valid.setPaymentId(null);
-
-        InvalidRefundRequestException ex = assertThrows(InvalidRefundRequestException.class,
-                () -> refundRequestsService.createRefundRequest(valid));
-
-        assertEquals("Payment ID is required", ex.getMessage());
-        verifyNoInteractions(usersClient, paymentsClient);
-    }
-
-    @Test
-    void createRefundRequest_userIdNull_throwsInvalid() {
-        valid.setUserId(null);
-
-        InvalidRefundRequestException ex = assertThrows(InvalidRefundRequestException.class,
-                () -> refundRequestsService.createRefundRequest(valid));
-
-        assertEquals("User ID is required", ex.getMessage());
-        verifyNoInteractions(usersClient, paymentsClient);
-    }
-
-    @Test
     void createRefundRequest_titleBlank_throwsInvalid() {
         valid.setTitle("   ");
 
@@ -127,42 +107,28 @@ class RefundRequestsServiceTest {
         InvalidRefundRequestException ex = assertThrows(InvalidRefundRequestException.class,
                 () -> refundRequestsService.createRefundRequest(valid));
 
-        assertEquals("There is already an active or processed refund for this payment", ex.getMessage());
+        assertEquals("There is already an active or processed refund for this order", ex.getMessage());
         verifyNoInteractions(usersClient, paymentsClient);
     }
 
     @Test
-    void createRefundRequest_userNotFound_throwsUserNotFound() {
-        when(refundRequestsRepository.existsByOrderIdAndStatusIn(eq(orderId), any())).thenReturn(false);
-        when(usersClient.getUser(userId)).thenThrow(feignNotFound());
-
-        UserNotFoundException ex = assertThrows(UserNotFoundException.class,
-                () -> refundRequestsService.createRefundRequest(valid));
-
-        assertTrue(ex.getMessage().contains("User not found"));
-        verifyNoInteractions(paymentsClient);
-    }
-
-    @Test
-    void createRefundRequest_usersServiceError_throwsExternal() {
-        when(refundRequestsRepository.existsByOrderIdAndStatusIn(eq(orderId), any())).thenReturn(false);
-        when(usersClient.getUser(userId)).thenThrow(feignGenericError(503));
-
-        ExternalServiceException ex = assertThrows(ExternalServiceException.class,
-                () -> refundRequestsService.createRefundRequest(valid));
-
-        assertTrue(ex.getMessage().contains("Users service error"));
-        verifyNoInteractions(paymentsClient);
-    }
-
-    @Test
     void createRefundRequest_paymentNotFound_throwsPaymentNotFound() {
-        when(refundRequestsRepository.existsByOrderIdAndStatusIn(eq(orderId), any())).thenReturn(false);
-        when(usersClient.getUser(userId)).thenReturn(null);
-        when(paymentsClient.getPaymentByOrder(orderId)).thenThrow(feignNotFound());
+        when(refundRequestsRepository.existsByOrderIdAndStatusIn(eq(orderId), any()))
+                .thenReturn(false);
 
-        PaymentNotFoundException ex = assertThrows(PaymentNotFoundException.class,
-                () -> refundRequestsService.createRefundRequest(valid));
+        OrderDTO orderDTO = new OrderDTO();
+        orderDTO.setStatus(OrderStatus.PAYMENT_SUCCESS);
+
+        when(ordersClient.getOrder(orderId))
+                .thenReturn(ResponseEntity.ok(orderDTO));
+
+        when(paymentsClient.getPaymentByOrder(orderId))
+                .thenThrow(feignNotFound());
+
+        PaymentNotFoundException ex = assertThrows(
+                PaymentNotFoundException.class,
+                () -> refundRequestsService.createRefundRequest(valid)
+        );
 
         assertTrue(ex.getMessage().contains("Payment not found"));
         verify(refundRequestsRepository, never()).save(any());
@@ -170,12 +136,22 @@ class RefundRequestsServiceTest {
 
     @Test
     void createRefundRequest_paymentsServiceError_throwsExternal() {
-        when(refundRequestsRepository.existsByOrderIdAndStatusIn(eq(orderId), any())).thenReturn(false);
-        when(usersClient.getUser(userId)).thenReturn(null);
-        when(paymentsClient.getPaymentByOrder(orderId)).thenThrow(feignGenericError(500));
+        when(refundRequestsRepository.existsByOrderIdAndStatusIn(eq(orderId), any()))
+                .thenReturn(false);
 
-        ExternalServiceException ex = assertThrows(ExternalServiceException.class,
-                () -> refundRequestsService.createRefundRequest(valid));
+        OrderDTO orderDTO = new OrderDTO();
+        orderDTO.setStatus(OrderStatus.PAYMENT_SUCCESS);
+
+        when(ordersClient.getOrder(orderId))
+                .thenReturn(ResponseEntity.ok(orderDTO));
+
+        when(paymentsClient.getPaymentByOrder(orderId))
+                .thenThrow(feignGenericError(500));
+
+        ExternalServiceException ex = assertThrows(
+                ExternalServiceException.class,
+                () -> refundRequestsService.createRefundRequest(valid)
+        );
 
         assertTrue(ex.getMessage().contains("Payments service error"));
         verify(refundRequestsRepository, never()).save(any());
@@ -183,16 +159,25 @@ class RefundRequestsServiceTest {
 
     @Test
     void createRefundRequest_paymentNotCaptured_throwsInvalid() {
-        when(refundRequestsRepository.existsByOrderIdAndStatusIn(eq(orderId), any())).thenReturn(false);
-        when(usersClient.getUser(userId)).thenReturn(null);
+        when(refundRequestsRepository.existsByOrderIdAndStatusIn(eq(orderId), any()))
+                .thenReturn(false);
+
+        OrderDTO orderDTO = new OrderDTO();
+        orderDTO.setStatus(OrderStatus.PAYMENT_SUCCESS);
+
+        when(ordersClient.getOrder(orderId))
+                .thenReturn(ResponseEntity.ok(orderDTO));
 
         PaymentDTO dto = new PaymentDTO();
         dto.setStatus(PaymentStatus.PENDING);
 
-        when(paymentsClient.getPaymentByOrder(orderId)).thenReturn(mockPayment(dto));
+        when(paymentsClient.getPaymentByOrder(orderId))
+                .thenReturn(ResponseEntity.ok(dto));
 
-        InvalidRefundRequestException ex = assertThrows(InvalidRefundRequestException.class,
-                () -> refundRequestsService.createRefundRequest(valid));
+        InvalidRefundRequestException ex = assertThrows(
+                InvalidRefundRequestException.class,
+                () -> refundRequestsService.createRefundRequest(valid)
+        );
 
         assertEquals("Payment is not processed yet", ex.getMessage());
         verify(refundRequestsRepository, never()).save(any());
@@ -200,19 +185,27 @@ class RefundRequestsServiceTest {
 
     @Test
     void createRefundRequest_success_savesWithPending() {
-        when(refundRequestsRepository.existsByOrderIdAndStatusIn(eq(orderId), any())).thenReturn(false);
-        when(usersClient.getUser(userId)).thenReturn(null);
+        when(refundRequestsRepository.existsByOrderIdAndStatusIn(eq(orderId), any()))
+                .thenReturn(false);
+
+        OrderDTO orderDTO = new OrderDTO();
+        orderDTO.setStatus(OrderStatus.PAYMENT_SUCCESS);
+
+        when(ordersClient.getOrder(orderId))
+                .thenReturn(ResponseEntity.ok(orderDTO));
 
         PaymentDTO dto = new PaymentDTO();
         dto.setStatus(PaymentStatus.CAPTURED);
 
-        when(paymentsClient.getPaymentByOrder(orderId)).thenReturn(mockPayment(dto));
+        when(paymentsClient.getPaymentByOrder(orderId))
+                .thenReturn(ResponseEntity.ok(dto));
 
-        when(refundRequestsRepository.save(any(RefundRequest.class))).thenAnswer(inv -> {
-            RefundRequest rr = inv.getArgument(0);
-            rr.setId(UUID.randomUUID());
-            return rr;
-        });
+        when(refundRequestsRepository.save(any(RefundRequest.class)))
+                .thenAnswer(inv -> {
+                    RefundRequest rr = inv.getArgument(0);
+                    rr.setId(UUID.randomUUID());
+                    return rr;
+                });
 
         RefundRequest saved = refundRequestsService.createRefundRequest(valid);
 
