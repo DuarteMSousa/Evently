@@ -262,7 +262,13 @@ public class TicketReservationsService {
         List<TicketReservation> ticketReservations = ticketReservationsRepository.findByOrderId(message.getOrderId());
 
         ticketReservations.forEach(ticketReservation -> {
-            this.releaseTicketReservation(ticketReservation.getId());
+            try{
+                this.releaseTicketReservation(ticketReservation.getId());
+            } catch (TicketReservationNotFoundException e) {
+                logger.info("Ticket Reservation not found");
+            } catch (InvalidTicketReservationException e){
+                logger.info("Ticket Reservation status is RELEASED already");
+            }
         });
     }
 
