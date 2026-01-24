@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: organizations-service-config
+  name: orders-config
 data:
   application.properties: |
-    server.port=8086
+    server.port=8085
 
-    spring.datasource.url=jdbc:postgresql://postgres:5432/organizations
+    spring.datasource.url=jdbc:postgresql://postgres:5432/orders
     spring.datasource.driver-class-name=org.postgresql.Driver
     spring.datasource.username=admin
     spring.datasource.password=postgres123
@@ -16,5 +16,10 @@ data:
     spring.jpa.show-sql=true
     spring.jpa.properties.hibernate.format_sql=true
 
-    eureka.client.service-url.default-zone=http://localhost:8761/eureka/
-    spring.application.name=organizations
+    eureka.client.service-url.default-zone=http://eureka-server:8761/eureka/
+    spring.application.name=orders
+
+    spring.rabbitmq.host=rabbitmq
+    spring.rabbitmq.port=5672
+    spring.rabbitmq.username=user
+    spring.rabbitmq.password=123

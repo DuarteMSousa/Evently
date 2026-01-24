@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: tickets-service-config
+  name: ticket-management-config
 data:
   application.properties: |
-    server.port=8091
+    server.port=8090
 
-    spring.datasource.url=jdbc:postgresql://postgres:5432/tickets
+    spring.datasource.url=jdbc:postgresql://postgres:5432/ticketmanagement
     spring.datasource.driver-class-name=org.postgresql.Driver
     spring.datasource.username=admin
     spring.datasource.password=postgres123
@@ -15,7 +15,7 @@ data:
     spring.jpa.show-sql=true
 
     eureka.client.service-url.default-zone=http://localhost:8761/eureka/
-    spring.application.name=tickets
+    spring.application.name=ticketManagement
 
     spring.rabbitmq.host=rabbitmq
     spring.rabbitmq.port=5672
