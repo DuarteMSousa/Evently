@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: reviews-service-config
+  name: reviews-config
 data:
   application.properties: |
     server.port=8089

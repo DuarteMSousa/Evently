@@ -6,6 +6,6 @@ spec:
   selector:
     app: api-gateway
   ports:
-    - port: 80       # porta interna do cluster
+    - port: 80
       targetPort: 8080
-  type: ClusterIP    # padrão interno do cluster
+  type: ClusterIP

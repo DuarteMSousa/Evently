@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: venues-service-config
+  name: venues-config
 data:
   application.properties: |
     server.port=8093

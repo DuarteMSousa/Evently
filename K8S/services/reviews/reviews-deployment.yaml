@@ -19,3 +19,10 @@ spec:
           image: duarte15sousa/evently_reviews
           ports:
             - containerPort: 8089
+          volumeMounts:
+            - name: config-volume
+              mountPath: /config
+      volumes:
+        - name: config-volume
+          configMap:
+            name: reviews-config

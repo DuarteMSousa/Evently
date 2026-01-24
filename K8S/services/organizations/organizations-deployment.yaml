@@ -19,3 +19,10 @@ spec:
           image: duarte15sousa/evently_organizations
           ports:
             - containerPort: 8086
+          volumeMounts:
+            - name: config-volume
+              mountPath: /config
+      volumes:
+        - name: config-volume
+          configMap:
+            name: organizations-config

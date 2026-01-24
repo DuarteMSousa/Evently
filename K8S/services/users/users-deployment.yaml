@@ -19,3 +19,10 @@ spec:
           image: duarte15sousa/evently_users
           ports:
             - containerPort: 8092
+          volumeMounts:
+            - name: config-volume
+              mountPath: /config
+      volumes:
+        - name: config-volume
+          configMap:
+            name: users-config

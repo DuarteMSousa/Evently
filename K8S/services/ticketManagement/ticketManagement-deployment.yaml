@@ -19,3 +19,10 @@ spec:
           image: duarte15sousa/evently_ticket_management
           ports:
             - containerPort: 8090
+          volumeMounts:
+            - name: config-volume
+              mountPath: /config
+      volumes:
+        - name: config-volume
+          configMap:
+            name: ticket-management-config

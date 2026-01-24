@@ -3,10 +3,10 @@ kind: Ingress
 metadata:
   name: api-gateway-ingress
   annotations:
-    kubernetes.io/ingress.class: "nginx"  # depende do seu controller
+    kubernetes.io/ingress.class: "nginx"
 spec:
   rules:
-    - host: example.local                 # substitua pelo seu host
+    - host: teste
       http:
         paths:
           - path: /api

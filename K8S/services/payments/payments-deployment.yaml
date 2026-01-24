@@ -19,3 +19,10 @@ spec:
           image: duarte15sousa/evently_payments
           ports:
             - containerPort: 8087
+          volumeMounts:
+            - name: config-volume
+              mountPath: /config
+      volumes:
+        - name: config-volume
+          configMap:
+            name: payments-config

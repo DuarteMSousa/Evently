@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: filegeneration-config
+  name: fileGeneration-config
 data:
   application.properties: |
     server.port=8083
