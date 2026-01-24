@@ -8,8 +8,6 @@ data:
 
     spring.datasource.url=jdbc:postgresql://postgres:5432/orders
     spring.datasource.driver-class-name=org.postgresql.Driver
-    spring.datasource.username=admin
-    spring.datasource.password=postgres123
 
     spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
     spring.jpa.hibernate.ddl-auto=update
@@ -21,5 +19,3 @@ data:
 
     spring.rabbitmq.host=rabbitmq
     spring.rabbitmq.port=5672
-    spring.rabbitmq.username=user
-    spring.rabbitmq.password=123
