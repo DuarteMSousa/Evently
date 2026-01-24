@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: eureka-server-config
+data:
+  application.properties: |
+    server.port=8761
+    spring.application.name=eureka-server
+    eureka.client.register-with-eureka=false
+    eureka.client.fetch-registry=false

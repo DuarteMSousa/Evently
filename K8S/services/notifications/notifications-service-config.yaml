@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: notifications-service-config
+data:
+  application.properties: |
+    server.port=8084
+
+    spring.datasource.url=jdbc:postgresql://postgres:5432/notifications
+    spring.datasource.driver-class-name=org.postgresql.Driver
+    spring.datasource.username=admin
+    spring.datasource.password=postgres123
+
+    spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+    spring.jpa.hibernate.ddl-auto=update
+    spring.jpa.show-sql=true
+    spring.jpa.properties.hibernate.format_sql=true
+
+    eureka.client.service-url.default-zone=http://localhost:8761/eureka/
+    spring.application.name=notifications
+
+    spring.rabbitmq.host=rabbitmq
+    spring.rabbitmq.port=5672
+    spring.rabbitmq.username=user
+    spring.rabbitmq.password=123
+
+    # ==== CONFIG EMAIL ====
+    spring.mail.host=smtp.gmail.com
+    spring.mail.port=587
+    spring.mail.username=servicosemailfreitas@gmail.com
+    spring.mail.password=hlxffiocmyoclxqk
+    spring.mail.properties.mail.smtp.auth=true
+    spring.mail.properties.mail.smtp.starttls.enable=true

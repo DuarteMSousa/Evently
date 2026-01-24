@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cart-service-config
+data:
+  application.properties: |
+    server.port=8081
+    spring.datasource.url=jdbc:postgresql://postgres:5432/cart
+    spring.datasource.driver-class-name=org.postgresql.Driver
+    spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+    spring.datasource.username=admin
+    spring.datasource.password=postgres123
+    spring.jpa.hibernate.ddl-auto=update
+    spring.jpa.show-sql=true
+    eureka.client.service-url.default-zone=http://eureka:8761/eureka/
+    spring.application.name=cart
