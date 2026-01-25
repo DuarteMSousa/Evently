@@ -1,6 +1,6 @@
 @echo off
 
-kubectl apply -f ./infastructure --recursive
+kubectl apply -f ./infrastructure --recursive
 kubectl apply -f ./eureka
 kubectl apply -f ./gateway
 
