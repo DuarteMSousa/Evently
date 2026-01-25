@@ -14,7 +14,7 @@ kubectl apply -f ./services/fileGeneration
 
 timeout /t 60
 
-kubectl apply -f ./services/notification
+kubectl apply -f ./services/notifications
 
 kubectl apply -f ./services/orders
 
