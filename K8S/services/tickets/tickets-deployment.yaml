@@ -22,25 +22,25 @@ spec:
           volumeMounts:
             - name: config-volume
               mountPath: /config
-          resources:
-            requests:
-              memory: "256Mi"
-              cpu: "250m"
-            limits:
-              memory: "512Mi"
-              cpu: "500m"
+#          resources:
+#            requests:
+#              memory: "256Mi"
+#              cpu: "250m"
+#            limits:
+#              memory: "512Mi"
+#              cpu: "500m"
           readinessProbe:
             httpGet:
               path: /actuator/health/readiness
-              port: 8081
-            initialDelaySeconds: 20
-            periodSeconds: 10
+              port: 8091
+            initialDelaySeconds: 70
+            periodSeconds: 20
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness
-              port: 8081
-            initialDelaySeconds: 40
-            periodSeconds: 10
+              port: 8091
+            initialDelaySeconds: 70
+            periodSeconds: 20
           env:
             - name: SPRING_DATASOURCE_USERNAME
               valueFrom:
