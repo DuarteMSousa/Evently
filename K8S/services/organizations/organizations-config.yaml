@@ -9,6 +9,8 @@ data:
     spring.datasource.url=jdbc:postgresql://postgres:5432/organizations
     spring.datasource.driver-class-name=org.postgresql.Driver
 
+    spring.rabbitmq.host=rabbitmq
+    spring.rabbitmq.port=5672
 
     spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
     spring.jpa.hibernate.ddl-auto=update
@@ -23,3 +25,4 @@ data:
     management.health.readinessstate.enabled=true
     management.endpoints.web.exposure.include=health,info,metrics,prometheus
     eureka.instance.prefer-ip-address=true
+    spring.main.lazy-initialization=true

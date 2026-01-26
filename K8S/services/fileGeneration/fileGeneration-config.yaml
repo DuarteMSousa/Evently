@@ -17,3 +17,4 @@ data:
     management.health.readinessstate.enabled=true
     management.endpoints.web.exposure.include=health,info,metrics,prometheus
     eureka.instance.prefer-ip-address=true
+    spring.main.lazy-initialization=true
