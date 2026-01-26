@@ -260,7 +260,6 @@ public class PaymentsController {
 
         logger.info(PAYPAL_CANCEL, "Method paypalCancel entered (token={})", token);
 
-        // Podes só devolver uma mensagem ou no futuro marcar como FAILED/CANCELED
         logger.info(PAYPAL_CANCEL, "200 OK returned, PayPal cancellation acknowledged (token={})", token);
         return ResponseEntity.ok("Pagamento cancelado pelo utilizador no PayPal.");
     }
