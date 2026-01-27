@@ -12,6 +12,7 @@ import org.example.models.StockMovement;
 import org.example.models.TicketStock;
 import org.example.models.TicketStockId;
 import org.example.publishers.EventTicketManagementMessagesPublisher;
+import org.example.repositories.StockMovementsRepository;
 import org.example.repositories.TicketStocksRepository;
 import org.example.messages.received.EventPublishedMessage;
 import org.slf4j.Logger;
@@ -33,6 +34,9 @@ public class TicketStocksService {
     private TicketStocksRepository ticketStocksRepository;
 
     @Autowired
+    private StockMovementsRepository stockMovementsRepository;
+
+    @Autowired
     private EventTicketManagementMessagesPublisher ticketManagementMessagesPublisher;
 
     private static final Logger logger = LoggerFactory.getLogger(TicketStocksService.class);
@@ -44,9 +48,51 @@ public class TicketStocksService {
     private static final Marker SESSION_TICKET_STOCK_DELETE = MarkerFactory.getMarker("SESSION_TICKET_STOCK_DELETE");
     private static final Marker TIER_TICKET_STOCK_DELETE = MarkerFactory.getMarker("TIER_TICKET_STOCK_DELETE");
     private static final Marker HANDLE_EVENT_PUBLISHED = MarkerFactory.getMarker("HANDLE_EVENT_PUBLISHED");
+    private static final Marker TICKET_STOCKS_GET = MarkerFactory.getMarker("TICKET_STOCK_GET");
+    private static final Marker TICKET_STOCK_MOVEMENTS_GET = MarkerFactory.getMarker("TICKET_STOCK_MOVEMENTS_GET");
 
     @Autowired
     private VenuesClient venuesClient;
+
+    /**
+     * Retrieves all ticket stock entries associated with a specific event.
+     * <p>
+     * This method queries the database for {@link TicketStock} entities that have
+     * the given {@code eventId} in their composite primary key ({@link TicketStockId}).
+     * It returns a list of all matching ticket stocks.
+     *
+     * @param eventId the UUID of the event for which ticket stocks should be retrieved
+     * @return a {@link List} of {@link TicketStock} entities associated with the given event
+     *
+     */
+    public List<TicketStock> getTicketStocksByEvent(UUID eventId) {
+
+        logger.error(TICKET_STOCKS_GET, "getTicketStock method entered");
+
+        List<TicketStock> stocks = ticketStocksRepository.findByIdEventId(eventId);
+
+        return stocks;
+    }
+
+    /**
+     * Retrieves all ticket stock movements associated with a specific event.
+     * <p>
+     * This method queries the database for {@link StockMovement} entities that have
+     * the given {@code eventId}.
+     * It returns a list of all matching ticket stock movements.
+     *
+     * @param eventId the UUID of the event for which ticket stock movements should be retrieved
+     * @return a {@link List} of {@link StockMovement} entities associated with the given event
+     *
+     */
+    public List<StockMovement> getStockMovementsByEvent(UUID eventId) {
+
+        logger.error(TICKET_STOCK_MOVEMENTS_GET, "getStockMovementsByEvent method entered");
+
+        List<StockMovement> stockMovementList = stockMovementsRepository.findByTicketStockIdEventId(eventId);
+
+        return stockMovementList;
+    }
 
     /**
      * Creates a new ticket stock entry.

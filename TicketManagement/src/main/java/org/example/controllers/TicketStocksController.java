@@ -1,5 +1,6 @@
 package org.example.controllers;
 
+import org.example.models.StockMovement;
 import org.example.models.TicketStock;
 import org.example.services.TicketStocksService;
 import org.example.exceptions.TicketStockAlreadyExistsException;
@@ -29,6 +30,32 @@ public class TicketStocksController {
     private static final Marker EVENT_TICKET_STOCK_DELETE = MarkerFactory.getMarker("EVENT_TICKET_STOCK_DELETE");
     private static final Marker SESSION_TICKET_STOCK_DELETE = MarkerFactory.getMarker("SESSION_TICKET_STOCK_DELETE");
     private static final Marker TIER_TICKET_STOCK_DELETE = MarkerFactory.getMarker("TIER_TICKET_STOCK_DELETE");
+    private static final Marker TICKET_STOCK_GET = MarkerFactory.getMarker("TICKET_STOCK_GET");
+    private static final Marker TICKET_STOCK_MOVEMENTS_GET = MarkerFactory.getMarker("TICKET_STOCK_MOVEMENTS_GET");
+
+    @GetMapping("/get-by-event/{eventId}")
+    public ResponseEntity<?> getTicketStocksByEvent(@PathVariable UUID eventId) {
+        logger.info(TICKET_STOCK_GET, "getTicketStocksByEvent method entered");
+        try {
+            List<TicketStock> stocks = ticketStocksService.getTicketStocksByEvent(eventId);
+            return ResponseEntity.status(HttpStatus.OK).body(stocks);
+        } catch (Exception e) {
+            logger.error(TICKET_STOCK_GET, "Internal error: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/get-stock-movements-by-event/{eventId}")
+    public ResponseEntity<?> getStockMovementsByEvent(@PathVariable UUID eventId) {
+        logger.info(TICKET_STOCK_MOVEMENTS_GET, "getStockMovementsByEvent method entered");
+        try {
+            List<StockMovement> stocks = ticketStocksService.getStockMovementsByEvent(eventId);
+            return ResponseEntity.status(HttpStatus.OK).body(stocks);
+        } catch (Exception e) {
+            logger.error(TICKET_STOCK_MOVEMENTS_GET, "Internal error: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
 
 
     @PostMapping("/create-stock")
