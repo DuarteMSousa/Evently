@@ -31,6 +31,8 @@ public class Event {
 
     private UUID organizationId;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 50)
     private EventStatus status;
 
     private UUID createdBy;

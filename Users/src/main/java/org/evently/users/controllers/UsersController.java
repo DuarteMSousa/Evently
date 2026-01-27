@@ -118,34 +118,6 @@ public class UsersController {
         );
     }
 
-    @PutMapping("/deactivate-user/{id}")
-    public ResponseEntity<?> deactivateUser(@PathVariable("id") UUID id) {
-        /* HttpStatus(produces)
-         * 200 OK - Request processed as expected.
-         * 400 BAD_REQUEST - undefined error
-         * 409 CONFLICT - user already deactivated
-         * 404 NOT_FOUND - user not found
-         */
-        logger.info(USER_DEACTIVATE, "Method deactivate user entered");
-        User updatedUser;
-
-        try {
-            updatedUser = usersService.deactivateUser(id);
-        } catch (UserNotFoundException e) {
-            logger.error(USER_DEACTIVATE, "UserNotFoundException caught while deactivating user");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (UserAlreadyDeactivatedException e) {
-            logger.error(USER_DEACTIVATE, "UserAlreadyDeactivatedException caught while deactivating user");
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
-        } catch (Exception e) {
-            logger.error(USER_DEACTIVATE, "Exception caught while deactivating user {}: {}", id, e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
-
-        logger.info(USER_DEACTIVATE, "200 OK returned, user deactivated");
-        return ResponseEntity.status(HttpStatus.OK).body(modelMapper.map(updatedUser, UserDTO.class));
-    }
-
     @GetMapping("/get-users/{pageNumber}/{pageSize}")
     public ResponseEntity<?> getUsersPage(@PathVariable("pageNumber") Integer pageNumber, @PathVariable("pageSize") Integer pageSize) {
         /* HttpStatus(produces)

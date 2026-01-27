@@ -31,8 +31,6 @@ public class PaymentEvent {
     @Column(nullable = false, length = 20)
     private PaymentEventType eventType;
 
-    private Integer statusCode;
-
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private Date createdAt;

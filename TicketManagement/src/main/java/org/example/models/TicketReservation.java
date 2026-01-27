@@ -43,7 +43,8 @@ public class TicketReservation {
     @Column(nullable = false)
     private Integer quantity;
 
-    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 50)
     private TicketReservationStatus status;
 
     private OffsetDateTime releasedAt;

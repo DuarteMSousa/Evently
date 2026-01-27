@@ -171,8 +171,8 @@ public class PaymentsController {
         }
     }
 
-    @PostMapping("/process-payment/{paymentId}")
-    public ResponseEntity<?> processPayment(@PathVariable("paymentId") UUID paymentId) {
+    @PostMapping("/process-payment/{orderId}")
+    public ResponseEntity<?> processPayment(@PathVariable("orderId") UUID orderId) {
         /* HttpStatus(produces)
          * 201 CREATED - Payment created and initiated successfully.
          * 402 PAYMENT_REQUIRED - Payment refused by provider.
@@ -182,7 +182,7 @@ public class PaymentsController {
         logger.info(PAYMENT_PROCESS, "Method processPayment entered");
 
         try {
-            Payment created = paymentsService.processPayment(paymentId);
+            Payment created = paymentsService.processPayment(orderId);
 
             String approvalUrl = "https://www.sandbox.paypal.com/checkoutnow?token=" + created.getProviderRef();
 
