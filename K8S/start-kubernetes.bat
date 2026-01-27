@@ -3,39 +3,39 @@
 kubectl apply -f ./infrastructure --recursive
 kubectl apply -f ./ingress
 
-kubectl apply -f ./services/cart
+kubectl apply -f ./servicesWithoutEureka/cart
 
-kubectl apply -f ./services/events
+kubectl apply -f ./servicesWithoutEureka/events
 
-kubectl apply -f ./services/fileGeneration
-
-timeout /t 60
-
-kubectl apply -f ./services/notifications
-
-kubectl apply -f ./services/orders
-
-kubectl apply -f ./services/organizations
+kubectl apply -f ./servicesWithoutEureka/fileGeneration
 
 timeout /t 60
 
-kubectl apply -f ./services/payments
+kubectl apply -f ./servicesWithoutEureka/notifications
 
-kubectl apply -f ./services/refunds
+kubectl apply -f ./servicesWithoutEureka/orders
 
-kubectl apply -f ./services/reviews
-
-timeout /t 60
-
-kubectl apply -f ./services/ticketManagement
-
-kubectl apply -f ./services/tickets
+kubectl apply -f ./servicesWithoutEureka/organizations
 
 timeout /t 60
 
-kubectl apply -f ./services/users
+kubectl apply -f ./servicesWithoutEureka/payments
 
-kubectl apply -f ./services/venues
+kubectl apply -f ./servicesWithoutEureka/refunds
+
+kubectl apply -f ./servicesWithoutEureka/reviews
+
+timeout /t 60
+
+kubectl apply -f ./servicesWithoutEureka/ticketManagement
+
+kubectl apply -f ./servicesWithoutEureka/tickets
+
+timeout /t 60
+
+kubectl apply -f ./servicesWithoutEureka/users
+
+kubectl apply -f ./servicesWithoutEureka/venues
 
 
 pause

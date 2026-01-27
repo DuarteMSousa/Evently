@@ -13,88 +13,88 @@ spec:
               service:
                 name: cart
                 port:
-                  number: 8081
+                  number: 80
           - path: /events
             pathType: Prefix
             backend:
               service:
                 name: events
                 port:
-                  number: 8095
+                  number: 80
           - path: /fileGeneration
             pathType: Prefix
             backend:
               service:
                 name: file-generation
                 port:
-                  number: 8083
+                  number: 80
           - path: /notifications
             pathType: Prefix
             backend:
               service:
                 name: notifications
                 port:
-                  number: 8084
+                  number: 80
           - path: /orders
             pathType: Prefix
             backend:
               service:
                 name: orders
                 port:
-                  number: 8085
+                  number: 80
           - path: /organizations
             pathType: Prefix
             backend:
               service:
                 name: organizations
                 port:
-                  number: 8086
+                  number: 80
           - path: /payments
             pathType: Prefix
             backend:
               service:
                 name: payments
                 port:
-                  number: 8087
+                  number: 80
           - path: /refunds
             pathType: Prefix
             backend:
               service:
                 name: refunds
                 port:
-                  number: 8088
+                  number: 80
           - path: /reviews
             pathType: Prefix
             backend:
               service:
                 name: reviews
                 port:
-                  number: 8089
+                  number: 80
           - path: /ticketManagement
             pathType: Prefix
             backend:
               service:
                 name: ticket-management
                 port:
-                  number: 8090
+                  number: 80
           - path: /tickets
             pathType: Prefix
             backend:
               service:
                 name: tickets
                 port:
-                  number: 8091
+                  number: 80
           - path: /users
             pathType: Prefix
             backend:
               service:
                 name: users
                 port:
-                  number: 8092
+                  number: 80
           - path: /venues
             pathType: Prefix
             backend:
               service:
                 name: venues
                 port:
-                  number: 8093
+                  number: 80

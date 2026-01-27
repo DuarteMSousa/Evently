@@ -200,7 +200,7 @@ public class TicketStocksService {
 
     @Transactional
     public void handleEventPublishedMessage(EventPublishedMessage message) {
-
+        logger.info(HANDLE_EVENT_PUBLISHED, "handleEventPublishedMessage method entered for event {}", message.getId());
         try {
 
             List<VenueZoneDTO> venueZoneCache = new ArrayList<VenueZoneDTO>();
