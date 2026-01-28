@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "ticketManagement", path = "/ticketManagement")
+@FeignClient(name = "ticket-management", path = "/ticketManagement")
 public interface TicketManagementClient {
 
     @PostMapping("/ticketReservations/reserve-ticket")
