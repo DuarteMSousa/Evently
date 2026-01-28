@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: ticketManagement
+  name: ticket-management
 spec:
   selector:
-    app: ticketManagement
+    app: ticket-management
   ports:
     - protocol: TCP
       port: 80
