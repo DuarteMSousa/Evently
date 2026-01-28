@@ -34,9 +34,8 @@ data:
 
     # PayPal sandbox
     paypal.base-url=https://api-m.sandbox.paypal.com
-    paypal.client-id=AXg38Wc0yftQGtEHmRqep8aAYSB_vH2WFjTV7bFbQ0cXhot6KZsbC4AQLxccwJgCWaT0EcFi3cMHu5Fq
-    paypal.client-secret=EMcwWsJkqmelzHE-nqHo4IL8Ndjib9yzQLg9V1mm3maP6t7vu7HgHBT6QwvGAZwgiz29XosMcBPf1H05
-    paypal.return-url=ht
+    paypal.return-url=http://localhost:8080/payments/paypal-callback
+    paypal.cancel-url=http://localhost:8080/payments/paypal-cancel
 
     management.endpoint.health.probes.enabled=true
     management.health.livenessstate.enabled=true
