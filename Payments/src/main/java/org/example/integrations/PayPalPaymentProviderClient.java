@@ -25,10 +25,10 @@ public class PayPalPaymentProviderClient implements PaymentProviderClient {
     @Value("${paypal.client-secret}")
     private String clientSecret;
 
-    @Value("${paypal.return-url}")
+    @Value("${paypal.return-url:}")
     private String returnUrl;
 
-    @Value("${paypal.cancel-url}")
+    @Value("${paypal.cancel-url:}")
     private String cancelUrl;
 
     public PayPalPaymentProviderClient(RestTemplate restTemplate) {
@@ -83,6 +83,18 @@ public class PayPalPaymentProviderClient implements PaymentProviderClient {
         body.put("purchase_units", Collections.singletonList(purchaseUnit));
 
         Map<String, String> appContext = new HashMap<>();
+
+        String newReturnUrl = resolveUrl(returnUrl);
+        if (!newReturnUrl.equals(returnUrl)) {
+            newReturnUrl+= "paypal-callback";
+            returnUrl = newReturnUrl;
+        }
+        String newCancelUrl = resolveUrl(cancelUrl);
+        if (!newCancelUrl.equals(cancelUrl)) {
+            newCancelUrl+= "paypal-cancel";
+            cancelUrl = newCancelUrl;
+        }
+
         appContext.put("return_url", returnUrl);
         appContext.put("cancel_url", cancelUrl);
         body.put("application_context", appContext);
@@ -126,4 +138,21 @@ public class PayPalPaymentProviderClient implements PaymentProviderClient {
                     response.getStatusCode());
         }
     }
+
+
+    private String resolveUrl(String urlTemplate) {
+        if (urlTemplate != null && !urlTemplate.isEmpty()) {
+            return urlTemplate;
+        }
+
+        String template = System.getenv("RETURN_URL_TEMPLATE");
+        String nodeIp = System.getenv("NODE_IP");
+
+        if (template == null || nodeIp == null) {
+            throw new IllegalStateException("RETURN_URL_TEMPLATE or NODE_IP not defined");
+        }
+
+        return template.replace("${NODE_IP}", nodeIp);
+    }
+
 }

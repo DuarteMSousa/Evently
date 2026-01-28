@@ -34,8 +34,6 @@ data:
 
     # PayPal sandbox
     paypal.base-url=https://api-m.sandbox.paypal.com
-    paypal.return-url=http://localhost:8080/payments/paypal-callback
-    paypal.cancel-url=http://localhost:8080/payments/paypal-cancel
 
     management.endpoint.health.probes.enabled=true
     management.health.livenessstate.enabled=true

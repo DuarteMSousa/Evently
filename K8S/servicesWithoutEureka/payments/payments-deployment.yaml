@@ -84,6 +84,15 @@ spec:
                 secretKeyRef:
                   name: payments-secrets
                   key: paypal-client-secret
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: RETURN_URL_TEMPLATE
+              valueFrom:
+                configMapKeyRef:
+                  name: payments-url-config
+                  key: RETURN_URL_TEMPLATE
       volumes:
         - name: config-volume
           configMap:

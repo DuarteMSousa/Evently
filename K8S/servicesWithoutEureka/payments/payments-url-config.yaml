@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: payments-url-config
+data:
+  RETURN_URL_TEMPLATE: "http://payments.${NODE_IP}.nip.io:30080/"
+
