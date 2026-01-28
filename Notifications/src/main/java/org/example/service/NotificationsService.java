@@ -85,9 +85,7 @@ public class NotificationsService {
         }
     }
 
-    /**
-     * Envia IN_APP sempre e (opcionalmente) EMAIL, buscando o email no Users pelo userId.
-     */
+
     private Notification sendInAppAndMaybeEmail(Notification base, boolean sendEmail) {
 
         Notification inApp = sendNotification(base, NotificationChannel.IN_APP, null);
@@ -314,17 +312,15 @@ public class NotificationsService {
     @Transactional
     public void notifyPdfGeneratedWithAttachment(UUID userId, UUID orderId, String fileName, byte[] pdfBytes) {
 
-        // cria notificação IN_APP (opcional)
         Notification n = new Notification();
         n.setUserId(userId);
         n.setType(NotificationType.FILE);
         n.setTitle("PDF gerado");
         n.setBody("O teu PDF está anexado: " + fileName);
 
-        // guarda notificação (IN_APP)
         sendNotification(n, NotificationChannel.IN_APP, null);
 
-        // resolve email e envia com anexo
+
         String email = resolveUserEmail(userId);
         if (email != null) {
             emailService.sendNotificationEmailWithAttachment(
