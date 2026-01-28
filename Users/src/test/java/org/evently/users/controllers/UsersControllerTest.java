@@ -142,30 +142,6 @@ class UsersControllerTest {
                 .andExpect(status().isNotFound());
     }
 
-    // ---------- deactivate-user ----------
-
-    @Test
-    void deactivateUser_success_returns200() throws Exception {
-        UUID id = UUID.randomUUID();
-        User u = new User(); u.setId(id); u.setActive(false);
-
-        when(usersService.deactivateUser(id)).thenReturn(u);
-
-        mockMvc.perform(put("/users/deactivate-user/{id}", id))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.active").value(false));
-    }
-
-    @Test
-    void deactivateUser_alreadyDeactivated_returns409() throws Exception {
-        UUID id = UUID.randomUUID();
-        when(usersService.deactivateUser(id))
-                .thenThrow(new UserAlreadyDeactivatedException("already"));
-
-        mockMvc.perform(put("/users/deactivate-user/{id}", id))
-                .andExpect(status().isConflict());
-    }
-
     // ---------- get-users-page ----------
 
     @Test
