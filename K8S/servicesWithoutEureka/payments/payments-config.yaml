@@ -34,6 +34,8 @@ data:
 
     # PayPal sandbox
     paypal.base-url=https://api-m.sandbox.paypal.com
+    paypal.return-url=
+    paypal.cancel-url=
 
     management.endpoint.health.probes.enabled=true
     management.health.livenessstate.enabled=true
