@@ -119,7 +119,7 @@ public class UsersService {
         if (!user.getPhoneNumber().equals(existingUser.getPhoneNumber())
                 && usersRepository.existsByPhoneNumber(user.getPhoneNumber())) {
             logger.error(USER_UPDATE, "Updated Phone number {} already exists", user.getPhoneNumber());
-            throw new UserAlreadyExistsException("User with phone number " + user.getNif() + " already exists");
+            throw new UserAlreadyExistsException("User with phone number " + user.getPhoneNumber() + " already exists");
         }
 
         existingUser.setUsername(user.getUsername());
