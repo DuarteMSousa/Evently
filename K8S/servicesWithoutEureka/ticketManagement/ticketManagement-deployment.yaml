@@ -3,19 +3,19 @@ kind: Deployment
 metadata:
   name: ticket-management-deployment
   labels:
-    app: ticket-management
+    app: ticketManagement
 spec:
   #replicas: 3
   selector:
     matchLabels:
-      app: ticket-management
+      app: ticketManagement
   template:
     metadata:
       labels:
-        app: ticket-management
+        app: ticketManagement
     spec:
       containers:
-        - name: ticket-management
+        - name: ticketManagement
           image: duarte15sousa/evently_ticket_management
           ports:
             - containerPort: 8090
