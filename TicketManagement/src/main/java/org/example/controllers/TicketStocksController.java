@@ -34,7 +34,7 @@ public class TicketStocksController {
     private static final Marker TICKET_STOCK_MOVEMENTS_GET = MarkerFactory.getMarker("TICKET_STOCK_MOVEMENTS_GET");
 
     @GetMapping("/get-by-event/{eventId}")
-    public ResponseEntity<?> getTicketStocksByEvent(@PathVariable UUID eventId) {
+    public ResponseEntity<?> getTicketStocksByEvent(@PathVariable("eventId") UUID eventId) {
         logger.info(TICKET_STOCK_GET, "getTicketStocksByEvent method entered");
         try {
             List<TicketStock> stocks = ticketStocksService.getTicketStocksByEvent(eventId);
@@ -46,7 +46,7 @@ public class TicketStocksController {
     }
 
     @GetMapping("/get-stock-movements-by-event/{eventId}")
-    public ResponseEntity<?> getStockMovementsByEvent(@PathVariable UUID eventId) {
+    public ResponseEntity<?> getStockMovementsByEvent(@PathVariable("eventId") UUID eventId) {
         logger.info(TICKET_STOCK_MOVEMENTS_GET, "getStockMovementsByEvent method entered");
         try {
             List<StockMovement> stocks = ticketStocksService.getStockMovementsByEvent(eventId);
