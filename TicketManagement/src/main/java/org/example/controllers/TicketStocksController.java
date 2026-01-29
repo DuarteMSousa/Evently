@@ -1,5 +1,7 @@
 package org.example.controllers;
 
+import org.example.dtos.stockMovement.StockMovementDTO;
+import org.example.dtos.ticketStocks.TicketStockDTO;
 import org.example.models.StockMovement;
 import org.example.models.TicketStock;
 import org.example.services.TicketStocksService;
@@ -14,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,7 +41,16 @@ public class TicketStocksController {
         logger.info(TICKET_STOCK_GET, "getTicketStocksByEvent method entered");
         try {
             List<TicketStock> stocks = ticketStocksService.getTicketStocksByEvent(eventId);
-            return ResponseEntity.status(HttpStatus.OK).body(stocks);
+            List<TicketStockDTO> stockDTOS = new ArrayList<>();
+            for (TicketStock stock : stocks) {
+                TicketStockDTO ticketStockDTO = new TicketStockDTO();
+                ticketStockDTO.setId(stock.getId());
+                ticketStockDTO.setAvailableQuantity(stock.getAvailableQuantity());
+                ticketStockDTO.setCreatedAt(stock.getCreatedAt());
+                ticketStockDTO.setUpdatedAt(stock.getUpdatedAt());
+                stockDTOS.add(ticketStockDTO);
+            }
+            return ResponseEntity.status(HttpStatus.OK).body(stockDTOS);
         } catch (Exception e) {
             logger.error(TICKET_STOCK_GET, "Internal error: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
@@ -50,13 +62,21 @@ public class TicketStocksController {
         logger.info(TICKET_STOCK_MOVEMENTS_GET, "getStockMovementsByEvent method entered");
         try {
             List<StockMovement> stocks = ticketStocksService.getStockMovementsByEvent(eventId);
-            return ResponseEntity.status(HttpStatus.OK).body(stocks);
+            List<StockMovementDTO> stockMovementDTOS = new ArrayList<>();
+            for (StockMovement stockMovement : stocks) {
+                StockMovementDTO stockMovementDTO = new StockMovementDTO();
+                stockMovementDTO.setId(stockMovement.getId());
+                stockMovementDTO.setQuantity(stockMovement.getQuantity());
+                stockMovementDTO.setType(stockMovement.getType());
+                stockMovementDTO.setCreatedAt(stockMovement.getCreatedAt());
+                stockMovementDTOS.add(stockMovementDTO);
+            }
+            return ResponseEntity.status(HttpStatus.OK).body(stockMovementDTOS);
         } catch (Exception e) {
             logger.error(TICKET_STOCK_MOVEMENTS_GET, "Internal error: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
-
 
     @PostMapping("/create-stock")
     public ResponseEntity<?> createTicketStock(@RequestBody TicketStock ticketStock) {
