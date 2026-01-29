@@ -181,8 +181,8 @@ public class ReviewsService {
             pageSize = 50;
         }
 
-        if (pageNumber < 1) {
-            pageNumber = 1;
+        if (pageNumber < 0) {
+            pageNumber = 0;
         }
 
         logger.debug(REVIEW_GET, "Fetching reviews by author (authorId={}, page={}, size={})", authorId, pageNumber, pageSize);
@@ -204,8 +204,8 @@ public class ReviewsService {
             pageSize = 50;
         }
 
-        if (pageNumber < 1) {
-            pageNumber = 1;
+        if (pageNumber < 0) {
+            pageNumber = 0;
         }
 
         logger.debug(REVIEW_GET, "Fetching reviews by entity (entityId={}, page={}, size={})", entityId, pageNumber, pageSize);
