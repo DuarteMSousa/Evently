@@ -100,6 +100,7 @@ public class RefundRequestsController {
     private RefundRequestDTO convertToDTO(RefundRequest refund) {
         RefundRequestDTO dto = new RefundRequestDTO();
         dto.setId(refund.getId());
+        dto.setOrderId(refund.getOrderId());
         dto.setPaymentId(refund.getPaymentId());
         dto.setUserId(refund.getUserId());
         dto.setTitle(refund.getTitle());
