@@ -126,8 +126,8 @@ public class ReviewCommentsService {
             pageSize = 50;
         }
 
-        if (pageNumber < 1) {
-            pageNumber = 1;
+        if (pageNumber < 0) {
+            pageNumber = 0;
         }
 
         logger.debug(COMMENT_GET, "Fetching comments for review (reviewId={}, page={}, size={})",
