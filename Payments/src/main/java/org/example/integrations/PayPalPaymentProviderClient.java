@@ -84,19 +84,23 @@ public class PayPalPaymentProviderClient implements PaymentProviderClient {
 
         Map<String, String> appContext = new HashMap<>();
 
-        String newReturnUrl = resolveUrl(returnUrl);
+        String newReturnUrl = "";
+
         if (returnUrl.equals("no-url")) {
-            newReturnUrl+= "paypal-callback";
-            returnUrl = newReturnUrl;
-        }
-        String newCancelUrl = resolveUrl(cancelUrl);
-        if (newCancelUrl.equals("no-url")) {
-            newCancelUrl+= "paypal-cancel";
-            cancelUrl = newCancelUrl;
+            newReturnUrl = resolveUrl(returnUrl) + "paypal-callback";
+        } else {
+            newReturnUrl = returnUrl;
         }
 
-        appContext.put("return_url", returnUrl);
-        appContext.put("cancel_url", cancelUrl);
+        String newCancelUrl = "";
+        if (cancelUrl.equals("no-url")) {
+            newCancelUrl += resolveUrl(cancelUrl) + "paypal-cancel";
+        }else {
+            newCancelUrl = cancelUrl;
+        }
+
+        appContext.put("return_url", newReturnUrl);
+        appContext.put("cancel_url", newCancelUrl);
         body.put("application_context", appContext);
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
@@ -141,7 +145,7 @@ public class PayPalPaymentProviderClient implements PaymentProviderClient {
 
 
     private String resolveUrl(String urlTemplate) {
-        if (urlTemplate != null && !urlTemplate.isEmpty()) {
+        if (urlTemplate != null && !urlTemplate.isEmpty() && !urlTemplate.equals("no-url")) {
             return urlTemplate;
         }
 
