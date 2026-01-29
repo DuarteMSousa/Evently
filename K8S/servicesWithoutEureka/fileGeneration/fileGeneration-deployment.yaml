@@ -75,6 +75,6 @@ spec:
         - name: config-volume
           configMap:
             name: file-generation-config
-        - name: ticket-storage            
+        - name: ticket-storage
           persistentVolumeClaim:
             claimName: ticket-files-pvc
