@@ -2,6 +2,10 @@ package org.example.integrations;
 
 import org.example.exceptions.PaymentRefusedException;
 import org.example.models.Payment;
+import org.example.services.PaymentsService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
@@ -15,6 +19,8 @@ import java.util.*;
 public class PayPalPaymentProviderClient implements PaymentProviderClient {
 
     private final RestTemplate restTemplate;
+
+    private static final Logger logger = LoggerFactory.getLogger(PayPalPaymentProviderClient.class);
 
     @Value("${paypal.base-url}")
     private String baseUrl;
@@ -99,6 +105,8 @@ public class PayPalPaymentProviderClient implements PaymentProviderClient {
             newCancelUrl = cancelUrl;
         }
 
+        logger.info("New Payment Return URL: " + newReturnUrl);
+        logger.info("New Payment Cancel URL: " + newCancelUrl);
         appContext.put("return_url", newReturnUrl);
         appContext.put("cancel_url", newCancelUrl);
         body.put("application_context", appContext);

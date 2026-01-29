@@ -22,6 +22,8 @@ spec:
           volumeMounts:
             - name: config-volume
               mountPath: /config
+            - name: ticket-storage
+              mountPath: /TicketFiles
           resources:
             requests:
               memory: "256Mi"
@@ -73,3 +75,6 @@ spec:
         - name: config-volume
           configMap:
             name: file-generation-config
+        - name: ticket-storage            
+          persistentVolumeClaim:
+            claimName: ticket-files-pvc
