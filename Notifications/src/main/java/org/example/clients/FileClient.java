@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.UUID;
 
-@FeignClient(name = "fileGeneration", path = "/fileGeneration/ticket-files")
+@FeignClient(name = "file-generation", path = "/fileGeneration/ticket-files")
 public interface FileClient {
 
     @GetMapping("/get-ticket-file/{id}")
