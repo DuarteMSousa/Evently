@@ -25,6 +25,7 @@
         <module>FileGeneration</module>
         <module>APIGateway</module>
         <module>EurekaServer</module>
+        <module>coverage-report</module>
     </modules>
 
     <properties>
