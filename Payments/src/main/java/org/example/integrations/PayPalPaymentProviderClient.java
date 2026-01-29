@@ -85,12 +85,12 @@ public class PayPalPaymentProviderClient implements PaymentProviderClient {
         Map<String, String> appContext = new HashMap<>();
 
         String newReturnUrl = resolveUrl(returnUrl);
-        if (!newReturnUrl.equals(returnUrl)) {
+        if (returnUrl.equals("no-url")) {
             newReturnUrl+= "paypal-callback";
             returnUrl = newReturnUrl;
         }
         String newCancelUrl = resolveUrl(cancelUrl);
-        if (!newCancelUrl.equals(cancelUrl)) {
+        if (newCancelUrl.equals("no-url")) {
             newCancelUrl+= "paypal-cancel";
             cancelUrl = newCancelUrl;
         }

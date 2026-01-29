@@ -93,10 +93,6 @@ spec:
                 configMapKeyRef:
                   name: payments-url-config
                   key: RETURN_URL_TEMPLATE
-            - name: PAYPAL_RETURN_URL
-              value: ""
-            - name: PAYPAL_CANCEL_URL
-              value: ""
       volumes:
         - name: config-volume
           configMap:
