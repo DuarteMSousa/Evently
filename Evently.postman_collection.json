@@ -1,0 +1,2176 @@
+{
+  "info": {
+    "_postman_id": "447545c4-22e7-4112-84f6-1a14c0cf55db",
+    "name": "Evently",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "49656165",
+    "_collection_link": "https://go.postman.co/collection/49656165-447545c4-22e7-4112-84f6-1a14c0cf55db?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Reviews",
+      "item": [
+        {
+          "name": "ReviewComments",
+          "item": [
+            {
+              "name": "Delete Review Comment",
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/reviews/comments/delete-comment/{{currentCommentId}}",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "reviews",
+                    "comments",
+                    "delete-comment",
+                    "{{currentCommentId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Register Review Comment",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"author\": \"{{currentUserId}}\",\r\n    \"reviewId\": \"{{currentReviewId}}\",\r\n    \"comment\": \"Concordo!\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/reviews/comments/register-comment",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "reviews",
+                    "comments",
+                    "register-comment"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Review Comment",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": ""
+                },
+                "url": {
+                  "raw": "{{baseURL}}/reviews/comments/get-comment/{{currentCommentId}}",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "reviews",
+                    "comments",
+                    "get-comment",
+                    "{{currentCommentId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Comments By Review",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/reviews/comments/review/{{currentReviewId}}/0/10",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "reviews",
+                    "comments",
+                    "review",
+                    "{{currentReviewId}}",
+                    "0",
+                    "10"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Regist Review",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"authorId\": \"{{currentUserId}}\",\r\n  \"entityId\": \"{{currentVenueId}}\",\r\n  \"entityType\": \"VENUE\", \r\n  \"rating\": 3,\r\n  \"comment\": \"Mal cuidado\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/reviews/register-review",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "reviews",
+                "register-review"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Review",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/reviews/get-review/{{currentReviewId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "reviews",
+                "get-review",
+                "{{currentReviewId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Review",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/reviews/delete-review/{{currentReviewId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "reviews",
+                "delete-review",
+                "{{currentReviewId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Reviews By Entity",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/reviews/entity/{{currentVenueId}}/0/10",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "reviews",
+                "entity",
+                "{{currentVenueId}}",
+                "0",
+                "10"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Reviews By User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/reviews/author/{{currentUserId}}/0/10",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "reviews",
+                "author",
+                "{{currentUserId}}",
+                "0",
+                "10"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Venues",
+      "item": [
+        {
+          "name": "VenuesZone",
+          "item": [
+            {
+              "name": "Post VenueZone",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"venueId\": \"{{currentVenueId}}\",\r\n  \"name\": \"Bancada Sul\",\r\n  \"capacity\": 5000,\r\n  \"createdBy\": \"{{currentUserId}}\"\r\n}\r\n",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/venues/zones/create-zone",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "venues",
+                    "zones",
+                    "create-zone"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get VenueZone",
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/venues/zones/get-zone/{{currentZoneId}}",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "venues",
+                    "zones",
+                    "get-zone",
+                    "{{currentZoneId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get VenueZones from Venue",
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/venues/zones/by-venue/{{currentVenueId}}",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "venues",
+                    "zones",
+                    "by-venue",
+                    "{{currentVenueId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Put VenueZone",
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"id\": \"{{currentZoneId}}\",\r\n    \"name\": \"Bancada Sul Atualizado\",\r\n    \"capacity\": 6000,\r\n    \"updatedBy\": \"{{currentUserId}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/venues/zones/update-zone/{{currentZoneId}}",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "venues",
+                    "zones",
+                    "update-zone",
+                    "{{currentZoneId}}"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Get Venue",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI3OTQ2YTgzZS00Y2E0LTQxN2EtYTg3Ny00OGRlNzljNTQ5ODMiLCJ1c2VybmFtZSI6IkFsZXhhbmRyZSIsImlhdCI6MTc2NDI1MDIzMCwiZXhwIjoxNzY0MjUzODMwfQ.s37ZqstQVQ9XjC9GIoDewewrIqLgg16u2UGvVsx8ltQ",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/venues/get-venue/{{currentVenueId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "venues",
+                "get-venue",
+                "{{currentVenueId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Post Venue",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"Altice Arena\",\r\n  \"capacity\": 20000,\r\n  \"address\": \"Rossio dos Olivais, Lote 2.13.01A\",\r\n  \"city\": \"Lisboa\",\r\n  \"country\": \"Portugal\",\r\n  \"postalCode\": \"1990-231\",\r\n  \"createdBy\": \"{{currentUserId}}\"\r\n  }\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/venues/create-venue",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "venues",
+                "create-venue"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Put Desactivate",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/venues/deactivate-venue/{{currentVenueId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "venues",
+                "deactivate-venue",
+                "{{currentVenueId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Post Search",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"Altice Arena\",\r\n  \"city\": \"Lisboa\",\r\n  \"country\": \"Portugal\",\r\n  \"minCapacity\": 5000,\r\n  \"onlyActive\": true\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/venues/search-venues",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "venues",
+                "search-venues"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Create user",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"username\": \"paulo1234\",\r\n    \"password\": \"123\",\r\n    \"email\":\"8220195@gmail.com\",\r\n    \"nif\":\"123456711\",\r\n    \"birthDate\":\"2004-06-10\",\r\n    \"phoneNumber\":\"930613593\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/users/create-user",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "users",
+                "create-user"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update user",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"id\":\"{{currentUserId}}\",\r\n    \"username\": \"paulo1235\",\r\n    \"password\": \"123\",\r\n    \"email\":\"8220195@estg.ipp.pt\",\r\n    \"nif\":\"123456722\",\r\n    \"birthDate\":\"2004-06-10\",\r\n    \"phoneNumber\":\"930613593\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/users/update-user/{{currentUserId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "users",
+                "update-user",
+                "{{currentUserId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get user",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/users/get-user/{{currentUserId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "users",
+                "get-user",
+                "{{currentUserId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Page",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/users/get-users/0/10",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "users",
+                "get-users",
+                "0",
+                "10"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Organizations",
+      "item": [
+        {
+          "name": "OrganizationsMembers",
+          "item": [
+            {
+              "name": "Get Members Organization",
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/organizations/get-members/{{currentOrganizationId}}",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "organizations",
+                    "get-members",
+                    "{{currentOrganizationId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Post Add Member",
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/organizations/add-member/{{currentOrganizationId}}/{{currentMemberId}}?requesterId={{currentUserId}}",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "organizations",
+                    "add-member",
+                    "{{currentOrganizationId}}",
+                    "{{currentMemberId}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "requesterId",
+                      "value": "{{currentUserId}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Remove Member",
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/organizations/remove-member/{{currentOrganizationId}}/{{currentMemberId}}?requesterId={{currentUserId}}",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "organizations",
+                    "remove-member",
+                    "{{currentOrganizationId}}",
+                    "{{currentMemberId}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "requesterId",
+                      "value": "{{currentUserId}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Post Organization",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"Organizador de Eventos\",\r\n  \"description\": \"Organização de Eventos de sucesso\",\r\n  \"nipc\": \"510234543\",\r\n  \"siteUrl\": \"https://www.orgeventos.pt\",\r\n  \"createdBy\": \"{{currentUserId}}\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/organizations/create-organization",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "organizations",
+                "create-organization"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Organizations",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/organizations/get-organizations",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "organizations",
+                "get-organizations"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Organization",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/organizations/get-organization/{{currentOrganizationId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "organizations",
+                "get-organization",
+                "{{currentOrganizationId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Put Organization",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"id\": \"{{currentOrganizationId}}\",\r\n    \"name\": \"Organização de Eventos de Sucesso\",\r\n    \"description\": \"Organização Atualizada.\",\r\n    \"active\": true,\r\n    \"nipc\": \"510234543\",\r\n    \"siteUrl\": \"https://www.orgeventos.pt\",\r\n    \"updatedBy\": \"{{currentUserId}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/organizations/update-organization/{{currentOrganizationId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "organizations",
+                "update-organization",
+                "{{currentOrganizationId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "item": [
+        {
+          "name": "Get Users Payments",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/payments/user-payments/{{currentUserId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "payments",
+                "user-payments",
+                "{{currentUserId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Post Cancel Payment",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"orderId\": \"\",\r\n  \"userId\": \"\",\r\n  \"amount\": \"\",\r\n  \"provider\": \"\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/payments/cancel-payment/{{currentPaymentId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "payments",
+                "cancel-payment",
+                "{{currentPaymentId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Post Process Refound",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"orderId\": \"\",\r\n  \"userId\": \"\",\r\n  \"amount\": \"\",\r\n  \"provider\": \"\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/payments/process-refund/{{currentPaymentId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "payments",
+                "process-refund",
+                "{{currentPaymentId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Post Payment Paypal",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/payments/process-payment/{{currentOrderId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "payments",
+                "process-payment",
+                "{{currentOrderId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Check Payment Paypal",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/payments/check-payment-status/{{currentPaymentId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "payments",
+                "check-payment-status",
+                "{{currentPaymentId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Refunds",
+      "item": [
+        {
+          "name": "Requests",
+          "item": [
+            {
+              "name": "Get Refund Request",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/refunds/get-refund/{{currentRefundId}}",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "refunds",
+                    "get-refund",
+                    "{{currentRefundId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Refund Requests By User",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/refunds/get-by-user/{{currentUserId}}/0/10",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "refunds",
+                    "get-by-user",
+                    "{{currentUserId}}",
+                    "0",
+                    "10"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Register Refund Request",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"order\": \"{{currentOrderId}}\",\r\n    \"title\": \"Refund\",\r\n    \"description\": \"Não poderei comparecer ao evento\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/refunds/register-refund",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "refunds",
+                    "register-refund"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Decisions",
+          "item": [
+            {
+              "name": "Get Refund Decision",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/refunds/decisions/get-decision/{{currentDecision}}",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "refunds",
+                    "decisions",
+                    "get-decision",
+                    "{{currentDecision}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Register decision",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"refundRequestId\": \"{{currentRefundId}}\",\r\n  \"decidedBy\": \"{{currentAnalystId}}\",\r\n  \"decisionType\": \"APPROVE\",\r\n  \"description\": \"O pedido de reembolso foi analisado e aprovado conforme a política da empresa.\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/refunds/decisions/register-decision",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "refunds",
+                    "decisions",
+                    "register-decision"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Refund Decision by request",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/refunds/decisions/get-decision-by-request/{{currentRefundId}}",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "refunds",
+                    "decisions",
+                    "get-decision-by-request",
+                    "{{currentRefundId}}"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Messages",
+          "item": [
+            {
+              "name": "Get Refund Message",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/refunds/messages/get-message/{{currentMessage}}",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "refunds",
+                    "messages",
+                    "get-message",
+                    "{{currentMessage}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Refund Messages By Request",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/refunds/messages/request/{{currentRefundId}}/0/10",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "refunds",
+                    "messages",
+                    "request",
+                    "{{currentRefundId}}",
+                    "0",
+                    "10"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Send message",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"user\": \"{{currentUserId}}\",\r\n  \"refundRequestId\": \"{{currentRefundId}}\",\r\n  \"content\": \"Gostaria de fornecer mais detalhes sobre o meu pedido de reembolso. O evento foi cancelado sem aviso prévio.\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/refunds/messages/send-message",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "refunds",
+                    "messages",
+                    "send-message"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "Get Order",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/orders/get-order/{{currentOrderId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "orders",
+                "get-order",
+                "{{currentOrderId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Orders By User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/orders/user/{{currentUserId}}/0/10",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "orders",
+                "user",
+                "{{currentUserId}}",
+                "0",
+                "10"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Register Order",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"userId\": {{currentUserId}},\r\n  \"lines\": [\r\n    {\r\n      \"productId\": {{currentTierId}},\r\n      \"quantity\": 2\r\n    }\r\n  ]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/orders/register-order",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "orders",
+                "register-order"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel Order",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/orders/cancel-order/{{currentOrderId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "orders",
+                "cancel-order",
+                "{{currentOrderId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Tickets",
+      "item": [
+        {
+          "name": "Get Ticket",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/tickets/get-ticket/{{currentTicketId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "tickets",
+                "get-ticket",
+                "{{currentTicketId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Tickets by User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/tickets/user/{{currentUserId}}/0/10",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "tickets",
+                "user",
+                "{{currentUserId}}",
+                "0",
+                "10"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Use Ticket",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/tickets/use-ticket/{{currentTicketId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "tickets",
+                "use-ticket",
+                "{{currentTicketId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel Ticket",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/tickets/cancel-ticket/{{currentTicketId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "tickets",
+                "cancel-ticket",
+                "{{currentTicketId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Cart",
+      "item": [
+        {
+          "name": "Cart controller",
+          "item": [
+            {
+              "name": "Get cart",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/carts/get-cart/{{currentUserId}}",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "carts",
+                    "get-cart",
+                    "{{currentUserId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Clear cart",
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/carts/clear-cart/{{currentUserId}}",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "carts",
+                    "clear-cart",
+                    "{{currentUserId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Checkout",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/carts/checkout-cart/{{currentUserId}}",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "carts",
+                    "checkout-cart",
+                    "{{currentUserId}}"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Cart Items Controller",
+          "item": [
+            {
+              "name": "Add Item",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/carts/items/add-item/:userId/:itemId/:quantity",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "carts",
+                    "items",
+                    "add-item",
+                    ":userId",
+                    ":itemId",
+                    ":quantity"
+                  ],
+                  "variable": [
+                    {
+                      "key": "userId",
+                      "value": "{{currentUserId}}"
+                    },
+                    {
+                      "key": "itemId",
+                      "value": "{{currentTierId}}"
+                    },
+                    {
+                      "key": "quantity",
+                      "value": "2"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update item",
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/carts/items/update-item/:userId/:itemId/:quantity",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "carts",
+                    "items",
+                    "update-item",
+                    ":userId",
+                    ":itemId",
+                    ":quantity"
+                  ],
+                  "variable": [
+                    {
+                      "key": "userId",
+                      "value": "{{currentUserId}}"
+                    },
+                    {
+                      "key": "itemId",
+                      "value": "{{currentTierId}}"
+                    },
+                    {
+                      "key": "quantity",
+                      "value": "5"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Remove item",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/carts/items/remove-item/:userId/:itemId",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "carts",
+                    "items",
+                    "remove-item",
+                    ":userId",
+                    ":itemId"
+                  ],
+                  "variable": [
+                    {
+                      "key": "userId",
+                      "value": "{{currentUserId}}"
+                    },
+                    {
+                      "key": "itemId",
+                      "value": "{{currentTierId}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Events",
+      "item": [
+        {
+          "name": "Events",
+          "item": [
+            {
+              "name": "Get Events Page",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/events/get-events-page/0/10",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "events",
+                    "get-events-page",
+                    "0",
+                    "10"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Event By ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/events/get-event/:id",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "events",
+                    "get-event",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{currentEventId}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Event",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"name\": \"Evento\",\n    \"description\": \"Evento\",\n    \"organizationId\": \"{{currentOrganizationId}}\",\n    \"createdBy\": \"{{currentUserId}}\",\n        \"categories\": [\n            {\n                \"id\":\"{{currentCategoryId}}\"\n            }\n        ]\n}"
+                },
+                "url": {
+                  "raw": "{{baseURL}}/events/create-event/",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "events",
+                    "create-event",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Event",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"id\": \"{{currentEventId}}\",\n    \"name\": \"Updated Event\",\n    \"description\": \"Updated description\",\n    \"categories\": [\n        {\n            \"id\": \"{{currentCategoryId}}\"\n        }\n    ]\n}"
+                },
+                "url": {
+                  "raw": "{{baseURL}}/events/update-event/:id",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "events",
+                    "update-event",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{currentEventId}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Cancel Event",
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/events/cancel-event/:id",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "events",
+                    "cancel-event",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{currentEventId}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Publish Event",
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/events/publish-event/:id",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "events",
+                    "publish-event",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{currentEventId}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Event Sessions",
+          "item": [
+            {
+              "name": "Get Session By ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/events/sessions/get-event-session/:id",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "events",
+                    "sessions",
+                    "get-event-session",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{currentSessionId}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Session",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"eventId\": \"{{currentEventId}}\",\n    \"venueId\": \"{{currentVenueId}}\",\n    \"startsAt\": \"2026-05-10T14:00:00Z\",\n    \"endsAt\": \"2026-05-10T18:00:00Z\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseURL}}/events/sessions/create-event-session/",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "events",
+                    "sessions",
+                    "create-event-session",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Session",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"id\": \"{{currentSessionId}}\",\n    \"startsAt\": \"2026-06-10T07:00:00Z\",\n    \"endsAt\": \"2026-06-10T08:00:00Z\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseURL}}/events/sessions/update-event-session/:id",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "events",
+                    "sessions",
+                    "update-event-session",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{currentSessionId}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Session",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/events/sessions/delete-event-session/:id",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "events",
+                    "sessions",
+                    "delete-event-session",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{currentSessionId}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Categories",
+          "item": [
+            {
+              "name": "Get All Categories",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/events/categories/get-categories",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "events",
+                    "categories",
+                    "get-categories"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Category By ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/events/categories/get-category/:id",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "events",
+                    "categories",
+                    "get-category",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{currentCategoryId}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Category",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"name\": \"Tech\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseURL}}/events/categories/create-category",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "events",
+                    "categories",
+                    "create-category"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Category",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"id\": \"{{currentCategoryId}}\",\n    \"name\": \"Tech\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseURL}}/events/categories/update-category/:id",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "events",
+                    "categories",
+                    "update-category",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{currentCategoryId}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Category",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/events/categories/delete-category/:id",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "events",
+                    "categories",
+                    "delete-category",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{currentCategoryId}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Session Tiers",
+          "item": [
+            {
+              "name": "Get Tier By ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/events/sessions/tiers/get-session-tier/:id",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "events",
+                    "sessions",
+                    "tiers",
+                    "get-session-tier",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{currentTierId}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Session Tier",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"eventSessionId\": \"{{currentSessionId}}\",\n    \"zoneId\": \"{{currentZoneId}}\",\n    \"price\": 20\n}"
+                },
+                "url": {
+                  "raw": "{{baseURL}}/events/sessions/tiers/create-session-tier/",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "events",
+                    "sessions",
+                    "tiers",
+                    "create-session-tier",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Session Tier",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"id\": {{currentTierId}},\n    \"price\": 29.99\n}"
+                },
+                "url": {
+                  "raw": "{{baseURL}}/events/sessions/tiers/update-session-tier/:id",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "events",
+                    "sessions",
+                    "tiers",
+                    "update-session-tier",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{currentTierId}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Session Tier",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/events/sessions/tiers/delete-session-tier/:id",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "events",
+                    "sessions",
+                    "tiers",
+                    "delete-session-tier",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{currentTierId}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Ticket Management",
+      "item": [
+        {
+          "name": "TicketStocks",
+          "item": [
+            {
+              "name": "Get stock by event",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/ticketManagement/ticketStocks/get-by-event/{{currentEventId}}",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "ticketManagement",
+                    "ticketStocks",
+                    "get-by-event",
+                    "{{currentEventId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get stock movements",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/ticketManagement/ticketStocks/get-stock-movements-by-event/{{currentEventId}}",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "ticketManagement",
+                    "ticketStocks",
+                    "get-stock-movements-by-event",
+                    "{{currentEventId}}"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseURL",
+      "value": ""
+    },
+    {
+      "key": "currentOrganizationId",
+      "value": ""
+    },
+    {
+      "key": "currentUserId",
+      "value": ""
+    },
+    {
+      "key": "currentVenueId",
+      "value": ""
+    },
+    {
+      "key": "currentZoneId",
+      "value": ""
+    },
+    {
+      "key": "currentEventId",
+      "value": ""
+    },
+    {
+      "key": "currentSessionId",
+      "value": ""
+    },
+    {
+      "key": "currentTierId",
+      "value": ""
+    },
+    {
+      "key": "currentReviewId",
+      "value": ""
+    },
+    {
+      "key": "currentCommentId",
+      "value": ""
+    },
+    {
+      "key": "currentPaymentId",
+      "value": ""
+    },
+    {
+      "key": "currentAnalystId",
+      "value": ""
+    },
+    {
+      "key": "currentRefundId",
+      "value": ""
+    },
+    {
+      "key": "currentOrderId",
+      "value": ""
+    },
+    {
+      "key": "currentReservationId",
+      "value": ""
+    },
+    {
+      "key": "currentTicketId",
+      "value": ""
+    },
+    {
+      "key": "currentCategoryId",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "key": "currentMemberId",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "key": "currentMessage",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "key": "currentDecision",
+      "value": "",
+      "type": "default"
+    }
+  ]
+}
