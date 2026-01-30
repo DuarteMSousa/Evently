@@ -3,39 +3,39 @@
 kubectl apply -f ./infrastructure --recursive
 kubectl apply -f ./ingress
 
-kubectl apply -f ./servicesWithoutEureka/cart
+kubectl apply -f ./microservices/cart
 
-kubectl apply -f ./servicesWithoutEureka/events
+kubectl apply -f ./microservices/events
 
-kubectl apply -f ./servicesWithoutEureka/fileGeneration
-
-timeout /t 30
-
-kubectl apply -f ./servicesWithoutEureka/notifications
-
-kubectl apply -f ./servicesWithoutEureka/orders
-
-kubectl apply -f ./servicesWithoutEureka/organizations
+kubectl apply -f ./microservices/fileGeneration
 
 timeout /t 30
 
-kubectl apply -f ./servicesWithoutEureka/payments
+kubectl apply -f ./microservices/notifications
 
-kubectl apply -f ./servicesWithoutEureka/refunds
+kubectl apply -f ./microservices/orders
 
-kubectl apply -f ./servicesWithoutEureka/reviews
-
-timeout /t 30
-
-kubectl apply -f ./servicesWithoutEureka/ticketManagement
-
-kubectl apply -f ./servicesWithoutEureka/tickets
+kubectl apply -f ./microservices/organizations
 
 timeout /t 30
 
-kubectl apply -f ./servicesWithoutEureka/users
+kubectl apply -f ./microservices/payments
 
-kubectl apply -f ./servicesWithoutEureka/venues
+kubectl apply -f ./microservices/refunds
+
+kubectl apply -f ./microservices/reviews
+
+timeout /t 30
+
+kubectl apply -f ./microservices/ticketManagement
+
+kubectl apply -f ./microservices/tickets
+
+timeout /t 30
+
+kubectl apply -f ./microservices/users
+
+kubectl apply -f ./microservices/venues
 
 
 pause
