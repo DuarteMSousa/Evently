@@ -7,6 +7,7 @@ minikube addons enable ingress
 
 Executar ficheiro start-kubernetes.bat na pasta K8S
 
+minikube ip (para obter o ip para o qual os pedidos devem ser feitos)
 
 
 
