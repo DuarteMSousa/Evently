@@ -49,10 +49,12 @@ public class NotificationsService {
     @Autowired
     private EmailService emailService;
 
-    // -------------------------
-    // Helpers
-    // -------------------------
-
+    /**
+     * Resolves a user's email address by communicating with the external User Service.
+     * * @param userId The unique identifier of the user.
+     * @return The trimmed email address, or {@code null} if the user is not found,
+     * the email is blank, or a service error occurs.
+     */
     private String resolveUserEmail(UUID userId) {
         try {
             ResponseEntity<UserDTO> resp = usersClient.getUser(userId);
@@ -85,7 +87,12 @@ public class NotificationsService {
         }
     }
 
-
+    /**
+     * Helper method to send a mandatory In-App notification and an optional Email.
+     * * @param base      The notification object containing the core content (title, body, userId).
+     * @param sendEmail Flag to determine if an email should also be dispatched.
+     * @return The persisted In-App notification instance.
+     */
     private Notification sendInAppAndMaybeEmail(Notification base, boolean sendEmail) {
 
         Notification inApp = sendNotification(base, NotificationChannel.IN_APP, null);
@@ -108,11 +115,14 @@ public class NotificationsService {
         return inApp;
     }
 
-
-    // -------------------------
-    // Validation + Core send
-    // -------------------------
-
+    /**
+     * Validates the notification's integrity and required fields based on the channel.
+     * * @param notification The notification entity to validate.
+     * @param channel      The target delivery channel.
+     * @param emailTo      The recipient email (required if channel is EMAIL).
+     * @throws InvalidNotificationException if mandatory fields are missing.
+     * @throws UserNotFoundException        if the userId is invalid (e.g., Nil UUID).
+     */
     private void validateNotification(Notification notification, NotificationChannel channel, String emailTo) {
 
         logger.debug(NOTIF_VALIDATE,
@@ -155,6 +165,14 @@ public class NotificationsService {
         }
     }
 
+    /**
+     * Core method for notification dispatch. Persists the notification and creates
+     * a corresponding <b>Outbox</b> entry to guarantee eventual delivery.
+     * * @param notification The notification to be saved and sent.
+     * @param channel      The communication channel (e.g., IN_APP, EMAIL).
+     * @param emailTo      The destination email address (used for EMAIL channel).
+     * @return The persisted notification entity.
+     */
     @Transactional
     public Notification sendNotification(Notification notification, NotificationChannel  channel, String emailTo) {
 
@@ -226,10 +244,13 @@ public class NotificationsService {
         return saved;
     }
 
-    // -------------------------
-    // Domain notify methods
-    // -------------------------
-
+    /**
+     * Notifies the user that a payment for an order has been successfully captured.
+     * * @param userId  Target user ID.
+     * @param orderId Associated order ID.
+     * @param amount  The total captured amount.
+     * @return The generated notification.
+     */
     @Transactional
     public Notification notifyPaymentCaptured(UUID userId, UUID orderId, float amount) {
         Notification n = new Notification();
@@ -241,6 +262,13 @@ public class NotificationsService {
         return sendInAppAndMaybeEmail(n, true);
     }
 
+    /**
+     * Notifies the user that an order payment attempt has failed.
+     * * @param userId  Target user ID.
+     * @param orderId Associated order ID.
+     * @param amount  The attempted payment amount.
+     * @return The generated notification.
+     */
     @Transactional
     public Notification notifyPaymentFailed(UUID userId, UUID orderId, float amount) {
         Notification n = new Notification();
@@ -252,6 +280,13 @@ public class NotificationsService {
         return sendInAppAndMaybeEmail(n, true);
     }
 
+    /**
+     * Notifies the user that a refund for a specific order has been processed.
+     * * @param userId  Target user ID.
+     * @param orderId Associated order ID.
+     * @param amount  The refunded amount.
+     * @return The generated notification.
+     */
     @Transactional
     public Notification notifyPaymentRefunded(UUID userId, UUID orderId, float amount) {
         Notification n = new Notification();
@@ -263,6 +298,14 @@ public class NotificationsService {
         return sendInAppAndMaybeEmail(n, true);
     }
 
+    /**
+     * Notifies the user that a generated PDF file is ready for download via URL.
+     * * @param userId   Target user ID.
+     * @param orderId  Associated order ID.
+     * @param fileName Name of the generated file.
+     * @param url      The public access link for the file.
+     * @return The generated notification.
+     */
     @Transactional
     public Notification notifyPdfGenerated(UUID userId, UUID orderId, String fileName, String url) {
         Notification n = new Notification();
@@ -274,6 +317,13 @@ public class NotificationsService {
         return sendInAppAndMaybeEmail(n, true);
     }
 
+    /**
+     * Notifies the user that their refund request has been successfully submitted.
+     * * @param userId          Target user ID.
+     * @param refundRequestId The unique ID of the refund request.
+     * @param content         The message or reason provided in the request.
+     * @return The generated notification.
+     */
     @Transactional
     public Notification notifyRefundRequestSent(UUID userId, UUID refundRequestId, String content) {
         Notification n = new Notification();
@@ -285,6 +335,14 @@ public class NotificationsService {
         return sendInAppAndMaybeEmail(n, true);
     }
 
+    /**
+     * Notifies the user of the final decision regarding a refund request.
+     * * @param userId       Target user ID.
+     * @param orderId      Associated order ID.
+     * @param decisionType The outcome (APPROVE or REJECT).
+     * @param description  Optional feedback or reason for the decision.
+     * @return The generated notification.
+     */
     @Transactional
     public Notification notifyRefundDecision(UUID userId, UUID orderId, DecisionType decisionType, String description) {
         Notification n = new Notification();
@@ -309,6 +367,14 @@ public class NotificationsService {
         return sendInAppAndMaybeEmail(n, true);
     }
 
+    /**
+     * Generates an In-App notification and synchronously sends an email with
+     * the PDF document attached.
+     * * @param userId   Target user ID.
+     * @param orderId  Associated order ID.
+     * @param fileName The name for the attached file.
+     * @param pdfBytes The binary content of the PDF.
+     */
     @Transactional
     public void notifyPdfGeneratedWithAttachment(UUID userId, UUID orderId, String fileName, byte[] pdfBytes) {
 
